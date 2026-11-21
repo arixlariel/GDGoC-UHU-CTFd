@@ -115,6 +115,20 @@ html[data-theme="cyber"] main {
   padding-bottom: 3rem;
 }
 
+/* Ancho unificado con la web de Open Badges (max-w-[1320px] px-4 sm:px-6) */
+html[data-theme="cyber"] .container {
+  max-width: 1320px !important;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  html[data-theme="cyber"] .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
 html[data-theme="cyber"] code,
 html[data-theme="cyber"] pre,
 html[data-theme="cyber"] .font-mono,
@@ -1475,14 +1489,28 @@ html[data-theme="cyber"] .progress {
   font-weight: 600;
 }
 
-.theme-footer-links a {
-  color: #94A3B8;
+html[data-theme="cyber"] .theme-footer-links a.footer-link-accent {
+  color: #00F0FF;
+  font-weight: 600;
   transition: color 0.2s ease, text-shadow 0.2s ease;
 }
 
-.theme-footer-links a:hover {
-  color: #00F0FF;
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+html[data-theme="cyber"] .theme-footer-links a.footer-link-accent:hover {
+  color: #FF4DA6;
+  text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+}
+
+html[data-theme="cyber"] .theme-footer-links a.footer-link-muted {
+  color: #94A3B8;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+html[data-theme="cyber"] .theme-footer-links a.footer-link-muted:hover {
+  color: #CBD5E1;
+  opacity: 1;
+  text-shadow: none;
 }
 
 /* ============================================================================

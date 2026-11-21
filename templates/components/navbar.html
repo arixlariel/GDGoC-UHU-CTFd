@@ -25,8 +25,8 @@
           {% endif %}
         </div>
         <div class="text-truncate">
-          <div class="gdg-brand-title text-truncate">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</div>
-          <div class="gdg-brand-subtitle text-truncate">GDG on Campus · Universidad de Huelva</div>
+          <div class="gdg-brand-title text-truncate">GDGoC UHU</div>
+          <div class="gdg-brand-subtitle text-truncate">CyberTrainer</div>
         </div>
       </a>
 
@@ -43,7 +43,7 @@
       </button>
 
       <div class="collapse navbar-collapse" id="base-navbars">
-        <!-- Enlaces principales de navegación CTF -->
+        <!-- Enlaces principales de navegación CTF (orden oficial CTFd: Users -> Teams -> Scoreboard -> Challenges) -->
         <ul class="navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1">
           {% for page in Plugins.user_menu_pages %}
             <li class="nav-item">
@@ -52,22 +52,6 @@
               </a>
             </li>
           {% endfor %}
-
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('challenges.listing') }}">
-              <i class="fas fa-flag fa-fw"></i>
-              <span>{% trans %}Challenges{% endtrans %}</span>
-            </a>
-          </li>
-
-          {% if Configs.account_visibility != 'admins' and Configs.score_visibility != 'admins' %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('scoreboard.listing') }}">
-                <i class="fas fa-trophy fa-fw"></i>
-                <span>{% trans %}Scoreboard{% endtrans %}</span>
-              </a>
-            </li>
-          {% endif %}
 
           {% if Configs.account_visibility != 'admins' %}
             <li class="nav-item">
@@ -86,6 +70,22 @@
               </li>
             {% endif %}
           {% endif %}
+
+          {% if Configs.account_visibility != 'admins' and Configs.score_visibility != 'admins' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('scoreboard.listing') }}">
+                <i class="fas fa-trophy fa-fw"></i>
+                <span>{% trans %}Scoreboard{% endtrans %}</span>
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('challenges.listing') }}">
+              <i class="fas fa-flag fa-fw"></i>
+              <span>{% trans %}Challenges{% endtrans %}</span>
+            </a>
+          </li>
         </ul>
 
         <hr class="d-lg-none my-3">
@@ -188,17 +188,16 @@
             </form>
           </li>
 
-          <!-- Acceso rápido a la web general / Open Badges GDGoC UHU -->
+          <!-- Acceso rápido a la web general de GDGoC UHU -->
           <li class="nav-item">
             <a
               href="https://gdguhu.com"
               target="_blank"
               rel="noopener noreferrer"
               class="theme-pill-btn w-100 w-lg-auto"
-              title="Web oficial y Open Badges de GDG on Campus UHU"
+              title="Web oficial de GDG on Campus UHU"
             >
-              <span>⚡</span>
-              <span>gdguhu.com</span>
+              <span>Comunidad</span>
               <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>
             </a>
           </li>

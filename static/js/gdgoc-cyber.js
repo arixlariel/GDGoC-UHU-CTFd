@@ -173,15 +173,21 @@
     cards.forEach(bindTiltCard);
   }
 
-  // 5. Marcar el enlace activo en el navbar
+  // 5. Marcar el enlace activo en el navbar (sin marcar nunca el root en subrutas)
   function highlightActiveNav() {
     var path = window.location.pathname.replace(/\/+$/, "") || "/";
+    var rootPath =
+      (window.init && window.init.urlRoot ? window.init.urlRoot : "").replace(/\/+$/, "") || "/";
+
     document.querySelectorAll(".theme-header .nav-link[href]").forEach(function (link) {
+      link.classList.remove("active");
       try {
         var url = new URL(link.href, window.location.origin);
         if (url.origin !== window.location.origin) return;
         var linkPath = url.pathname.replace(/\/+$/, "") || "/";
-        if (linkPath === path || (linkPath !== "/" && path.startsWith(linkPath + "/"))) {
+        if (linkPath === path) {
+          link.classList.add("active");
+        } else if (linkPath !== "/" && linkPath !== rootPath && path.startsWith(linkPath + "/")) {
           link.classList.add("active");
         }
       } catch (_) {}
