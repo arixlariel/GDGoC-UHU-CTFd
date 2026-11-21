@@ -233,9 +233,14 @@
     if (scope.matches && scope.matches(".tilt-card")) {
       bindTiltCard(scope);
     }
+    if (scope.parentElement && scope.parentElement.matches && scope.parentElement.matches(".tilt-card")) {
+      bindTiltCard(scope.parentElement);
+    }
     var cards = scope.querySelectorAll ? scope.querySelectorAll(".tilt-card") : [];
     cards.forEach(bindTiltCard);
   }
+
+  window.gdgocScanTiltCards = scanTiltCards;
 
   // 5. Marcar el enlace activo en el navbar (incluyendo nav-link y botones pill de Profile/Settings/Login)
   function highlightActiveNav() {

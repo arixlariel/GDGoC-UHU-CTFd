@@ -17,7 +17,18 @@ Tema personalizado **Cyber Neon** para la plataforma **CyberTrainer CTF** de **G
 
 ---
 
-## Instalación en el servidor de CTFd (para el administrador)
+## Sincronización automática con la instancia CTFd en producción (GitHub Actions)
+
+Además de poder montarse como tema nativo en servidor, este repositorio incluye un **puente ligero zero-flicker** (`static/js/gdgoc-cyber-bridge.js`) y un job automático (`sync-live-ctfd`) en [`.github/workflows/pages.yml`](.github/workflows/pages.yml):
+
+1. Cada `git push` a `main` despliega los assets actualizados (`gdgoc-cyber.css`, `gdgoc-cyber.js`, `gdgoc-cyber-bridge.js`, logos y favicons) en GitHub Pages (`https://arixlariel.github.io/GDGoC-UHU-CTFd/static/...`).
+2. Al finalizar el despliegue, el script [`.github/scripts/sync_ctfd_theme.py`](.github/scripts/sync_ctfd_theme.py) llama a `PATCH /api/v1/configs` en la instancia CTFd configurada mediante los **GitHub Actions Secrets** (`CTFD_URL` y `CTFD_API_TOKEN`) para actualizar `theme_header` con cache-busting automático (`?v=<commit_sha>`).
+3. El puente nunca modifica `/admin` y se desactiva automáticamente si en el futuro se monta e instala el tema Jinja nativo `gdgoc-cyber` en el servidor.
+4. Para desactivar o rotar el acceso en cualquier momento, basta con revocar el token en `/settings#tokens` dentro de CTFd o eliminar el secreto `CTFD_API_TOKEN` en GitHub.
+
+---
+
+## Instalación en el servidor de CTFd (opcional · tema Jinja nativo)
 
 Este repositorio **es directamente una carpeta de tema de CTFd** (`templates/` + `static/`).
 
@@ -92,12 +103,13 @@ Cada `git push` a `main` publica automáticamente una vista previa interactiva (
 
 ```text
 GDGoC-UHU-CTFd/
-├── .github/                       # Workflow de GitHub Pages para previsualizar el tema en github.io
+├── .github/                       # Workflow de GitHub Pages + auto-sync con CTFd en vivo
 ├── static/
 │   ├── manifest.json              # Vite manifest oficial de CTFd core-beta
 │   ├── assets/                    # Bundles JS/CSS oficiales de CTFd (Alpine.js, ECharts, Bootstrap)
 │   ├── css/gdgoc-cyber.css        # Hoja maestra del diseño Cyber GDGoC UHU
 │   ├── js/gdgoc-cyber.js          # 3D tilt, glare, ECharts Cyber Neon y utilidades UI
+│   ├── js/gdgoc-cyber-bridge.js   # Puente zero-flicker para adaptar el tema `core` en caliente
 │   ├── img/                       # Logos y favicons oficiales de GDGoC UHU
 │   ├── sounds/                    # Sonidos de notificación de CTFd
 │   └── webfonts/                  # Iconografía FontAwesome

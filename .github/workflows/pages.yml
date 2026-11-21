@@ -1,4 +1,4 @@
-name: Deploy CTFd Cyber Theme Preview to GitHub Pages
+name: Deploy CTFd Cyber Theme Preview & Sync Live CTFd
 
 on:
   push:
@@ -49,3 +49,24 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  sync-live-ctfd:
+    name: Sync Cyber theme to live CTFd
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update CTFd theme_header via Admin REST API
+        env:
+          CTFD_URL: ${{ secrets.CTFD_URL }}
+          CTFD_API_TOKEN: ${{ secrets.CTFD_API_TOKEN }}
+          PAGES_BASE_URL: "https://arixlariel.github.io/GDGoC-UHU-CTFd"
+          ASSET_VERSION: ${{ github.sha }}
+        run: python3 .github/scripts/sync_ctfd_theme.py

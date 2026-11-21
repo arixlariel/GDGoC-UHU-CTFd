@@ -604,7 +604,7 @@ html[data-theme="cyber"] .btn-info:hover {
 html[data-theme="cyber"] .btn-secondary,
 html[data-theme="cyber"] .btn-outline-secondary,
 html[data-theme="cyber"] .btn-outline-info,
-html[data-theme="cyber"] .btn-dark {
+html[data-theme="cyber"] .btn-dark:not(.challenge-button) {
   background: rgba(12, 18, 38, 0.88) !important;
   border: 1px solid rgba(0, 240, 255, 0.45) !important;
   color: #E2F1FF !important;
@@ -1792,8 +1792,118 @@ html[data-theme="cyber"] .feature-card table.table-borderless tbody tr:last-chil
   border-bottom: none !important;
 }
 
-html[data-theme="cyber"] .gdg-legacy-hidden {
+html[data-theme="cyber"] .gdg-legacy-hidden,
+html[data-theme="cyber"] .gdg-filter-hidden {
   display: none !important;
+}
+
+/* ============================================================================
+   ADAPTACIÓN ZERO-FLICKER PARA TEMA NATIVO `core` (gdgoc-cyber-bridge.js)
+   ============================================================================ */
+html[data-theme="cyber"] body > nav.navbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1030 !important;
+  background: var(--cyber-header-bg) !important;
+  backdrop-filter: blur(22px) !important;
+  -webkit-backdrop-filter: blur(22px) !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.35) !important;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15) !important;
+}
+
+html[data-theme="cyber"] .theme-switch {
+  display: none !important;
+}
+
+/* Estilo Cyber para tarjetas de retos del tema `core` (.challenge-button > .challenge-inner) */
+html[data-theme="cyber"] .challenge-button.btn-dark {
+  border-radius: 18px !important;
+  min-height: 154px !important;
+  padding: 1.25rem 1.2rem 1.1rem !important;
+}
+
+html[data-theme="cyber"] .challenge-button > .challenge-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  margin: 0 !important;
+  gap: 0.7rem;
+  position: relative;
+  z-index: 2;
+}
+
+html[data-theme="cyber"] .challenge-button > .challenge-inner p {
+  font-size: 1.04rem;
+  font-weight: 700;
+  line-height: 1.32;
+  color: #F0F9FF;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+  margin: 0.35rem 0 0.25rem 0;
+  word-break: break-word;
+  text-align: left;
+  width: 100%;
+}
+
+html[data-theme="cyber"] .challenge-button > .challenge-inner > span {
+  font-family: 'Orbitron', 'Google Sans Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.24rem 0.7rem;
+  border-radius: 9999px;
+  background: rgba(0, 240, 255, 0.14);
+  border: 1px solid rgba(0, 240, 255, 0.55);
+  color: #00F0FF;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+  order: -1;
+}
+
+html[data-theme="cyber"] .challenge-button > .challenge-inner > span::after {
+  content: " PTS";
+}
+
+html[data-theme="cyber"] .challenge-button.challenge-solved > .challenge-inner > span,
+html[data-theme="cyber"] .challenge-button.solved-challenge > .challenge-inner > span {
+  background: rgba(0, 255, 102, 0.18);
+  border-color: #00FF66;
+  color: #00FF66;
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.3);
+}
+
+html[data-theme="cyber"] .challenge-button > .challenge-inner::after {
+  content: "HACK →";
+  display: block;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(0, 240, 255, 0.16);
+  text-align: right;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--cyber-gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="cyber"] .challenge-button.challenge-solved > .challenge-inner::after,
+html[data-theme="cyber"] .challenge-button.solved-challenge > .challenge-inner::after {
+  content: "✓ SOLVED · VER RETO →";
+  background: var(--cyber-gradient-solved);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gdg-core-status-badge {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.15rem;
+  z-index: 3;
+  pointer-events: none;
 }
 
 /* ============================================================================
