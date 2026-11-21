@@ -208,8 +208,8 @@
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <b>{{ form.description.label(class="form-label") }}</b>
-                  <input type="text" class="form-control" id="description" name="description" autocomplete="off" placeholder="Optional description (e.g. CLI, CI/CD)">
+                  <b><label class="form-label" for="description">{% trans %}Description{% endtrans %}</label></b>
+                  <input type="text" class="form-control" id="description" name="description" autocomplete="off">
                 </div>
               </div>
 

@@ -751,7 +751,7 @@
 
         if (!btn.classList.contains("tilt-card")) {
           btn.classList.add("tilt-card");
-          btn.setAttribute("data-tilt-max", "1.8");
+          btn.setAttribute("data-tilt-max", "2.0");
         }
         if (!btn.querySelector(".tilt-glare")) {
           var glare = document.createElement("div");
@@ -815,8 +815,21 @@
 
       var catNames = [];
       var sectionsParent = sections.length ? sections[0].section.parentElement : null;
+      // Solo reordenar en el DOM si realmente ha cambiado el orden (evita expulsar nodos bajo el cursor 3D)
+      var needsReorder = false;
+      if (sectionsParent) {
+        var currentOrder = Array.prototype.slice.call(sectionsParent.children).filter(function (el) {
+          return sections.some(function (s) { return s.section === el; });
+        });
+        for (var si = 0; si < sections.length; si++) {
+          if (currentOrder[si] !== sections[si].section) {
+            needsReorder = true;
+            break;
+          }
+        }
+      }
       sections.forEach(function (item) {
-        if (sectionsParent && item.section.parentElement === sectionsParent) {
+        if (needsReorder && sectionsParent && item.section.parentElement === sectionsParent) {
           sectionsParent.appendChild(item.section);
         }
         var header = item.header;
@@ -1273,7 +1286,14 @@
           buildCustomExpirationPicker(expInput);
         }
 
-        // Convertir descripción de textarea a input de 1 sola línea
+        // Convertir descripción de textarea a input de 1 sola línea sin placeholder y renombrar etiqueta a "Description"
+        var descLabel = tokForm.querySelector('label[for="description"]');
+        if (descLabel) {
+          var dlTxt = (descLabel.textContent || "").trim().toLowerCase();
+          if (dlTxt.indexOf("usage") !== -1 || dlTxt === "description") {
+            descLabel.textContent = "Description";
+          }
+        }
         var descEl = tokForm.querySelector('textarea[name="description"], #description');
         if (descEl && descEl.tagName === "TEXTAREA") {
           var oneLine = document.createElement("input");
@@ -1282,9 +1302,10 @@
           oneLine.name = descEl.name || "description";
           oneLine.className = "form-control";
           oneLine.autocomplete = "off";
-          oneLine.placeholder = "Optional description (e.g. CLI, CI/CD)";
           oneLine.value = descEl.value || "";
           descEl.parentNode.replaceChild(oneLine, descEl);
+        } else if (descEl) {
+          descEl.removeAttribute("placeholder");
         }
 
         var tokGroups = Array.prototype.slice

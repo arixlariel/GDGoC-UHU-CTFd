@@ -130,18 +130,39 @@
     misc: "#00FF66",
   };
   var CATEGORY_FALLBACK_COLORS = ["#FF6B00", "#38BDF8", "#F43F5E", "#10B981", "#E879F9", "#FACC15"];
-  var TOP10_SERIES_COLORS = [
+  var TOP15_SERIES_COLORS = [
     "#00F0FF",
     "#FF007F",
     "#00FF66",
     "#FFE600",
-    "#A855F7",
+    "#B366FF",
     "#FF6B00",
     "#38BDF8",
     "#FF3358",
-    "#10B981",
-    "#E879F9",
+    "#2DD4BF",
+    "#F472B6",
+    "#A3E635",
+    "#FBBF24",
+    "#818CF8",
+    "#FB7185",
+    "#34D399",
   ];
+
+  function formatOrdinalDate(d) {
+    var day = d.getDate();
+    var mod100 = day % 100;
+    var suf =
+      mod100 >= 11 && mod100 <= 13
+        ? "th"
+        : day % 10 === 1
+        ? "st"
+        : day % 10 === 2
+        ? "nd"
+        : day % 10 === 3
+        ? "rd"
+        : "th";
+    return (CHART_MONTHS[d.getMonth()] || "") + " " + day + suf;
+  }
 
   function getCategoryColor(name) {
     var key = (name || "").trim().toLowerCase();
@@ -155,7 +176,7 @@
   function makeCyberChartTheme(isProfile) {
     var base = {
       backgroundColor: "transparent",
-      color: TOP10_SERIES_COLORS.slice(),
+      color: TOP15_SERIES_COLORS.slice(),
       textStyle: safeMergeLeaf({
         color: "#E2F1FF",
         fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
@@ -414,104 +435,135 @@
     }
   }
 
-  // 4. Motor 3D Perspective Tilt + Specular Glare (inmune al scroll y pausa en inputs)
+  // 4. Motor 3D Perspective Tilt + Specular Glare (delegado único, 0 MutationObservers, paridad exacta con Open Badges)
   var prefersReducedMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var activeTiltCard = null;
+  var tiltRafId = null;
 
-  function bindTiltCard(card) {
-    if (prefersReducedMotion || !card || card.dataset.tiltBound === "1") return;
-    card.dataset.tiltBound = "1";
+  function ensureGlareEl(card) {
+    if (!card || card.querySelector(":scope > .tilt-glare")) return;
+    var glare = document.createElement("div");
+    glare.className = "tilt-glare";
+    glare.setAttribute("aria-hidden", "true");
+    card.insertBefore(glare, card.firstChild);
+  }
 
-    var maxTilt = Math.min(Number(card.getAttribute("data-tilt-max") || "2.2"), 2.5);
-    var rafId = null;
+  function resetTiltCard(card) {
+    if (!card) return;
+    card.removeAttribute("data-tilting");
+    card.classList.remove("is-tilting");
+    card.style.transform = "";
+  }
 
-    function resetTilt() {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      card.classList.remove("is-tilting");
-      card.style.transform = "";
+  function resetActiveTilt() {
+    if (tiltRafId !== null) {
+      cancelAnimationFrame(tiltRafId);
+      tiltRafId = null;
     }
+    if (activeTiltCard) {
+      resetTiltCard(activeTiltCard);
+      activeTiltCard = null;
+    }
+  }
 
-    card.addEventListener("pointermove", function (e) {
-      if (window.innerWidth < 768 || e.pointerType === "touch") return;
-      if (document.body.classList.contains("modal-open") || document.querySelector(".modal.show")) {
-        resetTilt();
-        return;
-      }
-      var activeEl = document.activeElement;
-      if (
-        activeEl &&
-        card.contains(activeEl) &&
-        (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")
-      ) {
-        resetTilt();
-        return;
-      }
+  function initDelegatedTiltEngine() {
+    if (prefersReducedMotion || window.__cyberTiltDelegated) return;
+    window.__cyberTiltDelegated = true;
 
-      var clientX = e.clientX;
-      var clientY = e.clientY;
-      if (rafId !== null) cancelAnimationFrame(rafId);
+    document.addEventListener(
+      "pointermove",
+      function (e) {
+        if (window.innerWidth < 768 || e.pointerType === "touch") {
+          resetActiveTilt();
+          return;
+        }
+        if (document.body.classList.contains("modal-open") || document.querySelector(".modal.show")) {
+          resetActiveTilt();
+          return;
+        }
+        var card = e.target && e.target.closest ? e.target.closest(".tilt-card") : null;
+        if (activeTiltCard && activeTiltCard !== card) {
+          resetTiltCard(activeTiltCard);
+          activeTiltCard = null;
+        }
+        if (!card) return;
 
-      rafId = requestAnimationFrame(function () {
-        rafId = null;
-        var rect = card.getBoundingClientRect();
-        var w = card.offsetWidth || rect.width;
-        var h = card.offsetHeight || rect.height;
-        if (!w || !h) return;
+        var activeEl = document.activeElement;
+        if (
+          activeEl &&
+          card.contains(activeEl) &&
+          (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")
+        ) {
+          resetTiltCard(card);
+          activeTiltCard = null;
+          return;
+        }
 
-        var cx = rect.left + rect.width / 2;
-        var cy = rect.top + rect.height / 2;
-        var pctX = Math.max(0, Math.min(1, (clientX - cx) / w + 0.5));
-        var pctY = Math.max(0, Math.min(1, (clientY - cy) / h + 0.5));
-        var rotateY = (pctX - 0.5) * maxTilt * 2;
-        var rotateX = (0.5 - pctY) * maxTilt * 2;
+        ensureGlareEl(card);
+        activeTiltCard = card;
+        var clientX = e.clientX;
+        var clientY = e.clientY;
+        var targetCard = card;
 
-        card.classList.add("is-tilting");
-        card.style.transform =
-          "perspective(1200px) rotateX(" +
-          rotateX.toFixed(2) +
-          "deg) rotateY(" +
-          rotateY.toFixed(2) +
-          "deg) scale3d(1.008, 1.008, 1)";
-        card.style.setProperty("--glare-x", (pctX * 100).toFixed(1) + "%");
-        card.style.setProperty("--glare-y", (pctY * 100).toFixed(1) + "%");
-      });
-    });
+        if (tiltRafId !== null) cancelAnimationFrame(tiltRafId);
+        tiltRafId = requestAnimationFrame(function () {
+          tiltRafId = null;
+          if (activeTiltCard !== targetCard || !document.contains(targetCard)) return;
+          var rect = targetCard.getBoundingClientRect();
+          var w = targetCard.offsetWidth || rect.width;
+          var h = targetCard.offsetHeight || rect.height;
+          if (!w || !h) return;
 
-    card.addEventListener("focusin", function (e) {
+          var maxTilt = Math.min(Number(targetCard.getAttribute("data-tilt-max") || "2.0"), 2.5);
+          var cx = rect.left + rect.width / 2;
+          var cy = rect.top + rect.height / 2;
+          var pctX = Math.max(0, Math.min(1, (clientX - cx) / w + 0.5));
+          var pctY = Math.max(0, Math.min(1, (clientY - cy) / h + 0.5));
+          var rotateY = (pctX - 0.5) * maxTilt * 2;
+          var rotateX = (0.5 - pctY) * maxTilt * 2;
+
+          targetCard.setAttribute("data-tilting", "1");
+          targetCard.style.transform =
+            "perspective(1200px) rotateX(" +
+            rotateX.toFixed(2) +
+            "deg) rotateY(" +
+            rotateY.toFixed(2) +
+            "deg) scale3d(1.008, 1.008, 1)";
+          targetCard.style.setProperty("--glare-x", (pctX * 100).toFixed(1) + "%");
+          targetCard.style.setProperty("--glare-y", (pctY * 100).toFixed(1) + "%");
+        });
+      },
+      { passive: true }
+    );
+
+    document.addEventListener("pointerleave", resetActiveTilt);
+    document.addEventListener("pointercancel", resetActiveTilt);
+    window.addEventListener("scroll", resetActiveTilt, { passive: true });
+    window.addEventListener("blur", resetActiveTilt);
+
+    document.addEventListener("focusin", function (e) {
       if (
         e.target &&
         (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")
       ) {
-        resetTilt();
+        resetActiveTilt();
       }
     });
 
-    card.addEventListener("pointerleave", resetTilt);
-    card.addEventListener("pointercancel", resetTilt);
-  }
-
-  // Limpiar cualquier transform 3D al abrir un modal de Bootstrap (evita atrapar modales fixed)
-  document.addEventListener("show.bs.modal", function () {
-    document.querySelectorAll(".tilt-card").forEach(function (card) {
-      card.classList.remove("is-tilting");
-      card.style.transform = "";
+    document.addEventListener("show.bs.modal", function () {
+      resetActiveTilt();
+      document.querySelectorAll(".tilt-card").forEach(resetTiltCard);
     });
-  });
+  }
 
   function scanTiltCards(root) {
     if (prefersReducedMotion) return;
+    initDelegatedTiltEngine();
     var scope = root || document;
-    if (scope.matches && scope.matches(".tilt-card")) {
-      bindTiltCard(scope);
-    }
-    if (scope.parentElement && scope.parentElement.matches && scope.parentElement.matches(".tilt-card")) {
-      bindTiltCard(scope.parentElement);
-    }
+    if (scope.matches && scope.matches(".tilt-card")) ensureGlareEl(scope);
     var cards = scope.querySelectorAll ? scope.querySelectorAll(".tilt-card") : [];
-    cards.forEach(bindTiltCard);
+    cards.forEach(ensureGlareEl);
   }
 
   window.gdgocScanTiltCards = scanTiltCards;
@@ -840,9 +892,15 @@
       var candidates = [];
       var seen = {};
       function addCandidate(u) {
-        if (!u || seen[u]) return;
-        seen[u] = true;
-        candidates.push(u);
+        if (!u) return;
+        // CRÍTICO: resolver SIEMPRE contra window.location.origin (no contra github.io desde donde se sirve cyber-bundle.min.js)
+        var abs = u;
+        try {
+          abs = new URL(u, window.location.origin).href;
+        } catch (_) {}
+        if (seen[abs]) return;
+        seen[abs] = true;
+        candidates.push(abs);
       }
 
       // 1. Buscar en <script type="module"> y <link rel="modulepreload">
@@ -870,16 +928,19 @@
 
       return tryImportList(candidates).then(function (found) {
         if (found) return found;
-        // 2. Fallback: consultar manifest.json de CTFd (`core` o preview estática) para resolver _index.*.js
+        // 2. Consultar manifest.json del origen actual (http://188.245.96.96/themes/core/static/manifest.json o preview)
         var manifestBases = [root + "/themes/core/static", root + "/static"];
         return Promise.all(
           manifestBases.map(function (base) {
-            return fetchJson(base + "/manifest.json").then(function (man) {
+            var manUrl = base + "/manifest.json";
+            try { manUrl = new URL(manUrl, window.location.origin).href; } catch (_) {}
+            return fetchJson(manUrl).then(function (man) {
               if (!man || typeof man !== "object") return [];
               var urls = [];
               Object.keys(man).forEach(function (k) {
                 if (/^_?index\.[a-f0-9]+\.js$/i.test(k) && man[k] && man[k].file) {
-                  urls.push(base + "/" + man[k].file.replace(/^\/+/, ""));
+                  var rel = base + "/" + man[k].file.replace(/^\/+/, "");
+                  try { urls.push(new URL(rel, window.location.origin).href); } catch (_) { urls.push(rel); }
                 }
               });
               return urls;
@@ -1103,11 +1164,11 @@
       var card = origGraph.closest(".theme-card") || origGraph.parentElement;
       if (!card) return;
 
-      var top10 = rows
+      var top15 = rows
         .filter(function (r) {
           return r.solveList.length > 0;
         })
-        .slice(0, 10);
+        .slice(0, 15);
 
       var customHost = document.getElementById("cyber-score-graph");
       if (!customHost) {
@@ -1117,12 +1178,12 @@
         origGraph.parentNode.insertBefore(customHost, origGraph.nextSibling);
       }
 
-      if (!top10.length) {
+      if (!top15.length) {
         origGraph.style.display = "none";
         customHost.style.display = "block";
         customHost.innerHTML =
           '<div class="cyber-empty-state py-5">' +
-          '  <span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>Top 10</span></span>' +
+          '  <span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>Top 15</span></span>' +
           '  <h4 class="h6 theme-text-secondary mb-0">No activity recorded in this timeframe</h4>' +
           "</div>";
         return;
@@ -1135,20 +1196,20 @@
 
         var xLabels = [];
         var series = [];
-        var chartTitle = "Top 10 · All-Time";
+        var chartTitle = "Top 15 · All-Time";
         var xAxisName = "Solves";
 
         if (activePeriod === "all") {
-          chartTitle = "Top 10 · All-Time";
+          chartTitle = "Top 15 · All-Time";
           xAxisName = "Solves";
           var maxSolves = 0;
-          top10.forEach(function (u) {
+          top15.forEach(function (u) {
             if (u.solveList.length > maxSolves) maxSolves = u.solveList.length;
           });
           xLabels = ["0"];
           for (var sIdx = 1; sIdx <= maxSolves; sIdx++) xLabels.push(String(sIdx));
-          top10.forEach(function (u, idx) {
-            var color = TOP10_SERIES_COLORS[idx % TOP10_SERIES_COLORS.length];
+          top15.forEach(function (u, idx) {
+            var color = TOP15_SERIES_COLORS[idx % TOP15_SERIES_COLORS.length];
             var cum = 0;
             var pts = [0];
             u.solveList.forEach(function (sv) {
@@ -1160,22 +1221,22 @@
               type: "line",
               smooth: false,
               symbol: "circle",
-              symbolSize: 13,
+              symbolSize: 16,
               showSymbol: true,
               showAllSymbol: true,
-              itemStyle: { color: color, borderColor: "#060A18", borderWidth: 2 },
-              lineStyle: { color: color, width: 3 },
+              itemStyle: { color: color, borderColor: "#060A18", borderWidth: 2.5 },
+              lineStyle: { color: color, width: 3.2 },
               emphasis: { scale: 1.35 },
               data: pts,
             });
           });
         } else if (activePeriod === "year") {
-          chartTitle = "Top 10 · This Year";
+          chartTitle = "Top 15 · This Year";
           xAxisName = "Weeks";
           var curWeek = getWeekOfYear(new Date());
-          for (var w = 1; w <= curWeek; w++) xLabels.push("W" + w);
-          top10.forEach(function (u, idx) {
-            var color = TOP10_SERIES_COLORS[idx % TOP10_SERIES_COLORS.length];
+          for (var w = 1; w <= curWeek; w++) xLabels.push("Week " + w);
+          top15.forEach(function (u, idx) {
+            var color = TOP15_SERIES_COLORS[idx % TOP15_SERIES_COLORS.length];
             var weekDelta = {};
             u.solveList.forEach(function (sv) {
               var d = new Date(sv.date);
@@ -1187,24 +1248,27 @@
             var cum = 0;
             var pts = [];
             for (var wk2 = 1; wk2 <= curWeek; wk2++) {
-              cum += weekDelta[wk2] || 0;
-              pts.push(Math.round(cum));
+              var delta = weekDelta[wk2] || 0;
+              cum += delta;
+              var showDot = delta > 0 || wk2 === curWeek;
+              pts.push({ value: Math.round(cum), symbolSize: showDot ? 15 : 0 });
             }
             series.push({
               name: u.name,
               type: "line",
               smooth: false,
               symbol: "circle",
-              symbolSize: 12,
+              symbolSize: 15,
               showSymbol: true,
-              itemStyle: { color: color, borderColor: "#060A18", borderWidth: 2 },
-              lineStyle: { color: color, width: 3 },
+              showAllSymbol: true,
+              itemStyle: { color: color, borderColor: "#060A18", borderWidth: 2.5 },
+              lineStyle: { color: color, width: 3.2 },
               emphasis: { scale: 1.35 },
               data: pts,
             });
           });
         } else {
-          chartTitle = "Top 10 · Last 30 days";
+          chartTitle = "Top 15 · Last 30 days";
           xAxisName = "Days";
           var now = new Date();
           var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -1212,10 +1276,10 @@
           for (var offset = 29; offset >= 0; offset--) {
             var day = new Date(todayStart.getTime() - offset * 24 * 60 * 60 * 1000);
             dayKeys.push(getDayKey(day));
-            xLabels.push(String(day.getDate()).padStart(2, "0") + " " + CHART_MONTHS[day.getMonth()]);
+            xLabels.push(formatOrdinalDate(day));
           }
-          top10.forEach(function (u, idx) {
-            var color = TOP10_SERIES_COLORS[idx % TOP10_SERIES_COLORS.length];
+          top15.forEach(function (u, idx) {
+            var color = TOP15_SERIES_COLORS[idx % TOP15_SERIES_COLORS.length];
             var dayDelta = {};
             u.solveList.forEach(function (sv) {
               var d = new Date(sv.date);
@@ -1225,19 +1289,22 @@
               }
             });
             var cum = 0;
-            var pts = dayKeys.map(function (k) {
-              cum += dayDelta[k] || 0;
-              return Math.round(cum);
+            var pts = dayKeys.map(function (k, di) {
+              var delta = dayDelta[k] || 0;
+              cum += delta;
+              var showDot = delta > 0 || di === dayKeys.length - 1;
+              return { value: Math.round(cum), symbolSize: showDot ? 15 : 0 };
             });
             series.push({
               name: u.name,
               type: "line",
               smooth: false,
               symbol: "circle",
-              symbolSize: 12,
+              symbolSize: 15,
               showSymbol: true,
-              itemStyle: { color: color, borderColor: "#060A18", borderWidth: 2 },
-              lineStyle: { color: color, width: 3 },
+              showAllSymbol: true,
+              itemStyle: { color: color, borderColor: "#060A18", borderWidth: 2.5 },
+              lineStyle: { color: color, width: 3.2 },
               emphasis: { scale: 1.35 },
               data: pts,
             });
@@ -1246,7 +1313,7 @@
 
         var opt = {
           backgroundColor: "transparent",
-          color: TOP10_SERIES_COLORS.slice(),
+          color: TOP15_SERIES_COLORS.slice(),
           title: {
             left: "center",
             top: 6,
@@ -1255,7 +1322,7 @@
               color: "#F0F9FF",
               fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
-              fontSize: 21,
+              fontSize: 22,
             },
           },
           tooltip: {
@@ -1302,28 +1369,30 @@
             show: true,
             type: "scroll",
             orient: "horizontal",
-            bottom: 8,
+            bottom: 6,
             icon: "circle",
-            itemWidth: 12,
-            itemHeight: 12,
+            itemWidth: 16,
+            itemHeight: 16,
+            itemGap: 18,
             textStyle: {
               color: "#E2F1FF",
               fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
-              fontWeight: 600,
+              fontWeight: 700,
+              fontSize: 13,
             },
             pageTextStyle: { color: "#94A3B8" },
             pageIconColor: "#00F0FF",
             pageIconInactiveColor: "#475569",
-            data: top10.map(function (u) { return u.name; }),
+            data: top15.map(function (u) { return u.name; }),
           },
           toolbox: { show: false },
-          grid: { top: 66, bottom: 72, left: 20, right: 28, containLabel: true },
+          grid: { top: 68, bottom: 78, left: 22, right: 28, containLabel: true },
           xAxis: [
             {
               type: "category",
               name: xAxisName,
               nameLocation: "middle",
-              nameGap: 32,
+              nameGap: 34,
               nameTextStyle: { color: "#64748B", fontFamily: "'JetBrains Mono', monospace", fontSize: 11 },
               boundaryGap: false,
               data: xLabels,
@@ -1357,7 +1426,7 @@
         // Montar sobre un nodo limpio para que cada cambio de pestaña re-renderice sin artefactos
         customHost.innerHTML = "";
         var inner = document.createElement("div");
-        inner.style.cssText = "width:100%;height:410px;";
+        inner.style.cssText = "width:100%;height:420px;";
         customHost.appendChild(inner);
         embed(inner, opt);
       });
@@ -2419,6 +2488,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     cleanupLegacyThemeHeader();
     highlightActiveNav();
+    initDelegatedTiltEngine();
     scanTiltCards(document);
     initCyberDatePickers(document);
     initSettingsInlineFeedback();
@@ -2428,32 +2498,5 @@
     initRegisteredUsersCounter();
     initUsersTableInteractive();
     initChallengeModalEnhancer();
-
-    // Observar nuevos nodos inyectados dinámicamente por Alpine.js (retos, modales) con debounce ligero
-    if (!prefersReducedMotion && typeof MutationObserver !== "undefined") {
-      var pendingNodes = [];
-      var scanRaf = null;
-      var observer = new MutationObserver(function (mutations) {
-        for (var i = 0; i < mutations.length; i++) {
-          var added = mutations[i].addedNodes;
-          for (var j = 0; j < added.length; j++) {
-            var node = added[j];
-            if (node.nodeType === 1 && (node.classList.contains("tilt-card") || node.childElementCount > 0)) {
-              pendingNodes.push(node);
-            }
-          }
-        }
-        if (pendingNodes.length && scanRaf === null) {
-          scanRaf = requestAnimationFrame(function () {
-            scanRaf = null;
-            var batch = pendingNodes.splice(0, pendingNodes.length);
-            for (var k = 0; k < batch.length; k++) {
-              scanTiltCards(batch[k]);
-            }
-          });
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
   });
 })();

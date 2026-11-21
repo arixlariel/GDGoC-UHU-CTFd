@@ -869,9 +869,9 @@ html[data-theme="cyber"] .card {
   border-radius: 20px !important;
   color: #E2F1FF !important;
   box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.05) !important;
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.25s ease,
-              border-color 0.25s ease !important;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
   position: relative;
   overflow: hidden;
 }
@@ -903,6 +903,7 @@ html[data-theme="cyber"] .theme-card:has(.modal.show) {
   will-change: auto !important;
 }
 
+/* Motor 3D idéntico al de Open Badges (sin !important conflictivos ni mutación de clases en hover) */
 .tilt-card {
   transform-origin: center center;
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
@@ -910,6 +911,7 @@ html[data-theme="cyber"] .theme-card:has(.modal.show) {
               border-color 0.3s ease;
 }
 
+.tilt-card[data-tilting="1"],
 .tilt-card.is-tilting {
   transition: transform 0.08s ease-out,
               box-shadow 0.3s ease,
@@ -1072,12 +1074,7 @@ html[data-theme="cyber"] .theme-card:has(.modal.show) {
   color: #00F0FF;
 }
 
-.category-challenges {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 240px;
-}
-
-/* Tarjeta de Reto (.challenge-button) */
+/* Tarjeta de Reto (.challenge-button) — sin content-visibility ni !important en transition para 3D fluido */
 html[data-theme="cyber"] .challenge-button {
   position: relative !important;
   overflow: hidden !important;
@@ -1092,9 +1089,17 @@ html[data-theme="cyber"] .challenge-button {
   border: 1px solid rgba(0, 240, 255, 0.35) !important;
   color: #F0F9FF !important;
   box-shadow: 0 0 22px rgba(0, 240, 255, 0.09), inset 0 0 18px rgba(0, 240, 255, 0.04) !important;
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.25s ease,
-              border-color 0.25s ease !important;
+  transform-origin: center center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+html[data-theme="cyber"] .challenge-button[data-tilting="1"] {
+  transition: transform 0.08s ease-out,
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+  will-change: transform;
 }
 
 html[data-theme="cyber"] .challenge-button:hover {
@@ -1966,10 +1971,16 @@ html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:last-ch
 }
 
 .cyber-users-search-btn {
-  min-height: 46px !important;
-  min-width: 76px !important;
-  padding: 0 1.4rem !important;
-  font-size: 1.02rem !important;
+  min-height: 54px !important;
+  min-width: 102px !important;
+  padding: 0 1.85rem !important;
+  font-size: 1.22rem !important;
+}
+
+form[data-cyber-users-search] input[name="q"],
+form[data-cyber-users-search] #q {
+  min-height: 54px !important;
+  font-size: 0.96rem !important;
 }
 
 /* Métricas operativas en la tabla de Scoreboard (Submission accuracy Violeta #B366FF, Efficiency Verde #00FF66, Bajo Rojo #FF3358) */
