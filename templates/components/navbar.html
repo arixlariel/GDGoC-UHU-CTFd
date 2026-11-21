@@ -109,26 +109,26 @@
           {% if authed() %}
             {% if is_admin() %}
               <li class="nav-item">
-                <a class="theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto" href="{{ url_for('admin.view') }}" data-cyber-tooltip="{% trans %}Admin Panel{% endtrans %}" aria-label="{% trans %}Admin Panel{% endtrans %}">
+                <a class="theme-pill-btn theme-pill-btn--icon theme-pill-btn--admin w-100 w-lg-auto" href="{{ url_for('admin.view') }}" data-cyber-tooltip="{% trans %}Admin Panel{% endtrans %}" aria-label="{% trans %}Admin Panel{% endtrans %}">
                   <i class="fas fa-wrench fa-fw"></i>
-                  <span>{% trans %}Admin{% endtrans %}</span>
+                  <span class="d-lg-none">{% trans %}Admin{% endtrans %}</span>
                 </a>
               </li>
             {% endif %}
 
             {% if Configs.user_mode == "teams" %}
               <li class="nav-item">
-                <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('teams.private') }}" data-cyber-tooltip="{% trans %}Team{% endtrans %}" aria-label="{% trans %}Team{% endtrans %}">
+                <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('teams.private') }}" data-cyber-tooltip="{% trans %}Team{% endtrans %}" aria-label="{% trans %}Team{% endtrans %}">
                   <i class="fas fa-users fa-fw"></i>
-                  <span>{% trans %}Team{% endtrans %}</span>
+                  <span class="d-lg-none">{% trans %}Team{% endtrans %}</span>
                 </a>
               </li>
             {% endif %}
 
             <li class="nav-item">
-              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('users.private') }}" data-cyber-tooltip="{% trans %}Profile{% endtrans %}" aria-label="{% trans %}Profile{% endtrans %}">
+              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('users.private') }}" data-cyber-tooltip="{% trans %}Profile{% endtrans %}" aria-label="{% trans %}Profile{% endtrans %}">
                 <i class="fas fa-user-circle fa-fw"></i>
-                <span>{% trans %}Profile{% endtrans %}</span>
+                <span class="d-lg-none">{% trans %}Profile{% endtrans %}</span>
               </a>
             </li>
 
@@ -152,15 +152,6 @@
                 <span>{% trans %}Login{% endtrans %}</span>
               </a>
             </li>
-
-            {% if registration_visible() %}
-              <li class="nav-item">
-                <a class="theme-primary-btn w-100 w-lg-auto" href="{{ url_for('auth.register') }}" data-cyber-tooltip="Register or Login" aria-label="Register or Login">
-                  <i class="fas fa-user-plus"></i>
-                  <span>{% trans %}Register{% endtrans %}</span>
-                </a>
-              </li>
-            {% endif %}
           {% endif %}
 
           <!-- Selector de idioma oficial de CTFd -->

@@ -187,8 +187,10 @@
   function setCyberTooltip(el, text) {
     if (!el || !text) return;
     el.removeAttribute("title");
-    el.removeAttribute("data-bs-toggle");
-    el.removeAttribute("data-bs-placement");
+    if (el.getAttribute("data-bs-toggle") === "tooltip") {
+      el.removeAttribute("data-bs-toggle");
+      el.removeAttribute("data-bs-placement");
+    }
     el.setAttribute("data-cyber-tooltip", text);
     el.setAttribute("aria-label", text);
   }
@@ -379,6 +381,7 @@
         var btn = li.querySelector("button.dropdown-toggle");
         if (btn) {
           btn.className = "theme-pill-btn theme-pill-btn--icon dropdown-toggle w-100 w-lg-auto";
+          btn.setAttribute("data-bs-toggle", "dropdown");
           setCyberTooltip(btn, "Language");
           btn.innerHTML =
             '<i class="fas fa-language"></i>' +
@@ -393,20 +396,21 @@
       var lbl = cleanLabel(a, "");
 
       if (p === "/admin") {
-        var adminLabel = lbl.toLowerCase() === "admin panel" ? "Admin" : lbl || "Admin";
-        a.className = "theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto";
+        // Solo visible cuando CTFd lo renderiza para cuentas admin; solo icono en escritorio
+        a.className = "theme-pill-btn theme-pill-btn--icon theme-pill-btn--admin w-100 w-lg-auto";
         setCyberTooltip(a, lbl || "Admin Panel");
-        a.innerHTML = '<i class="fas fa-wrench fa-fw"></i><span></span>';
-        a.querySelector("span").textContent = adminLabel;
+        a.innerHTML = '<i class="fas fa-wrench fa-fw"></i><span class="d-lg-none"></span>';
+        a.querySelector("span").textContent = lbl || "Admin";
       } else if (p === "/team") {
-        a.className = "theme-pill-btn w-100 w-lg-auto";
+        a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
         setCyberTooltip(a, lbl || "Team");
-        a.innerHTML = '<i class="fas fa-users fa-fw"></i><span></span>';
+        a.innerHTML = '<i class="fas fa-users fa-fw"></i><span class="d-lg-none"></span>';
         a.querySelector("span").textContent = lbl || "Team";
       } else if (p === "/user") {
-        a.className = "theme-pill-btn w-100 w-lg-auto";
+        // Solo icono en escritorio, igual que el resto de botones de cuenta
+        a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
         setCyberTooltip(a, lbl || "Profile");
-        a.innerHTML = '<i class="fas fa-user-circle fa-fw"></i><span></span>';
+        a.innerHTML = '<i class="fas fa-user-circle fa-fw"></i><span class="d-lg-none"></span>';
         a.querySelector("span").textContent = lbl || "Profile";
       } else if (p === "/settings") {
         a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
@@ -425,17 +429,11 @@
         a.innerHTML = '<i class="fas fa-sign-in-alt"></i><span></span>';
         a.querySelector("span").textContent = lbl || "Login";
       } else if (p === "/register") {
+        // Sin sesión solo mostramos Login en la barra; Register es accesible debajo del formulario de Login
         registerLi = li;
-        a.className = "theme-primary-btn w-100 w-lg-auto";
-        setCyberTooltip(a, "Register or Login");
-        a.innerHTML = '<i class="fas fa-user-plus"></i><span></span>';
-        a.querySelector("span").textContent = lbl || "Register";
+        li.remove();
       }
     });
-
-    if (loginLi && registerLi && loginLi.parentNode === rightUl && registerLi.parentNode === rightUl) {
-      rightUl.insertBefore(loginLi, registerLi);
-    }
 
     if (!rightUl.querySelector('a[href="https://gdguhu.com"]')) {
       var comLi = document.createElement("li");
@@ -958,10 +956,14 @@
     });
   }
 
-  // Helper para organizar pares de campos .mb-3 en rejilla 2 columnas limpia dentro de formularios anchos
+  // Helper para organizar campos de entrada .mb-3 en rejilla 2 columnas (excluyendo filas de botones submit)
   function arrangeFieldsIntoGrid(formEl, colClass) {
     if (!formEl) return;
-    var groups = Array.prototype.slice.call(formEl.querySelectorAll(":scope > .mb-3"));
+    var groups = Array.prototype.slice
+      .call(formEl.querySelectorAll(":scope > .mb-3"))
+      .filter(function (g) {
+        return !g.querySelector('input[type="submit"], button[type="submit"]');
+      });
     if (groups.length < 2) return;
     var grid = document.createElement("div");
     grid.className = "row g-3 mb-2";
@@ -971,6 +973,40 @@
       g.classList.add(colClass || "col-md-6");
       grid.appendChild(g);
     });
+  }
+
+  // Selector de fecha personalizado sin calendario nativo (presets + DD / MM / YYYY -> hidden YYYY-MM-DD)
+  function buildCustomExpirationPicker(oldInput) {
+    var hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.id = oldInput.id || "expiration";
+    hidden.name = oldInput.name || "expiration";
+    hidden.value = "";
+
+    var wrap = document.createElement("div");
+    wrap.className = "cyber-date-picker";
+    wrap.setAttribute("data-cyber-date-picker", "1");
+    wrap.innerHTML =
+      '<div class="cyber-date-presets" role="group" aria-label="Expiration presets">' +
+      '  <button type="button" class="cyber-date-preset active" data-days="0">Never</button>' +
+      '  <button type="button" class="cyber-date-preset" data-days="7">7d</button>' +
+      '  <button type="button" class="cyber-date-preset" data-days="30">30d</button>' +
+      '  <button type="button" class="cyber-date-preset" data-days="90">90d</button>' +
+      '  <button type="button" class="cyber-date-preset" data-days="365">1y</button>' +
+      "</div>" +
+      '<div class="cyber-date-inputs">' +
+      '  <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-dd" placeholder="DD" aria-label="Day">' +
+      '  <span class="cyber-date-sep">/</span>' +
+      '  <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-mm" placeholder="MM" aria-label="Month">' +
+      '  <span class="cyber-date-sep">/</span>' +
+      '  <input type="text" inputmode="numeric" maxlength="4" class="form-control cyber-date-yyyy" placeholder="YYYY" aria-label="Year">' +
+      "</div>" +
+      '<div class="cyber-date-hint">Leave empty for no expiration</div>';
+    wrap.insertBefore(hidden, wrap.firstChild);
+    oldInput.parentNode.replaceChild(wrap, oldInput);
+    if (typeof window.cyberInitDatePickers === "function") {
+      window.cyberInitDatePickers(wrap.parentNode);
+    }
   }
 
   // 8. Settings unificado y multilingüe (3 cajas 3D amplias: Profile → Passwords → Access Tokens)
@@ -1109,9 +1145,17 @@
         arrangeFieldsIntoGrid(profileForm, "col-md-6");
         var pSub = profileForm.querySelector('input[type="submit"], button[type="submit"]');
         if (pSub) {
-          pSub.classList.remove("float-end", "btn-outlined", "btn-md");
-          var pSubRow = pSub.closest(".mb-3");
-          if (pSubRow) pSubRow.className = "d-flex justify-content-end pt-3";
+          pSub.classList.remove("float-end", "btn-outlined", "btn-md", "w-100");
+          var pSubRow = pSub.closest(".mb-3, .submit-row, div");
+          if (pSubRow && pSubRow !== profileForm) {
+            pSubRow.className = "d-flex justify-content-end pt-3";
+            profileForm.appendChild(pSubRow);
+          } else {
+            var newRow = document.createElement("div");
+            newRow.className = "d-flex justify-content-end pt-3";
+            newRow.appendChild(pSub);
+            profileForm.appendChild(newRow);
+          }
         }
       }
 
@@ -1143,28 +1187,56 @@
       tokensPane.classList.add("show", "active");
       var tokForm = tokensPane.querySelector('form[x-data="TokensForm"]');
       if (tokForm) {
-        var tokGroups = Array.prototype.slice.call(tokForm.querySelectorAll(":scope > .mb-3"));
+        // Reemplazar input[type="date"] nativo por selector Cyber sin calendario
+        var expInput = tokForm.querySelector('input[name="expiration"], #expiration');
+        if (expInput && expInput.type !== "hidden") {
+          buildCustomExpirationPicker(expInput);
+        }
+
+        // Convertir descripción de textarea a input de 1 sola línea
+        var descEl = tokForm.querySelector('textarea[name="description"], #description');
+        if (descEl && descEl.tagName === "TEXTAREA") {
+          var oneLine = document.createElement("input");
+          oneLine.type = "text";
+          oneLine.id = descEl.id || "description";
+          oneLine.name = descEl.name || "description";
+          oneLine.className = "form-control";
+          oneLine.autocomplete = "off";
+          oneLine.placeholder = "Optional description (e.g. CLI, CI/CD)";
+          oneLine.value = descEl.value || "";
+          descEl.parentNode.replaceChild(oneLine, descEl);
+        }
+
+        var tokGroups = Array.prototype.slice
+          .call(tokForm.querySelectorAll(":scope > .mb-3"))
+          .filter(function (g) {
+            return !g.querySelector('input[type="submit"], button[type="submit"]');
+          });
         if (tokGroups.length >= 2) {
           var tGrid = document.createElement("div");
-          tGrid.className = "row g-3 mb-2";
+          tGrid.className = "row g-3 mb-2 align-items-start";
           tokForm.insertBefore(tGrid, tokGroups[0]);
-          tokGroups[0].className = "col-md-5";
-          tokGroups[1].className = "col-md-7";
+          tokGroups[0].className = "col-md-6";
+          tokGroups[1].className = "col-md-6";
           tGrid.appendChild(tokGroups[0]);
           tGrid.appendChild(tokGroups[1]);
         }
+
         var tSub = tokForm.querySelector('input[type="submit"], button[type="submit"]');
         if (tSub) {
-          tSub.classList.remove("float-end", "btn-outlined", "btn-md");
-          var tWrap = tSub.closest(".mb-3") || tSub.parentElement;
-          if (tWrap && tWrap.tagName === "DIV") tWrap.className = "d-flex justify-content-end pt-2";
+          tSub.classList.remove("float-end", "btn-outlined", "btn-md", "w-100");
+          var tWrap = tSub.closest(".mb-3, div");
+          if (tWrap && tWrap !== tokForm) {
+            tWrap.className = "d-flex justify-content-end pt-3";
+            tokForm.appendChild(tWrap);
+          } else {
+            var genRow = document.createElement("div");
+            genRow.className = "d-flex justify-content-end pt-3";
+            genRow.appendChild(tSub);
+            tokForm.appendChild(genRow);
+          }
         }
       }
-
-      // Mejorar el botón de borrar token con tooltip Cyber
-      tokensPane.querySelectorAll(".delete-token").forEach(function (del) {
-        setCyberTooltip(del, "Delete token");
-      });
 
       var tokensCard = wrapInThemeCard(tokensPane, "p-4 p-sm-5");
       if (tokensCard) {

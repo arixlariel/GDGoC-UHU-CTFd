@@ -347,10 +347,139 @@
     });
   }
 
+  // 6. Selector de expiración personalizado Cyber (presets + DD/MM/YYYY sin calendario nativo)
+  function initCyberDatePickers(root) {
+    var scope = root || document;
+    var pickers = scope.querySelectorAll ? scope.querySelectorAll("[data-cyber-date-picker]") : [];
+    pickers.forEach(function (picker) {
+      if (picker.dataset.pickerBound === "1") return;
+      picker.dataset.pickerBound = "1";
+
+      var hidden = picker.querySelector('input[type="hidden"][name="expiration"]');
+      var dd = picker.querySelector(".cyber-date-dd");
+      var mm = picker.querySelector(".cyber-date-mm");
+      var yyyy = picker.querySelector(".cyber-date-yyyy");
+      var hint = picker.querySelector(".cyber-date-hint");
+      var presets = Array.prototype.slice.call(picker.querySelectorAll(".cyber-date-preset"));
+      if (!hidden || !dd || !mm || !yyyy) return;
+
+      function pad2(n) {
+        return String(n).padStart(2, "0");
+      }
+
+      function setActivePreset(daysVal) {
+        presets.forEach(function (btn) {
+          btn.classList.toggle("active", daysVal !== null && btn.getAttribute("data-days") === String(daysVal));
+        });
+      }
+
+      function syncFromInputs() {
+        var dStr = dd.value.replace(/\D/g, "");
+        var mStr = mm.value.replace(/\D/g, "");
+        var yStr = yyyy.value.replace(/\D/g, "");
+        dd.value = dStr;
+        mm.value = mStr;
+        yyyy.value = yStr;
+
+        if (!dStr && !mStr && !yStr) {
+          hidden.value = "";
+          dd.classList.remove("is-invalid");
+          mm.classList.remove("is-invalid");
+          yyyy.classList.remove("is-invalid");
+          if (hint) hint.textContent = "Never expires";
+          setActivePreset(0);
+          return;
+        }
+
+        if (dStr.length > 0 && mStr.length > 0 && yStr.length === 4) {
+          var d = parseInt(dStr, 10);
+          var m = parseInt(mStr, 10);
+          var y = parseInt(yStr, 10);
+          var dt = new Date(y, m - 1, d);
+          var valid =
+            y >= 2024 &&
+            y <= 2100 &&
+            m >= 1 &&
+            m <= 12 &&
+            d >= 1 &&
+            d <= 31 &&
+            dt.getFullYear() === y &&
+            dt.getMonth() === m - 1 &&
+            dt.getDate() === d;
+          dd.classList.toggle("is-invalid", !valid);
+          mm.classList.toggle("is-invalid", !valid);
+          yyyy.classList.toggle("is-invalid", !valid);
+          if (valid) {
+            hidden.value = y + "-" + pad2(m) + "-" + pad2(d);
+            if (hint) hint.textContent = "Expires on " + pad2(d) + "/" + pad2(m) + "/" + y;
+          } else {
+            hidden.value = "";
+            if (hint) hint.textContent = "Invalid date (use DD / MM / YYYY)";
+          }
+        } else {
+          hidden.value = "";
+          if (hint) hint.textContent = "Complete DD / MM / YYYY or choose Never";
+        }
+      }
+
+      presets.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var days = parseInt(btn.getAttribute("data-days") || "0", 10);
+          if (!days) {
+            dd.value = "";
+            mm.value = "";
+            yyyy.value = "";
+            hidden.value = "";
+            dd.classList.remove("is-invalid");
+            mm.classList.remove("is-invalid");
+            yyyy.classList.remove("is-invalid");
+            if (hint) hint.textContent = "Never expires";
+            setActivePreset(0);
+            return;
+          }
+          var target = new Date();
+          target.setDate(target.getDate() + days);
+          dd.value = pad2(target.getDate());
+          mm.value = pad2(target.getMonth() + 1);
+          yyyy.value = String(target.getFullYear());
+          syncFromInputs();
+          setActivePreset(days);
+        });
+      });
+
+      dd.addEventListener("input", function () {
+        setActivePreset(null);
+        syncFromInputs();
+        if (dd.value.length === 2) mm.focus();
+      });
+      mm.addEventListener("input", function () {
+        setActivePreset(null);
+        syncFromInputs();
+        if (mm.value.length === 2) yyyy.focus();
+      });
+      yyyy.addEventListener("input", function () {
+        setActivePreset(null);
+        syncFromInputs();
+      });
+
+      mm.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && !mm.value) dd.focus();
+      });
+      yyyy.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && !yyyy.value) mm.focus();
+      });
+
+      if (hint) hint.textContent = "Never expires";
+    });
+  }
+
+  window.cyberInitDatePickers = initCyberDatePickers;
+
   document.addEventListener("DOMContentLoaded", function () {
     cleanupLegacyThemeHeader();
     highlightActiveNav();
     scanTiltCards(document);
+    initCyberDatePickers(document);
 
     // Observar nuevos nodos inyectados dinámicamente por Alpine.js (retos, modales) con debounce ligero
     if (!prefersReducedMotion && typeof MutationObserver !== "undefined") {

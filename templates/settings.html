@@ -191,14 +191,31 @@
                 </div>
               </div>
 
-              <div class="row g-3">
-                <div class="col-md-5">
+              <div class="row g-3 align-items-start">
+                <div class="col-md-6">
                   <b>{{ form.expiration.label(class="form-label") }}</b>
-                  {{ form.expiration(class="form-control") }}
+                  <div class="cyber-date-picker" data-cyber-date-picker="1">
+                    <input type="hidden" id="expiration" name="expiration" value="">
+                    <div class="cyber-date-presets" role="group" aria-label="Expiration presets">
+                      <button type="button" class="cyber-date-preset active" data-days="0">Never</button>
+                      <button type="button" class="cyber-date-preset" data-days="7">7d</button>
+                      <button type="button" class="cyber-date-preset" data-days="30">30d</button>
+                      <button type="button" class="cyber-date-preset" data-days="90">90d</button>
+                      <button type="button" class="cyber-date-preset" data-days="365">1y</button>
+                    </div>
+                    <div class="cyber-date-inputs">
+                      <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-dd" placeholder="DD" aria-label="Day">
+                      <span class="cyber-date-sep">/</span>
+                      <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-mm" placeholder="MM" aria-label="Month">
+                      <span class="cyber-date-sep">/</span>
+                      <input type="text" inputmode="numeric" maxlength="4" class="form-control cyber-date-yyyy" placeholder="YYYY" aria-label="Year">
+                    </div>
+                    <div class="cyber-date-hint">Never expires</div>
+                  </div>
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-6">
                   <b>{{ form.description.label(class="form-label") }}</b>
-                  {{ form.description(class="form-control", rows="2") }}
+                  <input type="text" class="form-control" id="description" name="description" autocomplete="off" placeholder="Optional description (e.g. CLI, CI/CD)">
                 </div>
               </div>
 
@@ -268,8 +285,7 @@
                             class="delete-token"
                             role="button"
                             style="color: #FF007F;"
-                            data-cyber-tooltip="Delete token"
-                            aria-label="Delete token"
+                            aria-label="{% trans %}Delete{% endtrans %}"
                             @click="deleteTokenModal({{ token.id }})"
                           >
                             <i class="cursor-pointer fas fa-times"></i>

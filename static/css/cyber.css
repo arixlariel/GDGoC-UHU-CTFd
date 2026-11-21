@@ -94,7 +94,7 @@ html[data-theme="cyber"] {
 }
 
 html[data-theme="cyber"] body {
-  font-family: 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, -apple-system, sans-serif !important;
+  font-family: 'Google Sans', 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, -apple-system, sans-serif !important;
   background-color: #05070F !important;
   color: var(--cyber-text-body) !important;
   min-height: 100vh;
@@ -317,8 +317,8 @@ html[data-theme="cyber"] hr {
   top: 0;
   z-index: 1030;
   background: rgba(6, 9, 20, 0.96) !important;
-  border-bottom: 1px solid rgba(0, 240, 255, 0.32) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.35) !important;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15) !important;
 }
 
 html[data-theme="cyber"] .theme-header .navbar {
@@ -431,43 +431,6 @@ html[data-theme="cyber"] .theme-header .theme-primary-btn {
 html[data-theme="cyber"] .theme-header .theme-pill-btn--icon {
   min-width: 38px !important;
   padding: 0 0.72rem !important;
-}
-
-.theme-pill-btn--admin {
-  background: rgba(255, 0, 127, 0.14) !important;
-  border: 1px solid rgba(255, 0, 127, 0.55) !important;
-  color: #FF85C0 !important;
-  box-shadow: 0 0 12px rgba(255, 0, 127, 0.18) !important;
-}
-
-.theme-pill-btn--admin:hover,
-.theme-pill-btn--admin:focus-visible,
-.theme-pill-btn--admin.active {
-  background: rgba(255, 0, 127, 0.28) !important;
-  border-color: #FF007F !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 0 18px rgba(255, 0, 127, 0.48) !important;
-}
-
-/* Botón Comunidad con color Cyber llamativo (Cyan → Green neón) */
-.theme-pill-btn--community {
-  background: linear-gradient(135deg, #00F0FF 0%, #00FF66 100%) !important;
-  background-origin: border-box !important;
-  background-clip: border-box !important;
-  border: 0 !important;
-  color: #05070F !important;
-  font-weight: 800 !important;
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.32), 0 0 10px rgba(0, 255, 102, 0.22) !important;
-  text-shadow: none !important;
-}
-
-.theme-pill-btn--community:hover,
-.theme-pill-btn--community:focus-visible {
-  background: linear-gradient(135deg, #3DF5FF 0%, #33FF85 100%) !important;
-  color: #05070F !important;
-  transform: translateY(-1px);
-  box-shadow: 0 0 24px rgba(0, 240, 255, 0.5), 0 0 18px rgba(0, 255, 102, 0.42) !important;
-  text-shadow: none !important;
 }
 
 html[data-theme="cyber"] .theme-header .nav-link:hover,
@@ -658,6 +621,48 @@ html[data-theme="cyber"] .navbar-toggler:focus {
   text-shadow: none !important;
 }
 
+/* Variantes con mayor especificidad definidas DESPUÉS de .theme-pill-btn para que nunca sean sobrescritas */
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--admin {
+  background: rgba(255, 0, 127, 0.16) !important;
+  border: 1px solid rgba(255, 0, 127, 0.6) !important;
+  color: #FF85C0 !important;
+  box-shadow: 0 0 12px rgba(255, 0, 127, 0.2) !important;
+}
+
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--admin:hover,
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--admin:focus-visible,
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--admin.active {
+  background: rgba(255, 0, 127, 0.3) !important;
+  border-color: #FF007F !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.5) !important;
+}
+
+/* Botón Comunidad en degradado oficial Cyber de Open Badges (Cyan → Magenta) */
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--community,
+html[data-theme="cyber"] a.theme-pill-btn--community {
+  background: linear-gradient(90deg, #00F0FF, #FF007F) !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  border: 0 !important;
+  color: #05070F !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.42) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--community:hover,
+html[data-theme="cyber"] .theme-pill-btn.theme-pill-btn--community:focus-visible,
+html[data-theme="cyber"] a.theme-pill-btn--community:hover,
+html[data-theme="cyber"] a.theme-pill-btn--community:focus-visible {
+  background: linear-gradient(90deg, #2BF4FF, #FF2493) !important;
+  border: 0 !important;
+  color: #05070F !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 26px rgba(0, 240, 255, 0.6), 0 0 34px rgba(255, 0, 127, 0.48) !important;
+  text-shadow: none !important;
+}
+
 /* Botón Primario Cyber (border: 0 + background-origin: border-box para evitar borde blanco/oscuro de gradiente) */
 .theme-primary-btn {
   display: inline-flex;
@@ -818,12 +823,12 @@ html[data-theme="cyber"] .theme-hero-section {
 }
 
 html[data-theme="cyber"] .jumbotron h1 {
-  font-family: 'Orbitron', 'Google Sans Display', sans-serif !important;
+  font-family: 'Google Sans', 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, sans-serif !important;
   font-weight: 800 !important;
-  font-size: clamp(1.9rem, 4vw, 2.85rem) !important;
-  letter-spacing: 0.02em;
+  font-size: clamp(2rem, 4vw, 2.9rem) !important;
+  letter-spacing: -0.02em;
   color: #F0F9FF !important;
-  text-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.38);
   margin-bottom: 0.35rem;
 }
 
@@ -1026,14 +1031,13 @@ html[data-theme="cyber"] .theme-card:has(.modal.show) {
 }
 
 .category-header h3 {
-  font-family: 'Orbitron', 'Google Sans Display', sans-serif !important;
-  font-size: 1.25rem !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-family: 'Google Sans', 'Plus Jakarta Sans', system-ui, sans-serif !important;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em;
   margin: 0 !important;
   color: #F0F9FF !important;
-  text-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
 }
 
 .category-count-pill {
@@ -1627,6 +1631,92 @@ html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:last-ch
   box-shadow: 0 0 14px rgba(255, 0, 127, 0.2);
 }
 
+/* Selector de expiración personalizado sin calendario nativo del navegador */
+.cyber-date-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.cyber-date-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.cyber-date-preset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.26rem 0.68rem;
+  border-radius: 9999px;
+  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(12, 18, 38, 0.92);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  color: #94A3B8;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.cyber-date-preset:hover,
+.cyber-date-preset:focus-visible {
+  border-color: #00F0FF;
+  color: #00F0FF;
+}
+
+.cyber-date-preset.active {
+  background: rgba(0, 240, 255, 0.16);
+  border-color: #00F0FF;
+  color: #00F0FF;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+}
+
+.cyber-date-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cyber-date-inputs .form-control {
+  text-align: center;
+  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace !important;
+  font-weight: 600;
+  padding: 0.58rem 0.5rem !important;
+  min-height: 44px;
+}
+
+.cyber-date-inputs .cyber-date-dd,
+.cyber-date-inputs .cyber-date-mm {
+  width: 68px;
+  flex: 0 0 68px;
+}
+
+.cyber-date-inputs .cyber-date-yyyy {
+  width: 96px;
+  flex: 1 1 96px;
+  max-width: 120px;
+}
+
+.cyber-date-inputs .form-control.is-invalid {
+  border-color: #FF007F !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 127, 0.25) !important;
+}
+
+.cyber-date-sep {
+  color: rgba(0, 240, 255, 0.55);
+  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
+  font-weight: 700;
+  user-select: none;
+}
+
+.cyber-date-hint {
+  font-size: 0.74rem;
+  color: #94A3B8;
+  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
+}
+
 html[data-theme="cyber"] .table {
   --bs-table-bg: transparent;
   --bs-table-striped-bg: rgba(0, 240, 255, 0.04);
@@ -1894,10 +1984,10 @@ html[data-theme="cyber"] .gdg-hero::before {
 }
 
 html[data-theme="cyber"] .gdg-hero h1 {
-  font-family: 'Orbitron', 'Google Sans Display', sans-serif !important;
-  letter-spacing: -0.01em !important;
+  font-family: 'Google Sans', 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, sans-serif !important;
+  letter-spacing: -0.02em !important;
   color: #F0F9FF !important;
-  text-shadow: 0 0 18px rgba(0, 240, 255, 0.35);
+  text-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
 }
 
 html[data-theme="cyber"] .gdg-pill-badge {

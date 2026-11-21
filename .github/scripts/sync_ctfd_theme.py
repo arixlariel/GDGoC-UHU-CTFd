@@ -40,7 +40,10 @@ def build_theme_header(pages_base: str, version: str) -> str:
     v = f"?v={version}" if version else ""
     fonts_url = (
         "https://fonts.googleapis.com/css2?"
-        "family=Plus+Jakarta+Sans:wght@400;500;600;700;800"
+        "family=Google+Sans:wght@400;500;700"
+        "&family=Google+Sans+Display:wght@400;500;700"
+        "&family=Google+Sans+Mono:wght@400;500;600"
+        "&family=Plus+Jakarta+Sans:wght@400;500;600;700;800"
         "&family=Orbitron:wght@600;700;800"
         "&family=JetBrains+Mono:wght@400;600;700&display=swap"
     )
