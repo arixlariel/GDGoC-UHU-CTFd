@@ -196,17 +196,11 @@
                   <b>{{ form.expiration.label(class="form-label") }}</b>
                   <div class="cyber-date-picker" data-cyber-date-picker="1">
                     <input type="hidden" id="expiration" name="expiration" value="">
-                    <div class="cyber-date-presets" role="group" aria-label="Expiration presets">
-                      <button type="button" class="cyber-date-preset" data-days="7">7d</button>
-                      <button type="button" class="cyber-date-preset" data-days="30">30d</button>
-                      <button type="button" class="cyber-date-preset" data-days="90">90d</button>
-                      <button type="button" class="cyber-date-preset" data-days="365">1y</button>
-                    </div>
                     <div class="cyber-date-input-wrap">
                       <input type="text" maxlength="10" inputmode="numeric" class="form-control cyber-date-text" placeholder="DD/MM/YYYY" autocomplete="off" aria-label="Expiration date DD/MM/YYYY">
                     </div>
                     <div class="cyber-date-never-wrap">
-                      <button type="button" class="cyber-date-never-btn active" data-days="0">
+                      <button type="button" class="cyber-date-never-btn" data-days="0">
                         <i class="fas fa-infinity"></i>
                         <span>Never</span>
                       </button>

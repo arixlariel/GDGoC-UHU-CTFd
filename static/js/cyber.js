@@ -577,19 +577,12 @@
       var hidden = picker.querySelector('input[type="hidden"][name="expiration"]');
       var textInput = picker.querySelector(".cyber-date-text");
       var neverBtn = picker.querySelector('.cyber-date-never-btn, [data-days="0"]');
-      var presets = Array.prototype.slice.call(picker.querySelectorAll(".cyber-date-preset"));
       if (!hidden || !textInput) return;
 
-      var neverActive = true;
+      var neverActive = false;
 
       function pad2(n) {
         return String(n).padStart(2, "0");
-      }
-
-      function setActivePreset(daysVal) {
-        presets.forEach(function (btn) {
-          btn.classList.toggle("active", daysVal !== null && btn.getAttribute("data-days") === String(daysVal));
-        });
       }
 
       function applyNever(enabled) {
@@ -602,7 +595,6 @@
           textInput.disabled = true;
           textInput.classList.remove("is-invalid");
           textInput.dataset.invalidDate = "0";
-          setActivePreset(null);
         } else {
           textInput.disabled = false;
         }
@@ -657,26 +649,9 @@
         });
       }
 
-      presets.forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var days = parseInt(btn.getAttribute("data-days") || "0", 10);
-          if (!days) {
-            applyNever(true);
-            return;
-          }
-          applyNever(false);
-          var target = new Date();
-          target.setDate(target.getDate() + days);
-          textInput.value = pad2(target.getDate()) + "/" + pad2(target.getMonth() + 1) + "/" + target.getFullYear();
-          validateStrict(textInput.value);
-          setActivePreset(days);
-        });
-      });
-
       textInput.addEventListener("input", function (e) {
         if (neverActive) return;
-        setActivePreset(null);
-        // Solo permitir dígitos y "/", máximo 8 dígitos (DD/MM/YYYY — imposible años de >4 cifras)
+        // Solo permitir dígitos y "/", máximo 8 dígitos (DD/MM/YYYY — imposible letras o años de >4 cifras)
         var cleaned = textInput.value.replace(/[^\d/]/g, "");
         if (e.inputType !== "deleteContentBackward") {
           var digits = cleaned.replace(/\D/g, "").slice(0, 8);
@@ -716,7 +691,8 @@
         );
       }
 
-      applyNever(true);
+      // Empezar con la barra habilitada (placeholder DD/MM/YYYY) y Never desactivado hasta pulsarlo
+      applyNever(false);
     });
   }
 
@@ -861,27 +837,66 @@
 
     function loadCtfdEmbed() {
       if (chartEmbedFn) return Promise.resolve(chartEmbedFn);
-      var scripts = Array.prototype.slice.call(document.querySelectorAll('script[type="module"][src]'));
       var candidates = [];
-      scripts.forEach(function (sc) {
-        var src = sc.getAttribute("src") || "";
-        if (/assets\/index\.[a-f0-9]+\.js/i.test(src)) {
-          candidates.push(src);
-        }
+      var seen = {};
+      function addCandidate(u) {
+        if (!u || seen[u]) return;
+        seen[u] = true;
+        candidates.push(u);
+      }
+
+      // 1. Buscar en <script type="module"> y <link rel="modulepreload">
+      document.querySelectorAll('script[type="module"][src], link[rel="modulepreload"][href]').forEach(function (el) {
+        var u = el.getAttribute("src") || el.getAttribute("href") || "";
+        if (/assets\/index\.[a-f0-9]+\.js/i.test(u)) addCandidate(u);
       });
-      if (!candidates.length) return Promise.resolve(null);
-      return Promise.all(
-        candidates.map(function (src) {
-          return import(src).catch(function () { return null; });
-        })
-      ).then(function (mods) {
-        for (var i = 0; i < mods.length; i++) {
-          if (mods[i] && typeof mods[i].e === "function" && typeof mods[i].c === "function") {
-            chartEmbedFn = mods[i].e;
-            return chartEmbedFn;
+
+      function tryImportList(urls) {
+        if (!urls.length) return Promise.resolve(null);
+        return Promise.all(
+          urls.map(function (src) {
+            return import(src).catch(function () { return null; });
+          })
+        ).then(function (mods) {
+          for (var i = 0; i < mods.length; i++) {
+            if (mods[i] && typeof mods[i].e === "function" && typeof mods[i].c === "function") {
+              chartEmbedFn = mods[i].e;
+              return chartEmbedFn;
+            }
           }
-        }
-        return null;
+          return null;
+        });
+      }
+
+      return tryImportList(candidates).then(function (found) {
+        if (found) return found;
+        // 2. Fallback: consultar manifest.json de CTFd (`core` o preview estática) para resolver _index.*.js
+        var manifestBases = [root + "/themes/core/static", root + "/static"];
+        return Promise.all(
+          manifestBases.map(function (base) {
+            return fetchJson(base + "/manifest.json").then(function (man) {
+              if (!man || typeof man !== "object") return [];
+              var urls = [];
+              Object.keys(man).forEach(function (k) {
+                if (/^_?index\.[a-f0-9]+\.js$/i.test(k) && man[k] && man[k].file) {
+                  urls.push(base + "/" + man[k].file.replace(/^\/+/, ""));
+                }
+              });
+              return urls;
+            });
+          })
+        ).then(function (lists) {
+          var flat = [];
+          lists.forEach(function (arr) {
+            arr.forEach(function (u) {
+              if (!seen[u]) {
+                seen[u] = true;
+                flat.push(u);
+              }
+            });
+          });
+          return tryImportList(flat);
+        });
       });
     }
 
@@ -1055,6 +1070,9 @@
         if (potential > 0) potential = Math.max(potential, earned);
         var efficiency = potential > 0 ? Math.min(100, (earned / potential) * 100) : null;
 
+        // Solo participan usuarios con al menos 1 solve (si tienen 1 solve y 0 puntos SÍ participan; con 0 solves NO)
+        if (solveCount < 1) return;
+
         rows.push({
           id: id,
           regOrder: u.regOrder,
@@ -1072,7 +1090,8 @@
 
       rows.sort(function (a, b) {
         if (b.score !== a.score) return b.score - a.score;
-        if (a.score > 0 && a.lastSolveMs !== b.lastSolveMs) return a.lastSolveMs - b.lastSolveMs;
+        if (b.solves !== a.solves) return b.solves - a.solves;
+        if (a.lastSolveMs !== b.lastSolveMs) return a.lastSolveMs - b.lastSolveMs;
         return a.regOrder - b.regOrder;
       });
       return rows;
@@ -1086,7 +1105,7 @@
 
       var top10 = rows
         .filter(function (r) {
-          return r.score > 0 && r.solveList.length > 0;
+          return r.solveList.length > 0;
         })
         .slice(0, 10);
 
@@ -1094,12 +1113,13 @@
       if (!customHost) {
         customHost = document.createElement("div");
         customHost.id = "cyber-score-graph";
-        customHost.style.cssText = "width:100%;min-height:410px;";
+        customHost.style.cssText = "width:100%;display:none;";
         origGraph.parentNode.insertBefore(customHost, origGraph.nextSibling);
       }
 
       if (!top10.length) {
-        origGraph.classList.add("d-none");
+        origGraph.style.display = "none";
+        customHost.style.display = "block";
         customHost.innerHTML =
           '<div class="cyber-empty-state py-5">' +
           '  <span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>Top 10</span></span>' +
@@ -1110,7 +1130,8 @@
 
       loadCtfdEmbed().then(function (embed) {
         if (!embed) return;
-        origGraph.classList.add("d-none");
+        origGraph.style.display = "none";
+        customHost.style.display = "block";
 
         var xLabels = [];
         var series = [];
@@ -1630,9 +1651,16 @@
       });
     }
 
-    // Ordenación alfabética por Country o Affiliation (vuelve al orden de registro al pulsar de nuevo o en Username)
+    // Ordenación alfabética con píldoras limpias en Country y Affiliation (vuelve al orden de registro al pulsar de nuevo o en Username)
     var ths = table.querySelectorAll("thead th");
     var sortState = null; // null | "country" | "affiliation"
+    var countryPill = null;
+    var affPill = null;
+
+    function updateSortPills() {
+      if (countryPill) countryPill.classList.toggle("is-active", sortState === "country");
+      if (affPill) affPill.classList.toggle("is-active", sortState === "affiliation");
+    }
 
     function applySort(field) {
       sortState = sortState === field ? null : field;
@@ -1653,39 +1681,44 @@
       sorted.forEach(function (item) {
         tbody.appendChild(item.tr);
       });
-      if (ths[1]) ths[1].classList.toggle("is-sorted", sortState === "country");
-      if (ths[2]) ths[2].classList.toggle("is-sorted", sortState === "affiliation");
+      updateSortPills();
     }
 
     if (ths[0]) {
-      ths[0].classList.add("cyber-sortable-th");
+      ths[0].style.cursor = "pointer";
       ths[0].setAttribute("title", "Restore registration order");
       ths[0].addEventListener("click", function () {
         sortState = null;
         rowMeta.slice().sort(function (a, b) { return a.origIdx - b.origIdx; }).forEach(function (it) {
           tbody.appendChild(it.tr);
         });
-        if (ths[1]) ths[1].classList.remove("is-sorted");
-        if (ths[2]) ths[2].classList.remove("is-sorted");
+        updateSortPills();
       });
     }
     if (ths[1]) {
-      ths[1].classList.add("cyber-sortable-th");
-      if (!ths[1].querySelector(".cyber-sort-icon")) {
-        ths[1].insertAdjacentHTML("beforeend", '<i class="fas fa-sort cyber-sort-icon" aria-hidden="true"></i>');
-      }
-      ths[1].addEventListener("click", function () { applySort("country"); });
+      var cLabel = (ths[1].textContent || "Country").trim();
+      ths[1].innerHTML = "";
+      countryPill = document.createElement("button");
+      countryPill.type = "button";
+      countryPill.className = "cyber-sort-pill";
+      countryPill.textContent = cLabel;
+      countryPill.addEventListener("click", function () { applySort("country"); });
+      ths[1].appendChild(countryPill);
     }
     if (ths[2]) {
-      ths[2].classList.add("cyber-sortable-th");
-      if (!ths[2].querySelector(".cyber-sort-icon")) {
-        ths[2].insertAdjacentHTML("beforeend", '<i class="fas fa-sort cyber-sort-icon" aria-hidden="true"></i>');
-      }
-      ths[2].addEventListener("click", function () { applySort("affiliation"); });
+      var aLabel = (ths[2].textContent || "Affiliation").trim();
+      ths[2].innerHTML = "";
+      affPill = document.createElement("button");
+      affPill.type = "button";
+      affPill.className = "cyber-sort-pill";
+      affPill.textContent = aLabel;
+      affPill.addEventListener("click", function () { applySort("affiliation"); });
+      ths[2].appendChild(affPill);
     }
   }
 
-  // 8c. Modal de retos (/challenges): Description, Username en Solves, ocultar ratings e inyectar pestaña Stats
+  // 8c. Modal de retos (/challenges): cabecera alineada 100%, Description con "pts", bloques de código limpios,
+  //     pestaña Stats (Average Attempts · Average Time en min · Average Points + %) y confirmación antes de desbloquear hints
   function initChallengeModalEnhancer() {
     if (getNormPath() !== "/challenges") return;
     var modal = document.getElementById("challenge-window");
@@ -1704,25 +1737,91 @@
         .catch(function () { return null; });
     }
 
-    function fmtDuration(ms) {
-      if (!ms || ms < 0 || isNaN(ms)) return "—";
-      var totalSec = Math.round(ms / 1000);
-      if (totalSec < 60) return totalSec + "s";
-      var mins = Math.floor(totalSec / 60);
-      if (mins < 60) return mins + "m " + (totalSec % 60) + "s";
-      var hrs = Math.floor(mins / 60);
-      if (hrs < 48) return hrs + "h " + (mins % 60) + "m";
-      return Math.floor(hrs / 24) + "d " + (hrs % 24) + "h";
+    function showCyberHintConfirm(summaryText) {
+      return new Promise(function (resolve) {
+        var existing = document.getElementById("cyber-hint-confirm-overlay");
+        if (existing) existing.remove();
+
+        var overlay = document.createElement("div");
+        overlay.id = "cyber-hint-confirm-overlay";
+        overlay.className = "cyber-confirm-backdrop";
+        overlay.innerHTML =
+          '<div class="cyber-confirm-dialog" role="dialog" aria-modal="true">' +
+          '  <h5 class="fw-bold theme-text-primary mb-2"><i class="fas fa-lightbulb me-2" style="color:#FFE600;"></i>Unlock Hint</h5>' +
+          '  <p class="small theme-text-secondary mb-1">Are you sure you want to unlock this hint?</p>' +
+          '  <p class="small font-mono mb-0" style="color:#00F0FF;"></p>' +
+          '  <div class="cyber-confirm-actions">' +
+          '    <button type="button" class="theme-pill-btn" data-confirm="no">Cancel</button>' +
+          '    <button type="button" class="btn btn-primary px-4" data-confirm="yes">Yes, unlock</button>' +
+          "  </div>" +
+          "</div>";
+        overlay.querySelector("p.font-mono").textContent = summaryText || "";
+
+        function cleanup(answer) {
+          overlay.remove();
+          resolve(answer);
+        }
+
+        overlay.querySelector('[data-confirm="no"]').addEventListener("click", function () { cleanup(false); });
+        overlay.querySelector('[data-confirm="yes"]').addEventListener("click", function () { cleanup(true); });
+        overlay.addEventListener("click", function (ev) {
+          if (ev.target === overlay) cleanup(false);
+        });
+        document.body.appendChild(overlay);
+      });
     }
+
+    // Interceptar clics sobre hints bloqueadas para mostrar confirmación Cyber antes de desbloquear
+    modal.addEventListener(
+      "click",
+      function (e) {
+        var summary = e.target && e.target.closest ? e.target.closest(".challenge-hints details > summary") : null;
+        if (!summary) return;
+        var details = summary.parentElement;
+        if (!details || details.open || details.dataset.cyberHintConfirmed === "1") return;
+        var txt = (summary.textContent || "").trim();
+        var isLocked = /unlock|cost/i.test(txt);
+        if (!isLocked) return;
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        showCyberHintConfirm(txt).then(function (ok) {
+          if (!ok) return;
+          details.dataset.cyberHintConfirmed = "1";
+          // Evitar doble diálogo si CTFd también lanza su displayUnlock nativo
+          var prevFn =
+            window.CTFd &&
+            window.CTFd._functions &&
+            window.CTFd._functions.challenge &&
+            window.CTFd._functions.challenge.displayUnlock;
+          if (prevFn) {
+            window.CTFd._functions.challenge.displayUnlock = function () {
+              return Promise.resolve(true);
+            };
+          }
+          details.open = true;
+          details.dispatchEvent(new Event("toggle"));
+          if (prevFn) {
+            setTimeout(function () {
+              if (window.CTFd && window.CTFd._functions && window.CTFd._functions.challenge) {
+                window.CTFd._functions.challenge.displayUnlock = prevFn;
+              }
+            }, 600);
+          }
+        });
+      },
+      true
+    );
 
     function populateChallengeStats(chalId, pane) {
       if (!chalId || !pane) return;
+      var attEl = pane.querySelector('[data-stat="avg-att"]');
       var timeEl = pane.querySelector('[data-stat="avg-time"]');
       var ptsEl = pane.querySelector('[data-stat="avg-pts"]');
-      var attEl = pane.querySelector('[data-stat="avg-att"]');
+      if (attEl) attEl.textContent = "…";
       if (timeEl) timeEl.textContent = "…";
       if (ptsEl) ptsEl.textContent = "…";
-      if (attEl) attEl.textContent = "…";
 
       Promise.all([
         fetchJson(root + "/api/v1/challenges/" + chalId),
@@ -1733,19 +1832,10 @@
         var solves = (res[1] && Array.isArray(res[1].data)) ? res[1].data : [];
         var subs = (res[2] && Array.isArray(res[2].data)) ? res[2].data : [];
 
-        // Average Points % (valor actual / máximo inicial)
         var maxPts = Number(chal.initial != null ? chal.initial : chal.value || 0);
         var curPts = Number(chal.value || 0);
-        if (ptsEl) {
-          if (maxPts > 0 && (solves.length > 0 || chal.solves > 0)) {
-            var pct = Math.min(100, Math.round((curPts / maxPts) * 1000) / 10);
-            ptsEl.textContent = pct + "%";
-          } else {
-            ptsEl.textContent = "—";
-          }
-        }
 
-        // Average Attempts & Average Time a partir de submissions si están accesibles
+        // Agrupar intentos y tiempos por usuario
         var byUser = {};
         subs.forEach(function (s) {
           var uid = String(s.user_id || s.account_id || "");
@@ -1767,42 +1857,55 @@
           var rec = byUser[uid];
           if (rec.solveMs > 0) {
             solverAttempts.push(rec.attempts);
-            if (rec.firstMs < rec.solveMs) {
+            if (rec.firstMs <= rec.solveMs) {
               durations.push(rec.solveMs - rec.firstMs);
             }
           }
         });
 
-        // Fallback de duración usando marca local de apertura del reto si el usuario lo resolvió al primer intento
         if (!durations.length && chal.solved_by_me) {
           try {
             var opened = Number(localStorage.getItem("cyber_chal_open_" + chalId) || "0");
             if (opened > 0 && solves.length) {
               var latestSolve = Date.parse(solves[solves.length - 1].date);
-              if (!isNaN(latestSolve) && latestSolve > opened) {
+              if (!isNaN(latestSolve) && latestSolve >= opened) {
                 durations.push(latestSolve - opened);
               }
             }
           } catch (_) {}
         }
 
+        // 1. Average Attempts (entero redondeado normal)
         if (attEl) {
           if (solverAttempts.length) {
             var avgAtt = solverAttempts.reduce(function (a, b) { return a + b; }, 0) / solverAttempts.length;
-            attEl.textContent = Number(avgAtt.toFixed(1));
+            attEl.textContent = String(Math.round(avgAtt));
           } else if (chal.attempts > 0) {
-            attEl.textContent = String(chal.attempts);
+            attEl.textContent = String(Math.round(chal.attempts));
           } else {
             attEl.textContent = "—";
           }
         }
 
+        // 2. Average Time (solo minutos enteros, sin decimales ni segundos)
         if (timeEl) {
           if (durations.length) {
             var avgMs = durations.reduce(function (a, b) { return a + b; }, 0) / durations.length;
-            timeEl.textContent = fmtDuration(avgMs);
+            var mins = Math.round(avgMs / 60000);
+            timeEl.textContent = mins + " min";
           } else {
             timeEl.textContent = "—";
+          }
+        }
+
+        // 3. Average Points: promedio entero de puntos obtenidos Y porcentaje entero sobre máximo obtenible
+        if (ptsEl) {
+          if (maxPts > 0 && (solves.length > 0 || chal.solves > 0)) {
+            var avgPts = Math.round(curPts);
+            var avgPct = Math.min(100, Math.round((curPts / maxPts) * 100));
+            ptsEl.textContent = avgPts + " (" + avgPct + "%)";
+          } else {
+            ptsEl.textContent = "—";
           }
         }
       });
@@ -1811,6 +1914,17 @@
     function enhanceModalContent() {
       var tabs = modal.querySelector(".nav-tabs");
       if (!tabs) return;
+
+      // 0. Envolver tabs + btn-close en .cyber-modal-header-bar para separador 100% de lado a lado
+      var headerParent = tabs.parentElement;
+      if (headerParent && !headerParent.classList.contains("cyber-modal-header-bar")) {
+        headerParent.classList.add("cyber-modal-header-bar");
+        var closeBtn = headerParent.querySelector(":scope > .btn-close");
+        if (closeBtn) {
+          closeBtn.classList.remove("float-end");
+          headerParent.appendChild(closeBtn);
+        }
+      }
 
       // 1. Ocultar ratings (like/dislike)
       modal.querySelectorAll(".challenge-ratings").forEach(function (el) { el.remove(); });
@@ -1821,6 +1935,29 @@
         firstTab.dataset.cyberRenamed = "1";
         firstTab.innerHTML = '<i class="fas fa-align-left me-1"></i><span>Description</span>';
       }
+
+      // 2b. Añadir "pts" al subtítulo de puntos en Description (ej. "35 pts")
+      var valEl = modal.querySelector(".challenge-value");
+      if (valEl && !valEl.dataset.cyberPtsFormatted) {
+        var rawVal = (valEl.textContent || "").trim();
+        if (/^\d+$/.test(rawVal)) {
+          valEl.textContent = rawVal + " pts";
+        } else if (/^\d+\s*pts$/i.test(rawVal)) {
+          valEl.textContent = rawVal.replace(/\s*pts$/i, " pts");
+        }
+        valEl.dataset.cyberPtsFormatted = "1";
+      }
+
+      // 2c. Convertir <code> inline largos en bloque limpio sin bordes partidos (ej. Set-Cookie / JWT)
+      modal.querySelectorAll(".challenge-desc code:not(pre code)").forEach(function (codeEl) {
+        if (codeEl.classList.contains("cyber-code-block")) return;
+        var txt = (codeEl.textContent || "").trim();
+        var parent = codeEl.parentElement;
+        var soleChild = parent && parent.tagName === "P" && parent.childNodes.length === 1;
+        if (txt.length > 42 || soleChild) {
+          codeEl.classList.add("cyber-code-block");
+        }
+      });
 
       // 3. Renombrar cabecera Name -> Username en Solves
       var solvesPane = modal.querySelector("#solves");
@@ -1842,7 +1979,7 @@
         } catch (_) {}
       }
 
-      // 5. Inyectar pestaña Stats al final si aún no existe
+      // 5. Inyectar pestaña Stats al final: Average Attempts -> Average Time -> Average Points
       var tabContent = modal.querySelector(".tab-content");
       if (tabContent && !tabs.querySelector("[data-cyber-stats-tab]")) {
         var li = document.createElement("li");
@@ -1861,19 +1998,19 @@
         pane.innerHTML =
           '<div class="cyber-chal-stats-grid" data-cyber-stats-body="1">' +
           '  <div class="cyber-chal-stat-box">' +
+          '    <span class="cyber-chal-stat-label">Average Attempts</span>' +
+          '    <span class="cyber-chal-stat-val" style="color:#B366FF;" data-stat="avg-att">—</span>' +
+          '    <span class="cyber-chal-stat-sub">Submissions per solve</span>' +
+          "  </div>" +
+          '  <div class="cyber-chal-stat-box">' +
           '    <span class="cyber-chal-stat-label">Average Time</span>' +
           '    <span class="cyber-chal-stat-val" data-stat="avg-time">—</span>' +
           '    <span class="cyber-chal-stat-sub">First attempt to solve</span>' +
           "  </div>" +
           '  <div class="cyber-chal-stat-box">' +
-          '    <span class="cyber-chal-stat-label">Average Points %</span>' +
+          '    <span class="cyber-chal-stat-label">Average Points</span>' +
           '    <span class="cyber-chal-stat-val" style="color:#00FF66;" data-stat="avg-pts">—</span>' +
-          '    <span class="cyber-chal-stat-sub">Of maximum points</span>' +
-          "  </div>" +
-          '  <div class="cyber-chal-stat-box">' +
-          '    <span class="cyber-chal-stat-label">Average Attempts</span>' +
-          '    <span class="cyber-chal-stat-val" style="color:#FFE600;" data-stat="avg-att">—</span>' +
-          '    <span class="cyber-chal-stat-sub">Submissions per solver</span>' +
+          '    <span class="cyber-chal-stat-sub">Average earned (% of max)</span>' +
           "  </div>" +
           "</div>";
         tabContent.appendChild(pane);
@@ -1891,7 +2028,6 @@
           var curCid = (modal.querySelector("#challenge-id, .challenge-id") || {}).value || chalId;
           populateChallengeStats(curCid, statsPane);
         });
-        // Asegurar que al volver a Description / Solves se oculta #stats
         tabs.querySelectorAll(".nav-link:not([data-cyber-stats-tab])").forEach(function (other) {
           other.addEventListener("click", function () {
             statsBtn.classList.remove("active");
@@ -1959,14 +2095,14 @@
         .catch(function () { return { data: [] }; });
     }
 
-    // Reestilizar Submission Accuracy (Cyan #00F0FF / Fails #FF3358) y Category Breakdown (color distinto por categoría)
+    // Reestilizar Submission Accuracy (Violeta #B366FF / Fails #FF3358) y Category Breakdown (color distinto por categoría)
     function applyProfileBarPalette(accCol, catCol) {
       if (accCol) {
         var accBars = accCol.querySelectorAll(".progress-bar");
-        if (accBars[0]) accBars[0].style.backgroundColor = "#00F0FF";
+        if (accBars[0]) accBars[0].style.backgroundColor = "#B366FF";
         if (accBars[1]) accBars[1].style.backgroundColor = "#FF3358";
         var accCircles = accCol.querySelectorAll("svg circle");
-        if (accCircles[0]) accCircles[0].setAttribute("fill", "#00F0FF");
+        if (accCircles[0]) accCircles[0].setAttribute("fill", "#B366FF");
         if (accCircles[1]) accCircles[1].setAttribute("fill", "#FF3358");
       }
       if (catCol) {
@@ -2188,8 +2324,8 @@
           });
 
           var coreHeaders = [
-            '<h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing:0.05em;"><i class="fas fa-crosshairs me-2" style="color:#00F0FF;"></i>Submission Accuracy</h4>',
-            '<h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing:0.05em;"><i class="fas fa-chart-pie me-2" style="color:#A855F7;"></i>Category Breakdown</h4>',
+            '<h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing:0.05em;"><i class="fas fa-crosshairs me-2" style="color:#B366FF;"></i>Submission Accuracy</h4>',
+            '<h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing:0.05em;"><i class="fas fa-chart-pie me-2" style="color:#00F0FF;"></i>Category Breakdown</h4>',
           ];
           var existingCols = Array.prototype.slice.call(graphsRow.querySelectorAll(":scope > .col-md-6"));
           existingCols.forEach(function (c, i) {
@@ -2242,12 +2378,12 @@
             '  </div>' +
             '  <div class="d-flex flex-wrap gap-3 small">' +
             '    <span class="d-inline-flex align-items-center gap-1 theme-text-primary">' +
-            '      <span class="cyber-dot cyber-dot--4" style="animation:none;"></span>' +
-            '      <span>Earned (' + earnedPct + '%)</span>' +
+            '      <svg height="16" width="16"><circle cx="8" cy="8" r="5" fill="#00FF66" /></svg>' +
+            '      <small>Earned (' + earnedPct + '%)</small>' +
             '    </span>' +
             '    <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">' +
-            '      <span class="cyber-dot cyber-dot--fail"></span>' +
-            '      <span>Missed (' + missedPct + '%)</span>' +
+            '      <svg height="16" width="16"><circle cx="8" cy="8" r="5" fill="#FF3358" /></svg>' +
+            '      <small>Missed (' + missedPct + '%)</small>' +
             '    </span>' +
             '  </div>' +
             '</div>';

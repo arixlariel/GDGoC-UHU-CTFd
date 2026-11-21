@@ -1046,7 +1046,7 @@
     });
   }
 
-  // Selector de fecha personalizado: campo DD/MM/YYYY estricto + botón Never debajo (sin subtítulo)
+  // Selector de fecha personalizado: campo DD/MM/YYYY estricto + botón Never debajo (sin subtítulo ni presets arriba)
   function buildCustomExpirationPicker(oldInput) {
     var hidden = document.createElement("input");
     hidden.type = "hidden";
@@ -1058,17 +1058,11 @@
     wrap.className = "cyber-date-picker";
     wrap.setAttribute("data-cyber-date-picker", "1");
     wrap.innerHTML =
-      '<div class="cyber-date-presets" role="group" aria-label="Expiration presets">' +
-      '  <button type="button" class="cyber-date-preset" data-days="7">7d</button>' +
-      '  <button type="button" class="cyber-date-preset" data-days="30">30d</button>' +
-      '  <button type="button" class="cyber-date-preset" data-days="90">90d</button>' +
-      '  <button type="button" class="cyber-date-preset" data-days="365">1y</button>' +
-      "</div>" +
       '<div class="cyber-date-input-wrap">' +
       '  <input type="text" maxlength="10" inputmode="numeric" class="form-control cyber-date-text" placeholder="DD/MM/YYYY" autocomplete="off" aria-label="Expiration date DD/MM/YYYY">' +
       "</div>" +
       '<div class="cyber-date-never-wrap">' +
-      '  <button type="button" class="cyber-date-never-btn active" data-days="0">' +
+      '  <button type="button" class="cyber-date-never-btn" data-days="0">' +
       '    <i class="fas fa-infinity"></i><span>Never</span>' +
       "  </button>" +
       "</div>";
@@ -1502,11 +1496,6 @@
         var gc = wrapInThemeCard(graph, "cyber-chart-card p-3 p-md-4 mb-4");
         if (gc) {
           makeTiltable(gc, 0.8);
-          if (typeof MutationObserver !== "undefined") {
-            new MutationObserver(function () {
-              gc.classList.toggle("d-none", graph.classList.contains("d-none"));
-            }).observe(graph, { attributes: true, attributeFilter: ["class"] });
-          }
         }
       }
       wrapTablesInCyberWrap(document);
@@ -1565,7 +1554,7 @@
             var btnCol = subBtn.closest('[class*="col-"]');
             if (btnCol) btnCol.className = "col-auto";
             subBtn.classList.remove("w-100");
-            subBtn.classList.add("px-4");
+            subBtn.classList.add("cyber-users-search-btn");
           }
         }
         var sc = wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");

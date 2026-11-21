@@ -122,13 +122,13 @@
           <div class="theme-card tilt-card p-4 h-100" data-tilt-max="1.2">
             <div class="tilt-glare" aria-hidden="true"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
-              <i class="fas fa-crosshairs me-2" style="color: #00F0FF;"></i>Submission Accuracy
+              <i class="fas fa-crosshairs me-2" style="color: #B366FF;"></i>Submission Accuracy
             </h4>
             <div class="progress mb-3">
               <div
                 class="progress-bar"
                 role="progressbar"
-                :style="{ width: `${getSolvePercentage()}%`, 'background-color': '#00F0FF' }"
+                :style="{ width: `${getSolvePercentage()}%`, 'background-color': '#B366FF' }"
               ></div>
               <div
                 class="progress-bar"
@@ -138,11 +138,11 @@
             </div>
             <div class="d-flex flex-wrap gap-3 small">
               <span class="d-inline-flex align-items-center gap-1 theme-text-primary">
-                <span class="cyber-dot cyber-dot--1" style="animation: none;"></span>
+                <svg height="16" width="16"><circle cx="8" cy="8" r="5" fill="#B366FF" /></svg>
                 <span x-text="`Solves (${getSolvePercentage()}%)`"></span>
               </span>
               <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">
-                <span class="cyber-dot cyber-dot--fail"></span>
+                <svg height="16" width="16"><circle cx="8" cy="8" r="5" fill="#FF3358" /></svg>
                 <span x-text="`Fails (${getFailPercentage()}%)`"></span>
               </span>
             </div>
