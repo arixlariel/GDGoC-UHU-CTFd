@@ -1,0 +1,209 @@
+<header class="theme-header">
+  <!-- Barra superior neón Cyber (idéntica a Open Badges) -->
+  <div class="theme-top-strip" aria-hidden="true"></div>
+
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a href="{{ url_for('views.static_html', route='/') }}" class="navbar-brand gdg-brand-link">
+        <div class="gdg-brand-logo-wrap">
+          {% if Configs.ctf_logo %}
+            <img
+              src="{{ url_for('views.files', path=Configs.ctf_logo) }}"
+              alt="{{ Configs.ctf_name }}"
+              width="44"
+              height="44"
+              decoding="async"
+            >
+          {% else %}
+            <img
+              src="{{ url_for('views.themes', path='img/gdgoc-uhu-logo-sm.webp') }}"
+              alt="GDG on Campus Universidad de Huelva"
+              width="44"
+              height="44"
+              decoding="async"
+            >
+          {% endif %}
+        </div>
+        <div class="text-truncate">
+          <div class="gdg-brand-title text-truncate">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</div>
+          <div class="gdg-brand-subtitle text-truncate">GDG on Campus · Universidad de Huelva</div>
+        </div>
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#base-navbars"
+        aria-controls="base-navbars"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="base-navbars">
+        <!-- Enlaces principales de navegación CTF -->
+        <ul class="navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1">
+          {% for page in Plugins.user_menu_pages %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ page.route }}" {% if page.link_target %}target="{{ page.link_target }}"{% endif %}>
+                {{ page.title }}
+              </a>
+            </li>
+          {% endfor %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('challenges.listing') }}">
+              <i class="fas fa-flag fa-fw"></i>
+              <span>{% trans %}Challenges{% endtrans %}</span>
+            </a>
+          </li>
+
+          {% if Configs.account_visibility != 'admins' and Configs.score_visibility != 'admins' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('scoreboard.listing') }}">
+                <i class="fas fa-trophy fa-fw"></i>
+                <span>{% trans %}Scoreboard{% endtrans %}</span>
+              </a>
+            </li>
+          {% endif %}
+
+          {% if Configs.account_visibility != 'admins' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('users.listing') }}">
+                <i class="fas fa-user-astronaut fa-fw"></i>
+                <span>{% trans %}Users{% endtrans %}</span>
+              </a>
+            </li>
+
+            {% if Configs.user_mode == 'teams' %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('teams.listing') }}">
+                  <i class="fas fa-users fa-fw"></i>
+                  <span>{% trans %}Teams{% endtrans %}</span>
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+        </ul>
+
+        <hr class="d-lg-none my-3">
+
+        <!-- Controles de sesión, idioma y enlaces GDGoC -->
+        <ul class="navbar-nav ms-lg-auto align-items-lg-center gap-2 pb-2 pb-lg-0">
+          {% if authed() %}
+            {% if is_admin() %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}">
+                  <i class="fas fa-wrench fa-fw"></i>
+                  <span class="d-lg-none d-xl-inline">{% trans %}Admin Panel{% endtrans %}</span>
+                </a>
+              </li>
+            {% endif %}
+
+            <li class="nav-item">
+              <a class="nav-link position-relative" href="{{ url_for('views.notifications') }}" title="{% trans %}Notifications{% endtrans %}">
+                <i class="fas fa-bell fa-fw"></i>
+                <span
+                  x-data
+                  x-show="$store.unread_count > 0"
+                  x-text="$store.unread_count"
+                  class="badge rounded-pill badge-notification ms-1"
+                ></span>
+                <span class="d-lg-none">{% trans %}Notifications{% endtrans %}</span>
+              </a>
+            </li>
+
+            {% if Configs.user_mode == "teams" %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('teams.private') }}" title="{% trans %}Team{% endtrans %}">
+                  <i class="fas fa-users fa-fw"></i>
+                  <span class="d-lg-none d-xl-inline">{% trans %}Team{% endtrans %}</span>
+                </a>
+              </li>
+            {% endif %}
+
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('users.private') }}" title="{% trans %}Profile{% endtrans %}">
+                <i class="fas fa-user-circle fa-fw"></i>
+                <span class="d-lg-none d-xl-inline">{% trans %}Profile{% endtrans %}</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('views.settings') }}" title="{% trans %}Settings{% endtrans %}">
+                <i class="fas fa-cogs fa-fw"></i>
+                <span class="d-lg-none">{% trans %}Settings{% endtrans %}</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}">
+                <i class="fas fa-sign-out-alt fa-fw"></i>
+                <span class="d-lg-none">{% trans %}Logout{% endtrans %}</span>
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('auth.login') }}">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>{% trans %}Login{% endtrans %}</span>
+              </a>
+            </li>
+
+            {% if registration_visible() %}
+              <li class="nav-item">
+                <a class="theme-primary-btn btn w-100 w-lg-auto d-inline-flex align-items-center justify-content-center gap-2" href="{{ url_for('auth.register') }}">
+                  <i class="fas fa-user-plus"></i>
+                  <span>{% trans %}Register{% endtrans %}</span>
+                </a>
+              </li>
+            {% endif %}
+          {% endif %}
+
+          <!-- Selector de idioma oficial de CTFd -->
+          <li class="nav-item dropdown">
+            <button
+              class="theme-pill-btn dropdown-toggle w-100 w-lg-auto"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              title="{% trans %}Change language{% endtrans %}"
+            >
+              <i class="fas fa-language"></i>
+              <span class="d-lg-none">{% trans %}Change language{% endtrans %}</span>
+            </button>
+            <form x-data="LanguageForm">
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% set curr_lang = get_locale() %}
+                {%- for lang in Languages.names.items() %}
+                  <li>
+                    <span class="dropdown-item {{ 'bg-primary text-white' if (curr_lang == lang[0]) }}" @click="set" value="{{ lang[0] }}">
+                      {{ lang[1] }}
+                    </span>
+                  </li>
+                {%- endfor %}
+              </ul>
+            </form>
+          </li>
+
+          <!-- Acceso rápido a la web general / Open Badges GDGoC UHU -->
+          <li class="nav-item">
+            <a
+              href="https://gdguhu.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="theme-pill-btn w-100 w-lg-auto"
+              title="Web oficial y Open Badges de GDG on Campus UHU"
+            >
+              <span>⚡</span>
+              <span>gdguhu.com</span>
+              <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,42 @@
+<footer class="theme-footer">
+  <div class="container">
+    <div class="theme-footer-inner">
+      <div class="theme-footer-brand">
+        <img
+          src="{{ url_for('views.themes', path='img/gdgoc-uhu-logo-sm.webp') }}"
+          alt="GDG on Campus UHU"
+          width="40"
+          height="40"
+          loading="lazy"
+          decoding="async"
+        >
+        <div>
+          <div class="fw-bold theme-text-primary" style="font-size: 0.9rem;">
+            GDG on Campus · Universidad de Huelva
+          </div>
+          <div class="theme-text-secondary" style="font-size: 0.76rem;">
+            {{ Configs.ctf_name or 'CyberTrainer CTF' }} · Entorno Oficial de Ciberseguridad
+          </div>
+        </div>
+      </div>
+
+      <div class="theme-footer-links">
+        <a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer">
+          Open Badges
+        </a>
+        <span style="opacity: 0.4;">·</span>
+        <a href="https://gdg.community.dev/gdg-on-campus-huelva-university-huelva-spain/" target="_blank" rel="noopener noreferrer">
+          Comunidad
+        </a>
+        <span style="opacity: 0.4;">·</span>
+        <a href="https://www.linkedin.com/company/gdgoc-huelva" target="_blank" rel="noopener noreferrer">
+          LinkedIn
+        </a>
+        <span style="opacity: 0.4;">·</span>
+        <a href="https://ctfd.io" target="_blank" rel="noopener noreferrer" style="opacity: 0.75;">
+          {% trans %}Powered by CTFd{% endtrans %}
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

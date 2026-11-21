@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div
+    x-data="ChallengeBoard"
+    @load-challenges.window="loadChallenges()"
+    @load-challenge.window="loadChallenge($event.detail)"
+  >
+    <!-- Hero Cyber de Retos con estadísticas en tiempo real -->
+    <section class="jumbotron theme-hero-section">
+      <div class="container position-relative">
+        <div class="theme-badge-pill mb-3">
+          <span class="cyber-dots" aria-hidden="true">
+            <span class="cyber-dot cyber-dot--1"></span>
+            <span class="cyber-dot cyber-dot--2"></span>
+            <span class="cyber-dot cyber-dot--3"></span>
+            <span class="cyber-dot cyber-dot--4"></span>
+          </span>
+          <span>CYBER ARENA · GDGoC UHU</span>
+        </div>
+
+        <h1>{% trans %}Challenges{% endtrans %}</h1>
+        <p class="cyber-hero-sub">
+          <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</span>
+        </p>
+
+        <!-- Chips de resumen y barra de progreso (visible cuando cargan los retos) -->
+        <div x-show="loaded && challenges.length > 0" style="display: none;">
+          <div class="cyber-stats-strip">
+            <span class="cyber-stat-chip">
+              <i class="fas fa-layer-group" style="color: #00F0FF;"></i>
+              <span>Categorías:</span>
+              <strong x-text="getCategories().length">0</strong>
+            </span>
+            <span class="cyber-stat-chip">
+              <i class="fas fa-terminal" style="color: #FF007F;"></i>
+              <span>Retos:</span>
+              <strong x-text="challenges.length">0</strong>
+            </span>
+            <span class="cyber-stat-chip cyber-stat-chip--solved">
+              <i class="fas fa-check-circle" style="color: #00FF66;"></i>
+              <span>Resueltos:</span>
+              <strong x-text="challenges.filter(c => c.solved_by_me).length + ' / ' + challenges.length">0 / 0</strong>
+            </span>
+          </div>
+
+          <div class="cyber-progress-wrap">
+            <div class="cyber-progress-track">
+              <div
+                class="cyber-progress-fill"
+                :style="'width: ' + (challenges.length ? Math.round((challenges.filter(c => c.solved_by_me).length / challenges.length) * 100) : 0) + '%'"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          {% include "components/errors.html" %}
+        </div>
+      </div>
+
+      <!-- Modal nativo de CTFd donde Alpine inyecta challenge.html -->
+      <div
+        x-ref="challengeWindow"
+        id="challenge-window"
+        class="modal fade"
+        tabindex="-1"
+        role="dialog"
+        x-data=""
+        x-html="$store.challenge.data.view"
+      ></div>
+
+      <!-- Estado de carga -->
+      <div x-show="!loaded">
+        <div class="min-vh-50 d-flex align-items-center justify-content-center py-5">
+          <div class="text-center">
+            <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
+            <p class="mt-3 font-mono theme-text-secondary small">CARGANDO_RETOS::SYNCHRONIZING...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tablero interactivo con buscador y filtros Cyber -->
+      <div
+        x-show="loaded"
+        x-data="{ search: '', activeCategory: 'ALL', hideSolved: false }"
+        style="display: none;"
+      >
+        <!-- Barra de búsqueda y filtro por categoría -->
+        <div class="cyber-filter-bar" x-show="challenges.length > 0">
+          <div class="row g-3 align-items-center">
+            <div class="col-lg-7">
+              <div class="theme-search-box">
+                <i class="fas fa-search ms-2" style="color: #00F0FF;"></i>
+                <input
+                  type="text"
+                  x-model="search"
+                  placeholder="Buscar reto por nombre, categoría o etiqueta..."
+                  aria-label="Buscar reto"
+                >
+                <button
+                  type="button"
+                  x-show="search.length > 0"
+                  @click="search = ''"
+                  class="btn btn-sm p-1 border-0 bg-transparent text-secondary"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="col-lg-5 d-flex justify-content-lg-end">
+              <button
+                type="button"
+                @click="hideSolved = !hideSolved"
+                class="theme-pill-btn"
+                :class="{ 'active': hideSolved }"
+              >
+                <i class="fas" :class="hideSolved ? 'fa-eye-slash' : 'fa-filter'"></i>
+                <span x-text="hideSolved ? 'Mostrando pendientes' : 'Ocultar resueltos'"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pills de categorías -->
+          <div class="cyber-category-pills">
+            <button
+              type="button"
+              class="theme-pill-btn"
+              :class="{ 'active': activeCategory === 'ALL' }"
+              @click="activeCategory = 'ALL'"
+            >
+              <span>⚡ Todas</span>
+            </button>
+            <template x-for="(cat, cIdx) in getCategories()" :key="cIdx">
+              <button
+                type="button"
+                class="theme-pill-btn"
+                :class="{ 'active': activeCategory === cat }"
+                @click="activeCategory = cat"
+                x-text="cat"
+              ></button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Estado vacío cuando aún no hay retos visibles -->
+        <div x-show="challenges.length === 0" class="theme-card p-5 text-center my-4">
+          <div class="cyber-card-accent-bar"></div>
+          <i class="fas fa-shield-alt fa-3x mb-3" style="color: #00F0FF; filter: drop-shadow(0 0 12px rgba(0,240,255,0.5));"></i>
+          <h3 class="theme-text-primary fw-bold mb-2">Sin retos disponibles todavía</h3>
+          <p class="theme-text-secondary mb-0">
+            Inicia sesión o espera a que comience la competición para desbloquear los desafíos.
+          </p>
+        </div>
+
+        <!-- Listado de categorías y tarjetas de retos -->
+        <template x-for="(category, idx) in getCategories()" :key="idx">
+          <div
+            class="pt-4 pb-2"
+            x-show="
+              (activeCategory === 'ALL' || activeCategory === category) &&
+              getChallenges(category).some(c => {
+                const q = search.trim().toLowerCase();
+                const matchText = !q ||
+                  c.name.toLowerCase().includes(q) ||
+                  c.category.toLowerCase().includes(q) ||
+                  (c.tags && c.tags.some(t => t.value.toLowerCase().includes(q)));
+                const matchSolved = !hideSolved || !c.solved_by_me;
+                return matchText && matchSolved;
+              })
+            "
+          >
+            <div class="category-header">
+              <span style="color: #00F0FF; font-family: 'Google Sans Mono', monospace; font-weight: 700;">//</span>
+              <h3 x-text="category"></h3>
+              <span
+                class="category-count-pill"
+                x-text="getChallenges(category).filter(c => c.solved_by_me).length + '/' + getChallenges(category).length"
+              ></span>
+            </div>
+
+            <div class="category-challenges d-flex flex-column">
+              <div class="challenges-row row g-4">
+                <template x-for="(c, idx) in getChallenges(category)" :key="c.id">
+                  <div
+                    class="col-sm-6 col-md-4 col-lg-3"
+                    x-show="
+                      (!hideSolved || !c.solved_by_me) &&
+                      (!search.trim() ||
+                        c.name.toLowerCase().includes(search.trim().toLowerCase()) ||
+                        c.category.toLowerCase().includes(search.trim().toLowerCase()) ||
+                        (c.tags && c.tags.some(t => t.value.toLowerCase().includes(search.trim().toLowerCase()))))
+                    "
+                  >
+                    <button
+                      type="button"
+                      data-tilt-max="2.2"
+                      class="challenge-button tilt-card w-100 h-100"
+                      :class="[
+                        c.solved_by_me ? 'challenge-solved' : '',
+                        ...(c.tags ? c.tags.map((tag) => `tag-${tag.value.replace(/ /g, '-')}`) : []),
+                      ]"
+                      :value="c.id"
+                      @click="loadChallenge(c.id)"
+                    >
+                      <div class="tilt-glare" aria-hidden="true"></div>
+
+                      <div class="challenge-card-top">
+                        <span class="challenge-points-pill">
+                          <span x-text="c.value"></span> PTS
+                        </span>
+                        <span
+                          class="challenge-status-badge"
+                          :class="c.solved_by_me ? 'challenge-status-badge--solved' : 'challenge-status-badge--open'"
+                          x-text="c.solved_by_me ? '✓ SOLVED' : 'ACTIVE'"
+                        ></span>
+                      </div>
+
+                      <div class="w-100">
+                        <p class="challenge-card-title" x-text="c.name"></p>
+
+                        <template x-if="c.tags && c.tags.length > 0">
+                          <div class="challenge-mini-tags">
+                            <template x-for="(tag, tIdx) in c.tags.slice(0, 3)" :key="tIdx">
+                              <span class="challenge-mini-tag" x-text="'#' + tag.value"></span>
+                            </template>
+                          </div>
+                        </template>
+                      </div>
+
+                      <div class="challenge-card-footer">
+                        <span class="font-mono">
+                          <template x-if="c.solves !== null && c.solves !== undefined">
+                            <span x-text="c.solves + (c.solves === 1 ? ' solve' : ' solves')"></span>
+                          </template>
+                          <template x-if="c.solves === null || c.solves === undefined">
+                            <span x-text="'#' + c.id"></span>
+                          </template>
+                        </span>
+                        <span class="challenge-card-cta">
+                          <span x-text="c.solved_by_me ? 'VER RETO →' : 'HACK →'"></span>
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/challenges.js") }}
+{% endblock %}

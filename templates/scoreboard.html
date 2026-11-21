@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="jumbotron theme-hero-section">
+    <div class="container">
+      <div class="theme-badge-pill mb-3">
+        <span class="cyber-dots" aria-hidden="true">
+          <span class="cyber-dot cyber-dot--1"></span>
+          <span class="cyber-dot cyber-dot--2"></span>
+          <span class="cyber-dot cyber-dot--3"></span>
+          <span class="cyber-dot cyber-dot--4"></span>
+        </span>
+        <span>LIVE RANKING · TELEMETRY</span>
+      </div>
+      <h1>{% trans %}Scoreboard{% endtrans %}</h1>
+      <p class="cyber-hero-sub">
+        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</span>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    {% include "components/errors.html" %}
+
+    <!-- Gráfica ECharts de evolución Top 10 -->
+    <div
+      class="theme-card p-3 p-md-4 mb-4"
+      x-data="ScoreboardDetail"
+      :class="{'d-block': show, 'd-none': !show}"
+      @bracket-change.window="activeBracket=$event.detail; update();"
+    >
+      <div class="cyber-card-accent-bar"></div>
+      <div id="score-graph" class="align-items-center d-flex" x-ref="scoregraph">
+        <div class="col-md-12 text-center py-5">
+          <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de posiciones y filtros de brackets -->
+    <div id="scoreboard" class="row" x-data="ScoreboardList">
+      <template x-if="brackets.length && standings.length">
+        <div class="col-md-12 pb-3">
+          <nav class="nav nav-pills justify-content-center flex-wrap gap-1">
+            <button
+              :class="{'nav-link': true, 'active': !activeBracket}"
+              @click="activeBracket=null"
+            >
+              {% trans %}All{% endtrans %}
+            </button>
+            <template x-for="bracket in brackets">
+              <button
+                :class="{'nav-link': true, 'active': activeBracket == bracket.id}"
+                x-text="bracket.name"
+                @click="activeBracket=bracket.id"
+              ></button>
+            </template>
+          </nav>
+        </div>
+      </template>
+
+      <div class="col-md-12" x-show="standings.length">
+        <div class="cyber-table-wrap">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th class="text-center" style="width: 90px">{% trans %}Place{% endtrans %}</th>
+                <th class="text-start ps-3">{{ get_mode_as_word(capitalize=True) }}</th>
+                <th class="text-end pe-4">{% trans %}Score{% endtrans %}</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <template x-for="(standing, index) in standings.filter(i => activeBracket ? i.bracket_id==activeBracket : true)">
+                <tr>
+                  <th scope="row" class="text-center">
+                    <span
+                      class="rank-badge"
+                      :class="{
+                        'rank-badge--1': index === 0,
+                        'rank-badge--2': index === 1,
+                        'rank-badge--3': index === 2,
+                        'rank-badge--other': index > 2
+                      }"
+                      x-text="'#' + (index + 1)"
+                    ></span>
+                  </th>
+                  <td class="text-start ps-3 fw-semibold">
+                    <a :href="standing.account_url" x-text="standing.name"></a>
+                    <template x-if="standing.bracket_name">
+                      <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
+                    </template>
+                  </td>
+                  <td class="text-end pe-4 font-mono fw-bold" style="color: #00F0FF;">
+                    <span x-text="standing.score"></span> <small style="color: #94A3B8;">PTS</small>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-md-12" x-show="! standings.length">
+        <div class="theme-card p-5 text-center">
+          <div class="cyber-card-accent-bar"></div>
+          <i class="fas fa-trophy fa-3x mb-3" style="color: #00F0FF; opacity: 0.7;"></i>
+          <h3 class="theme-text-primary fw-bold mb-1">{% trans %}Scoreboard is empty{% endtrans %}</h3>
+          <p class="theme-text-secondary mb-0">Aún no hay puntuaciones registradas en la clasificación.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/scoreboard.js") }}
+{% endblock %}

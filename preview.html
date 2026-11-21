@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="cyber" data-bs-theme="dark">
+<head>
+  <title>Preview · CyberTrainer GDGoC UHU</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05070F">
+  <link rel="icon" type="image/png" sizes="32x32" href="./static/img/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;500;700&family=Google+Sans+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+  >
+  <link rel="stylesheet" href="./static/assets/main.e9ec7884.css">
+  <link rel="stylesheet" href="./static/css/gdgoc-cyber.css">
+  <script src="./static/js/gdgoc-cyber.js"></script>
+</head>
+<body>
+  <!-- Fondo Animado Cyber -->
+  <div id="theme-fx-container" aria-hidden="true">
+    <div class="fx-cyber-grid"></div>
+    <div class="fx-cyber-scanline"></div>
+    <span class="fx-cyber-token fx-cyber-token--1">0xFA92_FLAG //⚡</span>
+    <span class="fx-cyber-token fx-cyber-token--2">&lt;CYBERTRAINER_CTF /&gt;</span>
+    <span class="fx-cyber-token fx-cyber-token--3">ROOT::ACCESS_GRANTED</span>
+    <span class="fx-cyber-token fx-cyber-token--4">[GDG_UHU::CYBER_NODE]</span>
+  </div>
+
+  <!-- Header Sticky Cyber -->
+  <header class="theme-header">
+    <div class="theme-top-strip" aria-hidden="true"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a href="#challenges" class="navbar-brand gdg-brand-link" onclick="switchView('challenges'); return false;">
+          <div class="gdg-brand-logo-wrap">
+            <img src="./static/img/gdgoc-uhu-logo-sm.webp" alt="GDG on Campus UHU" width="44" height="44">
+          </div>
+          <div class="text-truncate">
+            <div class="gdg-brand-title">CyberTrainer GDGoC UHU</div>
+            <div class="gdg-brand-subtitle">GDG on Campus · Universidad de Huelva</div>
+          </div>
+        </a>
+
+        <div class="collapse navbar-collapse show">
+          <ul class="navbar-nav me-auto ms-lg-3 gap-1">
+            <li class="nav-item">
+              <a class="nav-link active" id="nav-challenges" href="#challenges" onclick="switchView('challenges'); return false;">
+                <i class="fas fa-flag fa-fw"></i><span>Challenges</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="nav-scoreboard" href="#scoreboard" onclick="switchView('scoreboard'); return false;">
+                <i class="fas fa-trophy fa-fw"></i><span>Scoreboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="nav-home" href="#home" onclick="switchView('home'); return false;">
+                <i class="fas fa-home fa-fw"></i><span>Portada</span>
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav ms-lg-auto align-items-lg-center gap-2">
+            <li class="nav-item">
+              <a class="theme-pill-btn" id="nav-login" href="#login" onclick="switchView('login'); return false;">
+                <i class="fas fa-sign-in-alt"></i><span>Login</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="theme-primary-btn btn d-inline-flex align-items-center gap-2" href="#login" onclick="switchView('login'); return false;">
+                <i class="fas fa-user-plus"></i><span>Register</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" class="theme-pill-btn">
+                <span>⚡</span><span>gdguhu.com</span>
+                <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main role="main">
+    <!-- ==================== VISTA 1: CHALLENGES ==================== -->
+    <div id="view-challenges">
+      <section class="jumbotron theme-hero-section">
+        <div class="container">
+          <div class="theme-badge-pill mb-3">
+            <span class="cyber-dots">
+              <span class="cyber-dot cyber-dot--1"></span>
+              <span class="cyber-dot cyber-dot--2"></span>
+              <span class="cyber-dot cyber-dot--3"></span>
+              <span class="cyber-dot cyber-dot--4"></span>
+            </span>
+            <span>CYBER ARENA · GDGoC UHU</span>
+          </div>
+          <h1>Challenges</h1>
+          <p class="cyber-hero-sub">
+            <span class="theme-accent-text fw-bold">CyberTrainer GDGoC UHU</span>
+          </p>
+
+          <div class="cyber-stats-strip">
+            <span class="cyber-stat-chip"><i class="fas fa-layer-group" style="color:#00F0FF;"></i> Categorías: <strong>3</strong></span>
+            <span class="cyber-stat-chip"><i class="fas fa-terminal" style="color:#FF007F;"></i> Retos: <strong>6</strong></span>
+            <span class="cyber-stat-chip cyber-stat-chip--solved"><i class="fas fa-check-circle" style="color:#00FF66;"></i> Resueltos: <strong>2 / 6</strong></span>
+          </div>
+
+          <div class="cyber-progress-wrap">
+            <div class="cyber-progress-track">
+              <div class="cyber-progress-fill" style="width: 33%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="container">
+        <div class="cyber-filter-bar">
+          <div class="row g-3 align-items-center">
+            <div class="col-lg-7">
+              <div class="theme-search-box">
+                <i class="fas fa-search ms-2" style="color: #00F0FF;"></i>
+                <input type="text" id="preview-search" placeholder="Buscar reto por nombre, categoría o etiqueta..." oninput="filterPreview()">
+              </div>
+            </div>
+            <div class="col-lg-5 d-flex justify-content-lg-end">
+              <button type="button" id="toggle-solved-btn" class="theme-pill-btn" onclick="toggleHideSolved()">
+                <i class="fas fa-filter"></i><span>Ocultar resueltos</span>
+              </button>
+            </div>
+          </div>
+          <div class="cyber-category-pills">
+            <button class="theme-pill-btn active" onclick="setCat('ALL', this)">⚡ Todas</button>
+            <button class="theme-pill-btn" onclick="setCat('Web', this)">Web</button>
+            <button class="theme-pill-btn" onclick="setCat('Criptografía', this)">Criptografía</button>
+            <button class="theme-pill-btn" onclick="setCat('Forense', this)">Forense</button>
+          </div>
+        </div>
+
+        <div id="preview-board"></div>
+      </div>
+    </div>
+
+    <!-- ==================== VISTA 2: SCOREBOARD ==================== -->
+    <div id="view-scoreboard" style="display:none;">
+      <section class="jumbotron theme-hero-section">
+        <div class="container">
+          <div class="theme-badge-pill mb-3">
+            <span class="cyber-dots">
+              <span class="cyber-dot cyber-dot--1"></span>
+              <span class="cyber-dot cyber-dot--2"></span>
+              <span class="cyber-dot cyber-dot--3"></span>
+              <span class="cyber-dot cyber-dot--4"></span>
+            </span>
+            <span>LIVE RANKING · TELEMETRY</span>
+          </div>
+          <h1>Scoreboard</h1>
+          <p class="cyber-hero-sub"><span class="theme-accent-text fw-bold">CyberTrainer GDGoC UHU</span></p>
+        </div>
+      </section>
+
+      <div class="container">
+        <div class="cyber-table-wrap">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th class="text-center" style="width:90px;">Place</th>
+                <th class="text-start ps-3">User</th>
+                <th class="text-end pe-4">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th class="text-center"><span class="rank-badge rank-badge--1">#1</span></th>
+                <td class="ps-3 fw-semibold"><a href="#">0xHuelva_Root</a> <span class="badge bg-secondary ms-2">ETSI UHU</span></td>
+                <td class="text-end pe-4 font-mono fw-bold" style="color:#00F0FF;">1450 <small style="color:#94A3B8;">PTS</small></td>
+              </tr>
+              <tr>
+                <th class="text-center"><span class="rank-badge rank-badge--2">#2</span></th>
+                <td class="ps-3 fw-semibold"><a href="#">cyber_tartessos</a> <span class="badge bg-secondary ms-2">ETSI UHU</span></td>
+                <td class="text-end pe-4 font-mono fw-bold" style="color:#00F0FF;">1200 <small style="color:#94A3B8;">PTS</small></td>
+              </tr>
+              <tr>
+                <th class="text-center"><span class="rank-badge rank-badge--3">#3</span></th>
+                <td class="ps-3 fw-semibold"><a href="#">neo_gdg</a> <span class="badge bg-secondary ms-2">Invitado</span></td>
+                <td class="text-end pe-4 font-mono fw-bold" style="color:#00F0FF;">950 <small style="color:#94A3B8;">PTS</small></td>
+              </tr>
+              <tr>
+                <th class="text-center"><span class="rank-badge rank-badge--other">#4</span></th>
+                <td class="ps-3 fw-semibold"><a href="#">pwn_andaluz</a></td>
+                <td class="text-end pe-4 font-mono fw-bold" style="color:#00F0FF;">700 <small style="color:#94A3B8;">PTS</small></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VISTA 3: PORTADA EXISTENTE ==================== -->
+    <div id="view-home" style="display:none;">
+      <div class="container my-4">
+        <div class="gdg-hero text-center p-5 rounded-4">
+          <div class="gdg-pill-badge px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2 mb-3">
+            <span class="cyber-dots">
+              <span class="cyber-dot cyber-dot--1"></span>
+              <span class="cyber-dot cyber-dot--2"></span>
+              <span class="cyber-dot cyber-dot--3"></span>
+            </span>
+            <span>Google Developer Groups on Campus · Universidad de Huelva</span>
+          </div>
+          <h1 class="display-4 fw-bold mb-3 theme-text-primary">
+            CyberTrainer <span class="theme-accent-text">CTF 2026</span>
+          </h1>
+          <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width:740px;">
+            Plataforma oficial de entrenamiento y competición en ciberseguridad impulsada por <strong>GDG on Campus UHU</strong>.
+          </p>
+          <div class="flag-box px-4 py-2 rounded-3 d-inline-block font-mono fw-bold mb-4">CLUB{ejemplo_de_flag_1337}</div>
+          <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <button class="btn btn-primary btn-lg px-4" onclick="switchView('challenges')">🎯 Ver Retos</button>
+            <button class="theme-pill-btn px-4 py-2" onclick="switchView('scoreboard')">🏆 Scoreboard</button>
+            <a href="https://gdguhu.com" target="_blank" class="theme-pill-btn px-4 py-2">🌐 gdguhu.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VISTA 4: LOGIN ==================== -->
+    <div id="view-login" style="display:none;">
+      <section class="jumbotron theme-hero-section">
+        <div class="container">
+          <div class="theme-badge-pill mb-3"><span>AUTH::ACCESS_NODE</span></div>
+          <h1>Login</h1>
+          <p class="cyber-hero-sub">Inicia sesión para acceder a los retos y registrar tus flags</p>
+        </div>
+      </section>
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-md-7 col-lg-5">
+            <div class="theme-card p-4 p-sm-5">
+              <div class="cyber-card-accent-bar"></div>
+              <form onsubmit="event.preventDefault(); alert('Preview estática: en CTFd enviará el formulario con CSRF nonce.');">
+                <div class="mb-3">
+                  <label class="form-label">User Name or Email</label>
+                  <input type="text" class="form-control" placeholder="hacker@alu.uhu.es">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Password</label>
+                  <input type="password" class="form-control" placeholder="••••••••••••">
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                  <a href="#" class="small">Forgot your password?</a>
+                  <button type="submit" class="btn btn-primary px-4">Submit</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal interactivo de reto (preview) -->
+  <div id="preview-modal-backdrop" style="display:none; position:fixed; inset:0; background:rgba(2,4,10,0.8); z-index:1050; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this) closeModal();">
+    <div class="modal-dialog modal-lg w-100" style="max-width:640px;">
+      <div class="modal-content">
+        <div class="modal-body py-4 px-4 px-sm-5">
+          <button type="button" class="btn-close float-end" onclick="closeModal()" aria-label="Close"></button>
+          <ul class="nav nav-tabs">
+            <li class="nav-item"><button class="nav-link active"><i class="fas fa-terminal me-1"></i> Challenge</button></li>
+            <li class="nav-item"><button class="nav-link" id="modal-solves-tab">12 Solves</button></li>
+          </ul>
+          <h2 class="challenge-name text-center pt-4" id="modal-title">JWT None Bypass</h2>
+          <div class="text-center mt-2 mb-3">
+            <span class="theme-badge-pill"><span>⚡</span><span class="challenge-value m-0" id="modal-points">250 PTS</span></span>
+          </div>
+          <div class="challenge-tags text-center pb-3 d-flex justify-content-center gap-2" id="modal-tags"></div>
+          <p class="challenge-desc" id="modal-desc"></p>
+          <div class="mb-3"><span class="challenge-connection-info" id="modal-conn"></span></div>
+          <div class="challenge-hints mb-3">
+            <details>
+              <summary>View Hint: Revisa la cabecera del token</summary>
+              <div class="mt-2 pt-2 border-top theme-border small">Decodifica el segmento Base64URL inicial y comprueba qué algoritmo acepta el servidor.</div>
+            </details>
+          </div>
+          <div class="row g-2 align-items-stretch">
+            <div class="col-sm-8">
+              <input type="text" id="modal-flag-input" class="challenge-input form-control h-100" placeholder="CLUB{...}">
+            </div>
+            <div class="col-sm-4">
+              <button class="btn btn-primary w-100 h-100" onclick="testFlag()"><i class="fas fa-paper-plane me-1"></i> Submit</button>
+            </div>
+          </div>
+          <div id="modal-feedback" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Cyber -->
+  <footer class="theme-footer">
+    <div class="container">
+      <div class="theme-footer-inner">
+        <div class="theme-footer-brand">
+          <img src="./static/img/gdgoc-uhu-logo-sm.webp" alt="GDG on Campus UHU" width="40" height="40">
+          <div>
+            <div class="fw-bold theme-text-primary" style="font-size: 0.9rem;">GDG on Campus · Universidad de Huelva</div>
+            <div class="theme-text-secondary" style="font-size: 0.76rem;">CyberTrainer CTF · Entorno Oficial de Ciberseguridad</div>
+          </div>
+        </div>
+        <div class="theme-footer-links">
+          <a href="https://gdguhu.com" target="_blank">Open Badges</a>
+          <span style="opacity:0.4;">·</span>
+          <a href="https://gdg.community.dev/gdg-on-campus-huelva-university-huelva-spain/" target="_blank">Comunidad</a>
+          <span style="opacity:0.4;">·</span>
+          <a href="https://www.linkedin.com/company/gdgoc-huelva" target="_blank">LinkedIn</a>
+          <span style="opacity:0.4;">·</span>
+          <a href="https://ctfd.io" target="_blank" style="opacity:0.75;">Powered by CTFd</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const MOCK_CHALLENGES = [
+      { id: 1, name: "JWT None Bypass", category: "Web", value: 250, solved: true, solves: 14, tags: ["jwt", "auth", "easy"], desc: "El panel de administración confía demasiado en el campo <code>alg</code> del token JWT. Consigue acceso de administrador y recupera la flag.", conn: "https://jwt-lab.gdguhu.com" },
+      { id: 2, name: "Log Injection 101", category: "Web", value: 350, solved: false, solves: 7, tags: ["web", "ssti", "medium"], desc: "El visor de registros procesa plantillas sin sanitizar. Encuentra la variable de entorno con el secreto.", conn: "http://188.245.96.96:8002" },
+      { id: 3, name: "RSA Small Exponent", category: "Criptografía", value: 300, solved: true, solves: 11, tags: ["rsa", "math"], desc: "Hemos interceptado un mensaje cifrado con exponente público <code>e = 3</code> sin padding. Recupera el texto plano.", conn: "nc ctf.gdguhu.com 1337" },
+      { id: 4, name: "LCG Predictor", category: "Criptografía", value: 450, solved: false, solves: 3, tags: ["prng", "hard"], desc: "El generador de tokens usa un Linear Congruential Generator clásico. Predice el siguiente código de recuperación.", conn: "nc ctf.gdguhu.com 1338" },
+      { id: 5, name: "DNS Exfiltration", category: "Forense", value: 200, solved: false, solves: 9, tags: ["pcap", "wireshark"], desc: "Analiza la captura de tráfico de red y reconstruye los datos exfiltrados en subdominios DNS.", conn: "Descarga: capture.pcapng (1.4 MB)" },
+      { id: 6, name: "PNG Polyglot", category: "Forense", value: 400, solved: false, solves: 4, tags: ["stego", "binwalk"], desc: "Esta insignia de GDGoC esconde un archivo comprimido tras el chunk IEND.", conn: "Descarga: badge_secret.png (312 KB)" }
+    ];
+
+    let activeCat = "ALL";
+    let hideSolved = false;
+
+    function switchView(name) {
+      ["challenges", "scoreboard", "home", "login"].forEach(v => {
+        document.getElementById("view-" + v).style.display = v === name ? "" : "none";
+        const nav = document.getElementById("nav-" + v);
+        if (nav) nav.classList.toggle("active", v === name);
+      });
+    }
+
+    function setCat(cat, btn) {
+      activeCat = cat;
+      document.querySelectorAll(".cyber-category-pills .theme-pill-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      filterPreview();
+    }
+
+    function toggleHideSolved() {
+      hideSolved = !hideSolved;
+      const btn = document.getElementById("toggle-solved-btn");
+      btn.classList.toggle("active", hideSolved);
+      btn.querySelector("span").textContent = hideSolved ? "Mostrando pendientes" : "Ocultar resueltos";
+      filterPreview();
+    }
+
+    function filterPreview() {
+      const q = (document.getElementById("preview-search").value || "").trim().toLowerCase();
+      const board = document.getElementById("preview-board");
+      const cats = [...new Set(MOCK_CHALLENGES.map(c => c.category))];
+      let html = "";
+
+      cats.forEach(cat => {
+        if (activeCat !== "ALL" && activeCat !== cat) return;
+        const items = MOCK_CHALLENGES.filter(c =>
+          c.category === cat &&
+          (!hideSolved || !c.solved) &&
+          (!q || c.name.toLowerCase().includes(q) || c.category.toLowerCase().includes(q) || c.tags.some(t => t.includes(q)))
+        );
+        if (!items.length) return;
+        const allCat = MOCK_CHALLENGES.filter(c => c.category === cat);
+        const solvedCat = allCat.filter(c => c.solved).length;
+
+        html += `<div class="pt-4 pb-2">
+          <div class="category-header">
+            <span style="color:#00F0FF; font-family:'Google Sans Mono',monospace; font-weight:700;">//</span>
+            <h3>${cat}</h3>
+            <span class="category-count-pill">${solvedCat}/${allCat.length}</span>
+          </div>
+          <div class="row g-4">`;
+
+        items.forEach(c => {
+          html += `<div class="col-sm-6 col-md-4 col-lg-3">
+            <button type="button" data-tilt-max="2.2" class="challenge-button tilt-card w-100 h-100 ${c.solved ? 'challenge-solved' : ''}" onclick="openModal(${c.id})">
+              <div class="tilt-glare" aria-hidden="true"></div>
+              <div class="challenge-card-top">
+                <span class="challenge-points-pill">${c.value} PTS</span>
+                <span class="challenge-status-badge ${c.solved ? 'challenge-status-badge--solved' : 'challenge-status-badge--open'}">${c.solved ? '✓ SOLVED' : 'ACTIVE'}</span>
+              </div>
+              <div class="w-100">
+                <p class="challenge-card-title">${c.name}</p>
+                <div class="challenge-mini-tags">${c.tags.map(t => `<span class="challenge-mini-tag">#${t}</span>`).join("")}</div>
+              </div>
+              <div class="challenge-card-footer">
+                <span class="font-mono">${c.solves} solves</span>
+                <span class="challenge-card-cta">${c.solved ? 'VER RETO →' : 'HACK →'}</span>
+              </div>
+            </button>
+          </div>`;
+        });
+        html += `</div></div>`;
+      });
+
+      board.innerHTML = html || `<div class="theme-card p-5 text-center my-4"><div class="cyber-card-accent-bar"></div><p class="mb-0 theme-text-secondary">No se encontraron retos con ese filtro.</p></div>`;
+    }
+
+    function openModal(id) {
+      const c = MOCK_CHALLENGES.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById("modal-title").textContent = c.name;
+      document.getElementById("modal-points").textContent = c.value + " PTS";
+      document.getElementById("modal-solves-tab").textContent = c.solves + " Solves";
+      document.getElementById("modal-desc").innerHTML = c.desc;
+      document.getElementById("modal-conn").textContent = c.conn;
+      document.getElementById("modal-tags").innerHTML = c.tags.map(t => `<span class="challenge-tag badge">#${t}</span>`).join("");
+      document.getElementById("modal-flag-input").value = "";
+      document.getElementById("modal-feedback").innerHTML = "";
+      document.getElementById("preview-modal-backdrop").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("preview-modal-backdrop").style.display = "none";
+    }
+
+    function testFlag() {
+      const val = document.getElementById("modal-flag-input").value.trim();
+      const fb = document.getElementById("modal-feedback");
+      if (val.startsWith("CLUB{") && val.endsWith("}")) {
+        fb.innerHTML = `<div class="alert alert-success text-center mb-0"><strong>✓ Correct!</strong> Flag válida capturada.</div>`;
+      } else {
+        fb.innerHTML = `<div class="alert alert-danger text-center mb-0"><strong>✕ Incorrect</strong> Prueba el formato <code>CLUB{...}</code></div>`;
+      }
+    }
+
+    filterPreview();
+  </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="{{ get_locale() if get_locale is defined else 'es' }}" data-theme="cyber" data-bs-theme="dark">
+<head>
+  <title>{{ title or Configs.ctf_name }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05070F">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('views.themes', path='img/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('views.themes', path='img/favicon-192x192.png') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('views.themes', path='img/favicon.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('views.themes', path='img/apple-touch-icon.png') }}">
+  <link rel="shortcut icon" href="{{ Configs.ctf_small_icon or url_for('views.themes', path='img/favicon.ico') }}" type="image/x-icon">
+
+  {{ meta | safe }}
+
+  <!-- Google Fonts (idénticas a Open Badges GDGoC UHU) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;500;700&family=Google+Sans+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+  >
+
+  {% block stylesheets %}
+    {{ Assets.css("assets/scss/main.scss") }}
+  {% endblock %}
+
+  {{ Plugins.styles }}
+
+  <script type="text/javascript">
+      document.documentElement.setAttribute('data-theme', 'cyber');
+      document.documentElement.setAttribute('data-bs-theme', 'dark');
+      window.init = {
+          'urlRoot': "{{ request.script_root }}",
+          'csrfNonce': "{{ Session.nonce }}",
+          'userMode': "{{ Configs.user_mode }}",
+          'userId': {{ Session.id }},
+          'userName': {{ User.name | tojson }},
+          'userEmail': {{ User.email | tojson }},
+          'userVerified': {{ User.verified | tojson }},
+          'teamId': {{ Team.id | tojson }},
+          'teamName': {{ Team.name | tojson }},
+          'start': {{ Configs.start | tojson }},
+          'end': {{ Configs.end | tojson }},
+          'themeSettings': {{ Configs.theme_settings | tojson }},
+          'eventSounds': [
+            "{{ url_for('views.themes', path='sounds/notification.webm') }}",
+            "{{ url_for('views.themes', path='sounds/notification.mp3') }}",
+          ],
+      }
+  </script>
+
+  {{ Configs.theme_header }}
+
+  <!-- Hoja maestra Cyber GDGoC UHU (siempre cargada al final para prioridad visual) -->
+  <link rel="stylesheet" href="{{ url_for('views.themes', path='css/gdgoc-cyber.css') }}">
+  <script src="{{ url_for('views.themes', path='js/gdgoc-cyber.js') }}"></script>
+</head>
+<body>
+  <!-- Fondo Animado Cyber (idéntico a Open Badges GDGoC UHU) -->
+  <div id="theme-fx-container" aria-hidden="true">
+    <div class="fx-cyber-grid"></div>
+    <div class="fx-cyber-scanline"></div>
+    <span class="fx-cyber-token fx-cyber-token--1">0xFA92_FLAG //⚡</span>
+    <span class="fx-cyber-token fx-cyber-token--2">&lt;CYBERTRAINER_CTF /&gt;</span>
+    <span class="fx-cyber-token fx-cyber-token--3">ROOT::ACCESS_GRANTED</span>
+    <span class="fx-cyber-token fx-cyber-token--4">[GDG_UHU::CYBER_NODE]</span>
+  </div>
+
+  {% include "components/navbar.html" %}
+
+  <main role="main">
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  {% include "components/snackbar.html" %}
+
+  {% include "components/footer.html" %}
+
+  {% include "components/notifications.html" %}
+
+  {% block scripts %}
+    {{ Assets.js("assets/js/page.js") }}
+  {% endblock %}
+
+  {{ Plugins.scripts }}
+
+  {{ Configs.theme_footer }}
+</body>
+</html>

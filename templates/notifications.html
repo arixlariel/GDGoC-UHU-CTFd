@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="jumbotron theme-hero-section">
+    <div class="container">
+      <div class="theme-badge-pill mb-3">
+        <span>SYSTEM::BROADCASTS</span>
+      </div>
+      <h1>{% trans %}Notifications{% endtrans %}</h1>
+    </div>
+  </section>
+
+  <div class="container">
+    {% if not notifications %}
+      <div class="theme-card p-5 text-center">
+        <div class="cyber-card-accent-bar"></div>
+        <i class="fas fa-bell-slash fa-3x mb-3" style="color: #00F0FF; opacity: 0.7;"></i>
+        <h3 class="theme-text-primary fw-bold mb-1">{% trans %}There are no notifications yet{% endtrans %}</h3>
+      </div>
+    {% endif %}
+
+    {% for notification in notifications %}
+      <div class="theme-card mb-4 p-4">
+        <div class="cyber-card-accent-bar"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <h3 class="h5 fw-bold theme-text-primary mb-0">{{ notification.title }}</h3>
+          <small class="font-mono theme-text-secondary">
+            <span data-time="{{ notification.date | isoformat }}"></span>
+          </small>
+        </div>
+        <div class="theme-text-secondary">
+          {{ notification.html }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/notifications.js") }}
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="jumbotron theme-hero-section">
+    <div class="container">
+      <div class="theme-badge-pill mb-3">
+        <span class="cyber-dots" aria-hidden="true">
+          <span class="cyber-dot cyber-dot--1"></span>
+          <span class="cyber-dot cyber-dot--2"></span>
+          <span class="cyber-dot cyber-dot--3"></span>
+          <span class="cyber-dot cyber-dot--4"></span>
+        </span>
+        <span>NEW_PLAYER::ENROLLMENT</span>
+      </div>
+      <h1>{% trans %}Register{% endtrans %}</h1>
+      <p class="cyber-hero-sub">
+        Crea tu credencial para competir en <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</span>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="theme-card p-4 p-sm-5">
+          <div class="cyber-card-accent-bar"></div>
+
+          {% include "components/errors.html" %}
+
+          {% if integrations.mlc() %}
+            <a class="btn btn-secondary btn-lg w-100 mb-3" href="{{ url_for('auth.oauth_login') }}">
+              Login with Major League Cyber
+            </a>
+            <hr class="my-4">
+          {% endif %}
+
+          {% with form = Forms.auth.RegistrationForm() %}
+            {% from "macros/forms.html" import render_extra_fields %}
+
+            <form method="post" accept-charset="utf-8" role="form">
+              <div class="mb-3">
+                <b>{{ form.name.label(class="form-label") }}</b>
+                {{ form.name(class="form-control", value=name, autocomplete="username") }}
+                <small class="form-text text-muted">
+                  {% trans %}Your username on the site{% endtrans %}
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <b>{{ form.email.label(class="form-label") }}</b>
+                {{ form.email(class="form-control", value=email, autocomplete="email") }}
+                <small class="form-text text-muted">
+                  {% trans %}Never shown to the public{% endtrans %}
+                </small>
+              </div>
+
+              <div class="mb-3">
+                <b>{{ form.password.label(class="form-label") }}</b>
+                {{ form.password(class="form-control", value=password, autocomplete="new-password") }}
+                <small class="form-text text-muted">
+                  {% trans %}Password used to log into your account{% endtrans %}
+                </small>
+              </div>
+
+              {{ form.nonce() }}
+
+              {{ render_extra_fields(form.extra) }}
+
+              <div class="d-flex justify-content-end pt-3">
+                {{ form.submit(class="btn btn-primary px-5 w-100 w-sm-auto") }}
+              </div>
+
+              {% if Configs.tos_or_privacy %}
+                <div class="row pt-3">
+                  <div class="col-md-12 text-center">
+                    <small class="text-muted text-center">
+                      {% trans trimmed privacy_link=Configs.privacy_link, tos_link=Configs.tos_link %}
+                      By registering, you agree to the
+                      <a href="{{ privacy_link }}" target="_blank">privacy policy</a>
+                      and <a href="{{ tos_link }}" target="_blank">terms of service</a>
+                      {% endtrans %}
+                    </small>
+                  </div>
+                </div>
+              {% endif %}
+            </form>
+          {% endwith %}
+
+          <hr class="my-4">
+          <div class="text-center small theme-text-secondary">
+            ¿Ya tienes una cuenta registrada?
+            <a href="{{ url_for('auth.login') }}" class="fw-bold ms-1">
+              {% trans %}Login{% endtrans %} →
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
