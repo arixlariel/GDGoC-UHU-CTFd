@@ -140,14 +140,14 @@
             </li>
 
             <li class="nav-item">
-              <a class="theme-pill-btn theme-pill-btn--icon theme-pill-btn--logout w-100 w-lg-auto" href="{{ url_for('auth.logout') }}" data-cyber-tooltip="{% trans %}Logout{% endtrans %}" aria-label="{% trans %}Logout{% endtrans %}">
+              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('auth.logout') }}" data-cyber-tooltip="{% trans %}Logout{% endtrans %}" aria-label="{% trans %}Logout{% endtrans %}">
                 <i class="fas fa-power-off fa-fw"></i>
                 <span class="d-lg-none">{% trans %}Logout{% endtrans %}</span>
               </a>
             </li>
           {% else %}
             <li class="nav-item">
-              <a class="theme-pill-btn theme-pill-btn--login w-100 w-lg-auto" href="{{ url_for('auth.login') }}" data-cyber-tooltip="Register or Login" aria-label="Register or Login">
+              <a class="theme-pill-btn theme-pill-btn--login w-100 w-lg-auto" href="{{ url_for('auth.login') }}" data-cyber-tooltip="Login or Register" aria-label="Login or Register">
                 <i class="fas fa-key"></i>
                 <span>{% trans %}Login{% endtrans %}</span>
               </a>

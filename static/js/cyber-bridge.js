@@ -55,6 +55,46 @@
     });
   }
 
+  // 1b. Persistencia real de idioma (cookie 1 año path=/ sincronizada con localStorage)
+  function syncLanguagePersistence() {
+    try {
+      var saved = window.localStorage && localStorage.getItem("language");
+      if (saved && /^[a-zA-Z_-]{2,12}$/.test(saved)) {
+        document.cookie =
+          "language=" + encodeURIComponent(saved) + "; path=/; max-age=31536000; SameSite=Lax";
+        var activeEl = document.querySelector('form[x-data="LanguageForm"] .dropdown-item.bg-primary[value]');
+        var rendered = activeEl ? activeEl.getAttribute("value") : null;
+        if (rendered && rendered !== saved && window.sessionStorage) {
+          var guardKey = "cyber_lang_reloaded_" + saved;
+          if (!sessionStorage.getItem(guardKey)) {
+            sessionStorage.setItem(guardKey, "1");
+            window.location.reload();
+            return;
+          }
+        }
+      }
+      document.addEventListener(
+        "click",
+        function (e) {
+          var item =
+            e.target && e.target.closest
+              ? e.target.closest('form[x-data="LanguageForm"] .dropdown-item[value]')
+              : null;
+          if (!item) return;
+          var val = item.getAttribute("value");
+          if (val) {
+            try {
+              localStorage.setItem("language", val);
+              document.cookie =
+                "language=" + encodeURIComponent(val) + "; path=/; max-age=31536000; SameSite=Lax";
+            } catch (_) {}
+          }
+        },
+        true
+      );
+    } catch (_) {}
+  }
+
   // 2. Proxy de EventSource: evita que /events (SSE) sature HTTP/1.1 al cambiar rápido de apartado
   if (!window.__cyberEventSourcePatched && typeof window.EventSource === "function") {
     window.__cyberEventSourcePatched = true;
@@ -418,14 +458,14 @@
         a.innerHTML = '<i class="fas fa-cogs fa-fw"></i><span class="d-lg-none"></span>';
         a.querySelector("span").textContent = lbl || "Settings";
       } else if (p === "/logout") {
-        a.className = "theme-pill-btn theme-pill-btn--icon theme-pill-btn--logout w-100 w-lg-auto";
+        a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
         setCyberTooltip(a, lbl || "Logout");
         a.innerHTML = '<i class="fas fa-power-off fa-fw"></i><span class="d-lg-none"></span>';
         a.querySelector("span").textContent = lbl || "Logout";
       } else if (p === "/login") {
         loginLi = li;
         a.className = "theme-pill-btn theme-pill-btn--login w-100 w-lg-auto";
-        setCyberTooltip(a, "Register or Login");
+        setCyberTooltip(a, "Login or Register");
         a.innerHTML = '<i class="fas fa-key"></i><span></span>';
         a.querySelector("span").textContent = lbl || "Login";
       } else if (p === "/register") {
@@ -563,21 +603,26 @@
       jumboContainer.appendChild(statsWrap);
     }
 
+    var savedHideSolved = false;
+    try {
+      savedHideSolved = window.localStorage && localStorage.getItem("cyber_hide_solved") === "1";
+    } catch (_) {}
+
     var filterBar = document.createElement("div");
     filterBar.className = "cyber-filter-bar";
     filterBar.style.display = "none";
     filterBar.innerHTML =
       '<div class="row g-3 align-items-center justify-content-between">' +
-      '  <div class="col-md-7 col-lg-5">' +
+      '  <div class="col-md-8 col-lg-6">' +
       '    <div class="theme-search-box">' +
       '      <i class="fas fa-search ms-2" style="color:#00F0FF;"></i>' +
-      '      <input type="text" id="gdg-chal-search" placeholder="Search challenge by name" aria-label="Search challenge by name">' +
+      '      <input type="text" id="gdg-chal-search" placeholder="Search challenges by name" aria-label="Search challenges by name">' +
       '      <button type="button" id="gdg-chal-clear" class="btn btn-sm p-1 border-0 bg-transparent text-secondary" style="display:none;min-height:auto;padding:0.25rem!important;" aria-label="Clear search"><i class="fas fa-times"></i></button>' +
       "    </div>" +
       "  </div>" +
-      '  <div class="col-md-5 col-lg-4 d-flex justify-content-md-end">' +
-      '    <button type="button" id="gdg-chal-hide-solved" class="theme-pill-btn">' +
-      '      <i class="fas fa-eye"></i><span>Showing solved</span>' +
+      '  <div class="col-md-4 col-lg-4 d-flex justify-content-md-end">' +
+      '    <button type="button" id="gdg-chal-hide-solved" class="theme-pill-btn' + (savedHideSolved ? " active" : "") + '">' +
+      '      <i class="fas ' + (savedHideSolved ? "fa-eye-slash" : "fa-eye") + '"></i><span>' + (savedHideSolved ? "Hiding solved" : "Showing solved") + "</span>" +
       "    </button>" +
       "  </div>" +
       "</div>" +
@@ -590,7 +635,13 @@
       board.insertBefore(filterBar, board.firstChild);
     }
 
-    var state = { search: "", category: "ALL", hideSolved: false };
+    // Solo hideSolved se recuerda entre visitas; búsqueda y categoría se resetean siempre
+    var state = { search: "", category: "ALL", hideSolved: savedHideSolved };
+    var CATEGORY_ORDER = ["web", "criptografía", "criptografia", "forense", "reversing", "misc"];
+    function catRank(name) {
+      var idx = CATEGORY_ORDER.indexOf((name || "").trim().toLowerCase());
+      return idx === -1 ? 99 : idx;
+    }
     var searchInput = filterBar.querySelector("#gdg-chal-search");
     var clearBtn = filterBar.querySelector("#gdg-chal-clear");
     var hideSolvedBtn = filterBar.querySelector("#gdg-chal-hide-solved");
@@ -664,6 +715,9 @@
 
     hideSolvedBtn.addEventListener("click", function () {
       state.hideSolved = !state.hideSolved;
+      try {
+        if (window.localStorage) localStorage.setItem("cyber_hide_solved", state.hideSolved ? "1" : "0");
+      } catch (_) {}
       hideSolvedBtn.classList.toggle("active", state.hideSolved);
       hideSolvedBtn.innerHTML =
         '<i class="fas ' +
@@ -705,19 +759,21 @@
           glare.setAttribute("aria-hidden", "true");
           btn.insertBefore(glare, btn.firstChild);
         }
-        var targetCls =
-          "challenge-status-badge gdg-core-status-badge " +
-          (isSolved ? "challenge-status-badge--solved" : "challenge-status-badge--open");
-        var targetTxt = isSolved ? "✓ SOLVED" : "ACTIVE";
+        // Solo mostrar badge "✓ SOLVED" en retos resueltos (sin etiqueta "ACTIVE" innecesaria)
         var statusBadge = btn.querySelector(".gdg-core-status-badge");
-        if (!statusBadge) {
-          statusBadge = document.createElement("span");
-          statusBadge.className = targetCls;
-          statusBadge.textContent = targetTxt;
-          btn.appendChild(statusBadge);
-        } else {
-          if (statusBadge.className !== targetCls) statusBadge.className = targetCls;
-          if (statusBadge.textContent !== targetTxt) statusBadge.textContent = targetTxt;
+        if (isSolved) {
+          var targetCls = "challenge-status-badge gdg-core-status-badge challenge-status-badge--solved";
+          if (!statusBadge) {
+            statusBadge = document.createElement("span");
+            statusBadge.className = targetCls;
+            statusBadge.textContent = "✓ SOLVED";
+            btn.appendChild(statusBadge);
+          } else {
+            if (statusBadge.className !== targetCls) statusBadge.className = targetCls;
+            if (statusBadge.textContent !== "✓ SOLVED") statusBadge.textContent = "✓ SOLVED";
+          }
+        } else if (statusBadge) {
+          statusBadge.remove();
         }
       });
 
@@ -737,13 +793,35 @@
 
       filterBar.style.display = "";
 
+      // Ordenar las secciones del DOM según el orden oficial: Web → Criptografía → Forense → Reversing → Misc
+      var headers = Array.prototype.slice.call(board.querySelectorAll(".category-header"));
+      var sections = headers
+        .map(function (h) {
+          var h3 = h.querySelector("h3");
+          return {
+            header: h,
+            section: h.parentElement,
+            name: h3 ? (h3.textContent || "").trim() : "",
+          };
+        })
+        .filter(function (item) {
+          return item.name && item.section && item.section.parentElement;
+        });
+
+      sections.sort(function (a, b) {
+        var diff = catRank(a.name) - catRank(b.name);
+        return diff !== 0 ? diff : a.name.localeCompare(b.name);
+      });
+
       var catNames = [];
-      board.querySelectorAll(".category-header").forEach(function (header) {
+      var sectionsParent = sections.length ? sections[0].section.parentElement : null;
+      sections.forEach(function (item) {
+        if (sectionsParent && item.section.parentElement === sectionsParent) {
+          sectionsParent.appendChild(item.section);
+        }
+        var header = item.header;
         var h3 = header.querySelector("h3");
-        if (!h3) return;
-        var name = (h3.textContent || "").trim();
-        if (!name) return;
-        catNames.push(name);
+        catNames.push(item.name);
 
         if (!header.querySelector(".gdg-cat-slash")) {
           var slash = document.createElement("span");
@@ -754,9 +832,7 @@
           header.insertBefore(slash, h3);
         }
 
-        var secBtns = header.parentElement
-          ? header.parentElement.querySelectorAll(".challenge-button")
-          : [];
+        var secBtns = item.section.querySelectorAll(".challenge-button");
         var secSolved = 0;
         secBtns.forEach(function (b) {
           if (b.classList.contains("challenge-solved") || b.classList.contains("solved-challenge")) {
@@ -970,7 +1046,7 @@
     });
   }
 
-  // Selector de fecha personalizado: campo de texto DD/MM/YYYY + opción explícita Never (sin calendario nativo)
+  // Selector de fecha personalizado: campo DD/MM/YYYY estricto + botón Never debajo (sin subtítulo)
   function buildCustomExpirationPicker(oldInput) {
     var hidden = document.createElement("input");
     hidden.type = "hidden";
@@ -983,16 +1059,19 @@
     wrap.setAttribute("data-cyber-date-picker", "1");
     wrap.innerHTML =
       '<div class="cyber-date-presets" role="group" aria-label="Expiration presets">' +
-      '  <button type="button" class="cyber-date-preset active" data-days="0">Never</button>' +
       '  <button type="button" class="cyber-date-preset" data-days="7">7d</button>' +
       '  <button type="button" class="cyber-date-preset" data-days="30">30d</button>' +
       '  <button type="button" class="cyber-date-preset" data-days="90">90d</button>' +
       '  <button type="button" class="cyber-date-preset" data-days="365">1y</button>' +
       "</div>" +
       '<div class="cyber-date-input-wrap">' +
-      '  <input type="text" class="form-control cyber-date-text is-never" placeholder="Never (no expiration)" autocomplete="off" aria-label="Expiration date DD/MM/YYYY">' +
+      '  <input type="text" maxlength="10" inputmode="numeric" class="form-control cyber-date-text" placeholder="DD/MM/YYYY" autocomplete="off" aria-label="Expiration date DD/MM/YYYY">' +
       "</div>" +
-      '<div class="cyber-date-hint">Never expires — type DD/MM/YYYY to set a date</div>';
+      '<div class="cyber-date-never-wrap">' +
+      '  <button type="button" class="cyber-date-never-btn active" data-days="0">' +
+      '    <i class="fas fa-infinity"></i><span>Never</span>' +
+      "  </button>" +
+      "</div>";
     wrap.insertBefore(hidden, wrap.firstChild);
     oldInput.parentNode.replaceChild(wrap, oldInput);
     if (typeof window.cyberInitDatePickers === "function") {
@@ -1306,13 +1385,40 @@
           });
         }
 
+        if (path === "/login" || path === "/register") {
+          // Acortar botones Submit de Login y Register como el resto de la web
+          var authSub = form.querySelector('input[type="submit"], button[type="submit"]');
+          if (authSub) {
+            authSub.classList.remove("w-100", "w-sm-auto", "col-md-12", "btn-block", "float-end");
+            authSub.classList.add("px-4");
+            var subCol = authSub.closest('[class*="col-"]');
+            if (subCol && subCol.parentElement && subCol.parentElement.classList.contains("row")) {
+              var subRow = subCol.parentElement;
+              var forgotLink = subRow.querySelector('a[href*="reset_password"]');
+              if (forgotLink) {
+                subRow.className = "d-flex flex-wrap justify-content-between align-items-center gap-3 pt-3";
+                subRow.innerHTML = "";
+                subRow.appendChild(forgotLink);
+                subRow.appendChild(authSub);
+              } else {
+                subRow.className = "d-flex justify-content-end pt-3";
+                subRow.innerHTML = "";
+                subRow.appendChild(authSub);
+              }
+            }
+          }
+        }
+
         if (path === "/reset_password") {
-          // Aviso claro cuando no hay servidor de correo configurado (manteniendo el botón de cierre .btn-close)
+          // Aviso equilibrado en 2 líneas y sin puntos finales
           document.querySelectorAll("main .alert span, main p").forEach(function (el) {
             var txt = (el.textContent || "").trim();
             if (/not configured to send email/i.test(txt)) {
-              el.textContent =
-                "This CTFd instance is not configured to send emails, please contact an organizer to have your password reset.";
+              el.innerHTML =
+                "This CTFd instance is not configured to send emails<br>" +
+                "Please contact an organizer to have your password reset";
+            } else if (/provide the email address/i.test(txt)) {
+              el.textContent = txt.replace(/\.+$/, "");
             }
           });
           // Acortar botón Submit como el resto de formularios
@@ -1356,11 +1462,12 @@
         }
       } else if (path === "/reset_password") {
         // Caso sin formulario (CTFd solo renderiza aviso cuando no hay email configurado)
-        document.querySelectorAll("main .alert, main p, main h4, main h5").forEach(function (el) {
+        document.querySelectorAll("main .alert span, main p, main h4, main h5").forEach(function (el) {
           var txt = (el.textContent || "").trim();
           if (/not configured to send email/i.test(txt)) {
-            el.textContent =
-              "This CTFd instance is not configured to send emails, please contact an organizer to have your password reset.";
+            el.innerHTML =
+              "This CTFd instance is not configured to send emails<br>" +
+              "Please contact an organizer to have your password reset";
           }
         });
       }
@@ -1433,11 +1540,42 @@
       }
       var searchForm = document.querySelector("main form");
       if (searchForm) {
+        if (path === "/users") {
+          // Eliminar el selector de campo y el tooltip nativo "Completa este campo"
+          searchForm.setAttribute("novalidate", "novalidate");
+          searchForm.setAttribute("data-cyber-users-search", "1");
+          var fieldSel = searchForm.querySelector('select[name="field"], #field');
+          if (fieldSel) {
+            var selCol = fieldSel.closest('[class*="col-"]');
+            if (selCol) selCol.remove();
+            else fieldSel.remove();
+          }
+          var qInput = searchForm.querySelector('input[name="q"], #q');
+          if (qInput) {
+            qInput.removeAttribute("required");
+            qInput.removeAttribute("title");
+            qInput.setAttribute("placeholder", "Search by username, name, country or affiliation");
+            qInput.setAttribute("aria-label", "Search by username, name, country or affiliation");
+            qInput.setAttribute("autocomplete", "off");
+            var qCol = qInput.closest('[class*="col-"]');
+            if (qCol) qCol.className = "col";
+          }
+          var subBtn = searchForm.querySelector('button[type="submit"], input[type="submit"]');
+          if (subBtn) {
+            var btnCol = subBtn.closest('[class*="col-"]');
+            if (btnCol) btnCol.className = "col-auto";
+            subBtn.classList.remove("w-100");
+            subBtn.classList.add("px-4");
+          }
+        }
         var sc = wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");
         if (sc) makeTiltable(sc, 0.8);
       }
       upgradeUsersDirectoryTable();
       wrapTablesInCyberWrap(document);
+      if (path === "/users" && typeof window.cyberInitUsersTableInteractive === "function") {
+        window.cyberInitUsersTableInteractive();
+      }
       return;
     }
 
@@ -1484,6 +1622,7 @@
     if (!document.querySelector("header.theme-header") || navUpgraded) {
       injectBackgroundFx();
       upgradeNavbar();
+      syncLanguagePersistence();
       upgradeFooter();
       upgradeInnerPages();
       highlightActiveNav();

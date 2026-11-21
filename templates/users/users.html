@@ -26,15 +26,21 @@
       {% endif %}
 
       {% with form = Forms.users.PublicUserSearchForm(field=field, q=q) %}
-        <form method="GET" class="row g-2 align-items-center">
-          <div class="col-md-3">
-            {{ form.field(class="form-select w-100") }}
+        <form method="GET" novalidate class="row g-2 align-items-center" data-cyber-users-search="1">
+          <div class="col">
+            <input
+              type="text"
+              id="q"
+              name="q"
+              class="form-control w-100"
+              value="{{ q or '' }}"
+              placeholder="Search by username, name, country or affiliation"
+              aria-label="Search by username, name, country or affiliation"
+              autocomplete="off"
+            >
           </div>
-          <div class="col-md-7">
-            {{ form.q(class="form-control w-100", placeholder=form.q.description) }}
-          </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">
+          <div class="col-auto">
+            <button type="submit" class="btn btn-primary px-4" aria-label="Search">
               <i class="fas fa-search" aria-hidden="true"></i>
             </button>
           </div>

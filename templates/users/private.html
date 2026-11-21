@@ -124,32 +124,33 @@
         </div>
       {% endif %}
 
-      <!-- Gráficas y barras de progreso -->
+      <!-- Gráficas y barras de progreso (con 3D tilt) -->
       <div class="row g-4 mb-5" x-data="UserGraphs">
         <div class="col-md-6 d-none d-md-block">
-          <div class="theme-card p-4 h-100">
+          <div class="theme-card tilt-card p-4 h-100" data-tilt-max="1.2">
+            <div class="tilt-glare" aria-hidden="true"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
-              <i class="fas fa-crosshairs me-2" style="color: #00FF66;"></i>Submission Accuracy
+              <i class="fas fa-crosshairs me-2" style="color: #00F0FF;"></i>Submission Accuracy
             </h4>
             <div class="progress mb-3">
               <div
                 class="progress-bar"
                 role="progressbar"
-                :style="{ width: `${getSolvePercentage()}%`, 'background-color': '#00FF66' }"
+                :style="{ width: `${getSolvePercentage()}%`, 'background-color': '#00F0FF' }"
               ></div>
               <div
                 class="progress-bar"
                 role="progressbar"
-                :style="{ width: `${getFailPercentage()}%`, 'background-color': '#FF007F' }"
+                :style="{ width: `${getFailPercentage()}%`, 'background-color': '#FF3358' }"
               ></div>
             </div>
             <div class="d-flex flex-wrap gap-3 small">
               <span class="d-inline-flex align-items-center gap-1 theme-text-primary">
-                <span class="cyber-dot cyber-dot--4" style="animation: none;"></span>
+                <span class="cyber-dot cyber-dot--1" style="animation: none;"></span>
                 <span x-text="`Solves (${getSolvePercentage()}%)`"></span>
               </span>
               <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">
-                <span class="cyber-dot cyber-dot--2" style="animation: none;"></span>
+                <span class="cyber-dot cyber-dot--fail"></span>
                 <span x-text="`Fails (${getFailPercentage()}%)`"></span>
               </span>
             </div>
@@ -157,16 +158,17 @@
         </div>
 
         <div class="col-md-6 d-none d-md-block">
-          <div class="theme-card p-4 h-100">
+          <div class="theme-card tilt-card p-4 h-100" data-tilt-max="1.2">
+            <div class="tilt-glare" aria-hidden="true"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
-              <i class="fas fa-chart-pie me-2" style="color: #00F0FF;"></i>Category Breakdown
+              <i class="fas fa-chart-pie me-2" style="color: #A855F7;"></i>Category Breakdown
             </h4>
             <div class="progress mb-3">
               <template x-for="category in getCategoryBreakdown()" :key="category.name">
                 <div
                   class="progress-bar"
                   role="progressbar"
-                  :style="{ width: `${category.percent}%`, 'background-color': category.color }"
+                  :style="{ width: `${category.percent}%`, 'background-color': (window.cyberCategoryColor ? window.cyberCategoryColor(category.name) : category.color) }"
                 ></div>
               </template>
             </div>
@@ -174,7 +176,7 @@
               <template x-for="category in getCategoryBreakdown()" :key="category.name">
                 <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">
                   <svg height="12" width="12">
-                    <circle cx="6" cy="6" r="5" :fill="category.color" />
+                    <circle cx="6" cy="6" r="5" :fill="window.cyberCategoryColor ? window.cyberCategoryColor(category.name) : category.color" />
                   </svg>
                   <span x-text="`${category.name} (${category.percent}%)`"></span>
                 </span>
@@ -184,7 +186,8 @@
         </div>
 
         <div class="col-12 d-none d-md-block">
-          <div class="theme-card cyber-chart-card p-3 p-md-4">
+          <div class="theme-card tilt-card cyber-chart-card p-3 p-md-4" data-tilt-max="0.7">
+            <div class="tilt-glare" aria-hidden="true"></div>
             <div id="score-graph" x-ref="scoregraph" class="w-100 d-flex align-items-center">
               <div class="text-center w-100 py-5">
                 <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>

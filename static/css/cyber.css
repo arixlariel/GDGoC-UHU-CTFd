@@ -325,7 +325,7 @@ html[data-theme="cyber"] .theme-header .navbar {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0.65rem 0 !important;
+  padding: 0.92rem 0 !important;
   position: static !important;
 }
 
@@ -339,20 +339,20 @@ html[data-theme="cyber"] .navbar-brand::before {
 .gdg-brand-link {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.75rem !important;
+  gap: 0.8rem !important;
   text-decoration: none !important;
   min-width: 0;
   padding: 0 !important;
 }
 
 .gdg-brand-logo-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
   overflow: hidden;
-  border: 1px solid rgba(0, 240, 255, 0.4);
+  border: 1px solid rgba(0, 240, 255, 0.42);
   background: #ffffff;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.22);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.24);
   flex-shrink: 0;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
@@ -372,7 +372,7 @@ html[data-theme="cyber"] .navbar-brand::before {
 
 .gdg-brand-title {
   font-weight: 700;
-  font-size: 0.96rem;
+  font-size: 1.04rem;
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--cyber-text-primary);
@@ -380,13 +380,13 @@ html[data-theme="cyber"] .navbar-brand::before {
 }
 
 .gdg-brand-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 500;
   line-height: 1.2;
   color: var(--cyber-text-secondary);
 }
 
-/* Enlaces del Navbar (misma altura simétrica 38px en izquierda y derecha, sin hover pegado en :focus) */
+/* Enlaces del Navbar (altura simétrica 42px en izquierda y derecha, sin hover pegado en :focus) */
 html[data-theme="cyber"] .theme-header .navbar-nav {
   align-items: center;
 }
@@ -399,10 +399,10 @@ html[data-theme="cyber"] .theme-header .nav-item {
 html[data-theme="cyber"] .theme-header .nav-link {
   color: #CBD5E1 !important;
   font-weight: 600 !important;
-  font-size: 0.85rem !important;
-  height: 38px !important;
+  font-size: 0.89rem !important;
+  height: 42px !important;
   line-height: 1 !important;
-  padding: 0 0.92rem !important;
+  padding: 0 1rem !important;
   border-radius: 9999px !important;
   border: 1px solid transparent !important;
   box-sizing: border-box !important;
@@ -410,7 +410,7 @@ html[data-theme="cyber"] .theme-header .nav-link {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 0.42rem !important;
+  gap: 0.46rem !important;
   white-space: nowrap !important;
 }
 
@@ -421,16 +421,17 @@ html[data-theme="cyber"] .theme-header .nav-link:focus:not(:focus-visible) {
 
 html[data-theme="cyber"] .theme-header .theme-pill-btn,
 html[data-theme="cyber"] .theme-header .theme-primary-btn {
-  height: 38px !important;
+  height: 42px !important;
   line-height: 1 !important;
-  padding: 0 0.95rem !important;
+  font-size: 0.88rem !important;
+  padding: 0 1.05rem !important;
   box-sizing: border-box !important;
   white-space: nowrap !important;
 }
 
 html[data-theme="cyber"] .theme-header .theme-pill-btn--icon {
-  min-width: 38px !important;
-  padding: 0 0.72rem !important;
+  min-width: 42px !important;
+  padding: 0 0.78rem !important;
 }
 
 html[data-theme="cyber"] .theme-header .nav-link:hover,
@@ -589,6 +590,7 @@ html[data-theme="cyber"] .navbar-toggler:focus {
 .cyber-dot--2 { background: #FF007F; box-shadow: 0 0 8px #FF007F; animation-delay: 0.25s; }
 .cyber-dot--3 { background: #FFE600; box-shadow: 0 0 8px #FFE600; animation-delay: 0.5s; }
 .cyber-dot--4 { background: #00FF66; box-shadow: 0 0 8px #00FF66; animation-delay: 0.75s; }
+.cyber-dot--fail { background: #FF3358; box-shadow: 0 0 8px #FF3358; animation: none; }
 
 /* Botón Pill Secundario Cyber */
 .theme-pill-btn {
@@ -984,7 +986,7 @@ html[data-theme="cyber"] .theme-card:has(.modal.show) {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  max-width: 440px;
+  max-width: 585px;
   padding: 0.42rem 0.9rem;
   border-radius: 9999px;
   background: rgba(6, 10, 24, 0.9) !important;
@@ -1244,31 +1246,65 @@ html[data-theme="cyber"] .btn-close:hover {
   opacity: 1;
 }
 
-/* Pestañas del modal de reto */
+/* Modal de reto amplio, centrado y sin recortes contra los bordes */
+html[data-theme="cyber"] #challenge-window .modal-dialog {
+  max-width: min(860px, calc(100vw - 2rem)) !important;
+  width: calc(100vw - 2rem) !important;
+  margin: 1.5rem auto !important;
+  min-height: calc(100% - 3rem);
+  display: flex !important;
+  align-items: center !important;
+}
+
+html[data-theme="cyber"] #challenge-window .modal-content {
+  width: 100% !important;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+}
+
+html[data-theme="cyber"] #challenge-window .modal-body {
+  padding: 1.75rem clamp(1.25rem, 3.5vw, 2.5rem) 2rem !important;
+}
+
+html[data-theme="cyber"] .challenge-ratings {
+  display: none !important;
+}
+
+/* Pestañas del modal de reto estilizadas como botones Cyber claros */
 html[data-theme="cyber"] .nav-tabs {
-  border-bottom: 1px solid rgba(0, 240, 255, 0.25) !important;
-  gap: 0.35rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.22) !important;
+  padding-bottom: 0.95rem !important;
+  gap: 0.55rem !important;
+  flex-wrap: wrap;
 }
 
 html[data-theme="cyber"] .nav-tabs .nav-link {
-  border: 1px solid transparent !important;
-  border-radius: 12px 12px 0 0 !important;
-  color: #94A3B8 !important;
-  font-weight: 600 !important;
-  padding: 0.55rem 1rem !important;
-  background: transparent !important;
+  border: 1px solid rgba(0, 240, 255, 0.38) !important;
+  border-radius: 9999px !important;
+  color: #CBD5E1 !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  padding: 0.46rem 1.15rem !important;
+  background: rgba(12, 18, 38, 0.92) !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.1) !important;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.16s ease !important;
 }
 
 html[data-theme="cyber"] .nav-tabs .nav-link:hover {
   color: #00F0FF !important;
-  border-color: rgba(0, 240, 255, 0.3) !important;
+  border-color: #00F0FF !important;
+  background: rgba(0, 240, 255, 0.14) !important;
+  transform: translateY(-1px);
 }
 
 html[data-theme="cyber"] .nav-tabs .nav-link.active {
-  color: #00F0FF !important;
-  background: rgba(0, 240, 255, 0.14) !important;
-  border-color: #00F0FF #00F0FF transparent !important;
-  box-shadow: 0 -4px 16px rgba(0, 240, 255, 0.2);
+  color: #05070F !important;
+  background: var(--cyber-gradient-cta) !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  border: 0 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.4) !important;
 }
 
 html[data-theme="cyber"] .challenge-name {
@@ -1300,9 +1336,79 @@ html[data-theme="cyber"] .challenge-tag.badge {
 
 html[data-theme="cyber"] .challenge-desc {
   display: block;
-  margin: 1.2rem 0;
+  margin: 1.3rem auto;
+  max-width: 100%;
   color: #E2F1FF;
-  line-height: 1.7;
+  line-height: 1.72;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+html[data-theme="cyber"] .challenge-desc pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: #040814;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: #E2F1FF;
+}
+
+html[data-theme="cyber"] .challenge-desc img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border-radius: 12px;
+}
+
+/* KPIs de la pestaña Stats dentro del modal de reto */
+.cyber-chal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .cyber-chal-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cyber-chal-stat-box {
+  background: rgba(6, 10, 24, 0.88);
+  border: 1px solid rgba(0, 240, 255, 0.32);
+  border-radius: 16px;
+  padding: 1.2rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cyber-chal-stat-label {
+  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.cyber-chal-stat-val {
+  font-family: 'Orbitron', 'Google Sans Mono', monospace;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #00F0FF;
+}
+
+.cyber-chal-stat-sub {
+  font-size: 0.74rem;
+  color: #94A3B8;
 }
 
 html[data-theme="cyber"] .challenge-connection-info {
@@ -1703,9 +1809,46 @@ html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:last-ch
   min-height: 44px;
 }
 
-.cyber-date-text.is-never {
-  color: #94A3B8 !important;
-  border-color: rgba(0, 240, 255, 0.25) !important;
+.cyber-date-text:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+.cyber-date-never-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cyber-date-never-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.9rem;
+  border-radius: 9999px;
+  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: rgba(12, 18, 38, 0.92);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: #94A3B8;
+  cursor: pointer;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.cyber-date-never-btn:hover,
+.cyber-date-never-btn:focus-visible {
+  border-color: #00F0FF;
+  color: #00F0FF;
+  outline: none;
+}
+
+.cyber-date-never-btn.active {
+  background: rgba(0, 240, 255, 0.18);
+  border-color: #00F0FF;
+  color: #00F0FF;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
 }
 
 .cyber-date-text.is-invalid {
@@ -1713,14 +1856,30 @@ html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:last-ch
   box-shadow: 0 0 0 2px rgba(255, 51, 88, 0.25) !important;
 }
 
-.cyber-date-hint {
-  font-size: 0.74rem;
-  color: #94A3B8;
-  font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
+/* Cabeceras ordenables en /users */
+.cyber-sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.16s ease, background-color 0.16s ease;
 }
 
-.cyber-date-hint.is-error {
-  color: #FF6B84;
+.cyber-sortable-th:hover {
+  color: #FFFFFF !important;
+}
+
+.cyber-sortable-th.is-sorted {
+  color: #00FF66 !important;
+}
+
+.cyber-sort-icon {
+  margin-left: 0.35rem;
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
+.cyber-sortable-th.is-sorted .cyber-sort-icon {
+  opacity: 1;
+  color: #00FF66;
 }
 
 /* Estado vacío minimalista y limpio para Notificaciones */
@@ -1898,27 +2057,41 @@ html[data-theme="cyber"] .table tbody tr:hover > * {
 }
 
 .rank-badge--1 {
-  background: rgba(255, 230, 0, 0.18);
-  border: 1px solid #FFE600;
+  background: linear-gradient(135deg, rgba(255, 230, 0, 0.28), rgba(255, 166, 0, 0.2));
+  border: 1.5px solid #FFE600;
   color: #FFE600;
-  box-shadow: 0 0 14px rgba(255, 230, 0, 0.4);
+  box-shadow: 0 0 16px rgba(255, 230, 0, 0.45);
 }
 .rank-badge--2 {
-  background: rgba(0, 240, 255, 0.16);
-  border: 1px solid #00F0FF;
-  color: #00F0FF;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.26), rgba(56, 189, 248, 0.2));
+  border: 1.5px solid #00F0FF;
+  color: #7CF7FF;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
 }
 .rank-badge--3 {
-  background: rgba(255, 0, 127, 0.16);
-  border: 1px solid #FF007F;
-  color: #FF6EB4;
-  box-shadow: 0 0 12px rgba(255, 0, 127, 0.35);
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.28), rgba(255, 107, 0, 0.2));
+  border: 1.5px solid #FF007F;
+  color: #FF85C0;
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.45);
 }
 .rank-badge--other {
   background: rgba(148, 163, 184, 0.1);
   border: 1px solid rgba(148, 163, 184, 0.25);
   color: #94A3B8;
+}
+
+/* Protección contra nombres de usuario muy largos en Scoreboard */
+.cyber-sb-user-cell {
+  max-width: 240px;
+}
+
+.cyber-sb-user-link {
+  display: inline-block;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 /* Gráfica ECharts container + botón Download diferenciado */
@@ -1988,40 +2161,20 @@ html[data-theme="cyber"] [x-data="UserGraphs"] {
   gap: 0.5rem !important;
 }
 
-/* Métricas operativas en la tabla de Scoreboard */
+/* Métricas operativas en la tabla de Scoreboard (colores unificados con perfiles: Accuracy Cyan, Efficiency Verde, Bajo Rojo) */
 .cyber-sb-pct {
   font-family: 'Google Sans Mono', 'JetBrains Mono', monospace;
   font-weight: 700;
   font-size: 0.84rem;
 }
 
-.cyber-sb-pct--high { color: #00FF66; }
-.cyber-sb-pct--mid  { color: #FFE600; }
-.cyber-sb-pct--low  { color: #FF6B84; }
+.cyber-sb-pct--acc { color: #00F0FF; }
+.cyber-sb-pct--eff { color: #00FF66; }
+.cyber-sb-pct--low { color: #FF3358; }
 
-/* Diferenciación visual para Login y Logout en la navbar */
+/* Acento sutil para el icono de Login (Logout mantiene exactamente el mismo color que el resto) */
 html[data-theme="cyber"] .theme-pill-btn--login > i {
   color: #00F0FF;
-}
-
-html[data-theme="cyber"] .theme-pill-btn--logout {
-  border-color: rgba(255, 0, 127, 0.45) !important;
-}
-
-html[data-theme="cyber"] .theme-pill-btn--logout > i {
-  color: #FF6EB4;
-}
-
-html[data-theme="cyber"] .theme-pill-btn--logout:hover,
-html[data-theme="cyber"] .theme-pill-btn--logout:focus-visible {
-  background: rgba(255, 0, 127, 0.2) !important;
-  border-color: #FF007F !important;
-  color: #FFFFFF !important;
-  box-shadow: 0 0 18px rgba(255, 0, 127, 0.42) !important;
-}
-
-html[data-theme="cyber"] .theme-pill-btn--logout:hover > i {
-  color: #FFFFFF;
 }
 
 /* Alertas & Toasts */

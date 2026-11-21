@@ -69,20 +69,36 @@
       <!-- Tablero interactivo con buscador y filtros Cyber -->
       <div
         x-show="loaded"
-        x-data="{ search: '', activeCategory: 'ALL', hideSolved: false }"
+        x-data="{
+          search: '',
+          activeCategory: 'ALL',
+          hideSolved: (function(){ try { return localStorage.getItem('cyber_hide_solved') === '1'; } catch(e) { return false; } })(),
+          toggleHideSolved() {
+            this.hideSolved = !this.hideSolved;
+            try { localStorage.setItem('cyber_hide_solved', this.hideSolved ? '1' : '0'); } catch(e) {}
+          },
+          orderedCategories() {
+            const pref = ['web', 'criptografía', 'criptografia', 'forense', 'reversing', 'misc'];
+            return this.getCategories().slice().sort((a, b) => {
+              const ia = pref.indexOf(a.toLowerCase());
+              const ib = pref.indexOf(b.toLowerCase());
+              return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.localeCompare(b);
+            });
+          }
+        }"
         style="display: none;"
       >
         <!-- Barra de búsqueda y filtro por categoría -->
         <div class="cyber-filter-bar" x-show="challenges.length > 0">
           <div class="row g-3 align-items-center justify-content-between">
-            <div class="col-md-7 col-lg-5">
+            <div class="col-md-8 col-lg-6">
               <div class="theme-search-box">
                 <i class="fas fa-search ms-2" style="color: #00F0FF;"></i>
                 <input
                   type="text"
                   x-model="search"
-                  placeholder="Search challenge by name"
-                  aria-label="Search challenge by name"
+                  placeholder="Search challenges by name"
+                  aria-label="Search challenges by name"
                 >
                 <button
                   type="button"
@@ -96,10 +112,10 @@
               </div>
             </div>
 
-            <div class="col-md-5 col-lg-4 d-flex justify-content-md-end">
+            <div class="col-md-4 col-lg-4 d-flex justify-content-md-end">
               <button
                 type="button"
-                @click="hideSolved = !hideSolved"
+                @click="toggleHideSolved()"
                 class="theme-pill-btn"
                 :class="{ 'active': hideSolved }"
               >
@@ -119,7 +135,7 @@
             >
               <span>⚡ All</span>
             </button>
-            <template x-for="(cat, cIdx) in getCategories()" :key="cIdx">
+            <template x-for="(cat, cIdx) in orderedCategories()" :key="cIdx">
               <button
                 type="button"
                 class="theme-pill-btn"
@@ -141,7 +157,7 @@
         </div>
 
         <!-- Listado de categorías y tarjetas de retos -->
-        <template x-for="(category, idx) in getCategories()" :key="idx">
+        <template x-for="(category, idx) in orderedCategories()" :key="idx">
           <div
             class="pt-4 pb-2"
             x-show="
@@ -196,11 +212,9 @@
                         <span class="challenge-points-pill">
                           <span x-text="c.value"></span> PTS
                         </span>
-                        <span
-                          class="challenge-status-badge"
-                          :class="c.solved_by_me ? 'challenge-status-badge--solved' : 'challenge-status-badge--open'"
-                          x-text="c.solved_by_me ? '✓ SOLVED' : 'ACTIVE'"
-                        ></span>
+                        <template x-if="c.solved_by_me">
+                          <span class="challenge-status-badge challenge-status-badge--solved">✓ SOLVED</span>
+                        </template>
                       </div>
 
                       <div class="w-100">

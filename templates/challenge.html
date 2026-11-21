@@ -8,8 +8,8 @@
         <ul class="nav nav-tabs">
           <li class="nav-item">
             <button class="nav-link active" data-bs-target="#challenge" @click="showChallenge()">
-              <i class="fas fa-terminal me-1"></i>
-              {% trans %}Challenge{% endtrans %}
+              <i class="fas fa-align-left me-1"></i>
+              {% trans %}Description{% endtrans %}
             </button>
           </li>
 
@@ -44,6 +44,13 @@
             </li>
             {% endif %}
           {% endblock %}
+
+          <li class="nav-item">
+            <button class="nav-link challenge-stats" data-bs-target="#stats" data-cyber-stats-tab="1" type="button">
+              <i class="fas fa-chart-bar me-1"></i>
+              <span>Stats</span>
+            </button>
+          </li>
         </ul>
       </div>
 
@@ -332,7 +339,7 @@
                   <table class="table table-striped align-middle text-center">
                     <thead>
                       <tr>
-                        <th>{% trans %}Name{% endtrans %}</th>
+                        <th>{% trans %}Username{% endtrans %}</th>
                         <th>{% trans %}Date{% endtrans %}</th>
                       </tr>
                     </thead>
@@ -360,6 +367,26 @@
                     <div x-html="solution" style="white-space: pre-wrap;"></div>
                   </template>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div role="tabpanel" class="tab-pane fade" id="stats">
+            <div class="cyber-chal-stats-grid" data-cyber-stats-body="1">
+              <div class="cyber-chal-stat-box">
+                <span class="cyber-chal-stat-label">Average Time</span>
+                <span class="cyber-chal-stat-val" data-stat="avg-time">—</span>
+                <span class="cyber-chal-stat-sub">First attempt to solve</span>
+              </div>
+              <div class="cyber-chal-stat-box">
+                <span class="cyber-chal-stat-label">Average Points %</span>
+                <span class="cyber-chal-stat-val" style="color: #00FF66;" data-stat="avg-pts">—</span>
+                <span class="cyber-chal-stat-sub">Of maximum points</span>
+              </div>
+              <div class="cyber-chal-stat-box">
+                <span class="cyber-chal-stat-label">Average Attempts</span>
+                <span class="cyber-chal-stat-val" style="color: #FFE600;" data-stat="avg-att">—</span>
+                <span class="cyber-chal-stat-sub">Submissions per solver</span>
               </div>
             </div>
           </div>

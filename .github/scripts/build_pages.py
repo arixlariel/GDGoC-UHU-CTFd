@@ -286,8 +286,9 @@ HOME_CONTENT = Markup("""
       Cyber <span class="theme-accent-text">Trainer</span>
     </h1>
 
-    <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width: 780px; font-size: 1.12rem;">
-      Plataforma oficial de entrenamiento y competición en ciberseguridad impulsada por CTFd. Resuelve retos de Criptografía, Web, Forense o Reversing para ganar puntos y badges
+    <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width: 780px; font-size: 1.12rem; line-height: 1.7;">
+      Plataforma oficial de entrenamiento y competición en ciberseguridad impulsada por CTFd.<br>
+      Resuelve retos de Criptografía, Web, Forense o Reversing para ganar puntos y badges
     </p>
 
     <!-- FORMATO DE FLAG -->
@@ -305,10 +306,10 @@ HOME_CONTENT = Markup("""
       </span>
     </div>
 
-    <!-- BOTONES DE ACCIÓN RÁPIDA -->
+    <!-- BOTONES DE ACCIÓN RÁPIDA (emojis alineados con los iconos del navbar) -->
     <div class="gdg-hero-actions">
       <a href="__BASE__/users/" class="theme-pill-btn gdg-hero-action-btn">
-        <span aria-hidden="true">👥</span>
+        <span aria-hidden="true">👨‍🚀</span>
         <span>Ver usuarios</span>
       </a>
       <a href="__BASE__/scoreboard/" class="theme-pill-btn gdg-hero-action-btn">
@@ -316,32 +317,14 @@ HOME_CONTENT = Markup("""
         <span>Ver scoreboard</span>
       </a>
       <a href="__BASE__/challenges/" class="btn btn-primary gdg-hero-action-btn fw-bold">
-        <span aria-hidden="true">🎯</span>
+        <span aria-hidden="true">🚩</span>
         <span>Ver retos</span>
       </a>
     </div>
   </div>
 
-  <!-- TARJETAS 3D POR CADA CATEGORÍA ACTIVA EN LA WEB -->
+  <!-- TARJETAS 3D POR CADA CATEGORÍA (orden: Web, Criptografía, Forense, Reversing, Misc) -->
   <div class="row mt-4 g-4 justify-content-center">
-    <div class="col-md-6 col-lg-4">
-      <div class="feature-card tilt-card border-burdeos" data-tilt-max="1.8">
-        <div class="tilt-glare" aria-hidden="true"></div>
-        <div class="icon-bubble bubble-burdeos">🔐</div>
-        <h5 class="fw-bold mb-2 theme-text-primary">Criptografía</h5>
-        <p class="small mb-0 theme-text-secondary">Cifrados clásicos y modernos, codificaciones en capas, RSA, Diffie-Hellman, curvas y criptoanálisis matemático</p>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4">
-      <div class="feature-card tilt-card border-morado" data-tilt-max="1.8">
-        <div class="tilt-glare" aria-hidden="true"></div>
-        <div class="icon-bubble bubble-morado">⚙️</div>
-        <h5 class="fw-bold mb-2 theme-text-primary">Reversing</h5>
-        <p class="small mb-0 theme-text-secondary">Ingeniería inversa de binarios, máquinas virtuales, validadores, checksums, rotación de bits y resolución con Z3</p>
-      </div>
-    </div>
-
     <div class="col-md-6 col-lg-4">
       <div class="feature-card tilt-card border-turquesa" data-tilt-max="1.8">
         <div class="tilt-glare" aria-hidden="true"></div>
@@ -352,11 +335,29 @@ HOME_CONTENT = Markup("""
     </div>
 
     <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-burdeos" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
+        <div class="icon-bubble bubble-burdeos">🔐</div>
+        <h5 class="fw-bold mb-2 theme-text-primary">Criptografía</h5>
+        <p class="small mb-0 theme-text-secondary">Cifrados clásicos y modernos, uso de capas, RSA, Diffie-Hellman, curvas y criptoanálisis matemático</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
       <div class="feature-card tilt-card border-mostaza" data-tilt-max="1.8">
         <div class="tilt-glare" aria-hidden="true"></div>
         <div class="icon-bubble bubble-mostaza">🕵️</div>
         <h5 class="fw-bold mb-2 theme-text-primary">Forense</h5>
-        <p class="small mb-0 theme-text-secondary">Análisis de logs, volcados de memoria, túneles DNS, marcas de tiempo Unix, endianness y trazas de red</p>
+        <p class="small mb-0 theme-text-secondary">Análisis de logs, volcados de memoria, túneles DNS, marcas de tiempo, endianness y trazas de red</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-morado" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
+        <div class="icon-bubble bubble-morado">⚙️</div>
+        <h5 class="fw-bold mb-2 theme-text-primary">Reversing</h5>
+        <p class="small mb-0 theme-text-secondary">Ingeniería inversa de binarios, máquinas virtuales, validadores, checksums, rotación de bits y resoluciones Z3</p>
       </div>
     </div>
 
@@ -365,7 +366,7 @@ HOME_CONTENT = Markup("""
         <div class="tilt-glare" aria-hidden="true"></div>
         <div class="icon-bubble bubble-verde">🧩</div>
         <h5 class="fw-bold mb-2 theme-text-primary">Misc</h5>
-        <p class="small mb-0 theme-text-secondary">Operaciones XOR, codificaciones binarias, octales y ASCII, señales, esteganografía y lógica aplicada</p>
+        <p class="small mb-0 theme-text-secondary">Codificaciones binarias, octales, XOR y ASCII. Todo tipo de señales, esteganografía y lógica aplicada</p>
       </div>
     </div>
   </div>
@@ -654,7 +655,26 @@ def build():
     }}
 
     if (/\\/api\\/v1\\/users(?:\\?|$)/.test(url)) {{
-      return jsonResp({{ success: true, data: [{{ id: 1, name: "0xHuelva_Root" }}], meta: {{ pagination: {{ total: 3, page: 1, pages: 1 }} }} }});
+      return jsonResp({{
+        success: true,
+        data: [
+          {{ id: 1, name: "0xHuelva_Root", bracket_id: 1, bracket_name: "ETSI UHU" }},
+          {{ id: 2, name: "cyber_tartessos", bracket_id: 1, bracket_name: "ETSI UHU" }},
+          {{ id: 3, name: "neo_gdg", bracket_id: 2, bracket_name: "Invitado" }},
+          {{ id: 4, name: "pwn_andaluz", bracket_id: 1, bracket_name: "ETSI UHU" }}
+        ],
+        meta: {{ pagination: {{ total: 4, page: 1, pages: 1, next: null }} }}
+      }});
+    }}
+    if (/\\/api\\/v1\\/submissions/.test(url)) {{
+      return jsonResp({{
+        success: true,
+        data: [
+          {{ user_id: 1, challenge_id: 1, type: "incorrect", date: "2026-11-20T18:05:00Z" }},
+          {{ user_id: 1, challenge_id: 1, type: "correct", date: "2026-11-20T18:15:00Z" }},
+          {{ user_id: 2, challenge_id: 1, type: "correct", date: "2026-11-20T18:30:00Z" }}
+        ]
+      }});
     }}
     if (/\\/api\\/v1\\/users\\/(?:me|\\d+)\\/solves/.test(url)) {{
       return jsonResp({{ success: true, data: USER_SOLVES, meta: {{ count: USER_SOLVES.length }} }});
