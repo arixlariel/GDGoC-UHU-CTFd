@@ -10,10 +10,51 @@ Hosted at https://arixlariel.github.io/GDGoC-UHU-CTFd/ (independent of gdguhu.co
 
 import json
 import os
+import re
 import shutil
 from types import SimpleNamespace
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
+
+
+def minify_css(src: str) -> str:
+    src = re.sub(r"/\*[\s\S]*?\*/", "", src)
+    src = re.sub(r"\s+", " ", src)
+    src = re.sub(r"\s*([{}:;,>~])\s*", r"\1", src)
+    src = src.replace(";}", "}")
+    return src.strip()
+
+
+def minify_js_safe(src: str) -> str:
+    """Safe line-oriented JS minifier (strips /* */ comments and full-line // comments without breaking regex/strings)."""
+    out_lines = []
+    in_block = False
+    for raw in src.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if in_block:
+            end = line.find("*/")
+            if end != -1:
+                in_block = False
+                line = line[end + 2:].strip()
+                if not line:
+                    continue
+            else:
+                continue
+        if line.startswith("/*"):
+            end = line.find("*/", 2)
+            if end != -1:
+                line = line[end + 2:].strip()
+                if not line:
+                    continue
+            else:
+                in_block = True
+                continue
+        if line.startswith("//"):
+            continue
+        out_lines.append(line)
+    return "\n".join(out_lines) + "\n"
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 TPL_DIR = os.path.join(ROOT, "templates")
@@ -393,6 +434,21 @@ def build():
     os.makedirs(OUT_DIR, exist_ok=True)
     shutil.copytree(STATIC_DIR, os.path.join(OUT_DIR, "static"))
 
+    # Generate minified single-request production assets for live CTFd (`cyber.min.css` & `cyber-bundle.min.js`)
+    with open(os.path.join(STATIC_DIR, "css/cyber.css"), encoding="utf-8") as f:
+        css_min = minify_css(f.read())
+    with open(os.path.join(OUT_DIR, "static/css/cyber.min.css"), "w", encoding="utf-8") as f:
+        f.write(css_min)
+
+    with open(os.path.join(STATIC_DIR, "js/cyber-bridge.js"), encoding="utf-8") as f:
+        bridge_js = f.read()
+    with open(os.path.join(STATIC_DIR, "js/cyber.js"), encoding="utf-8") as f:
+        cyber_js = f.read()
+    bundle_min = minify_js_safe(bridge_js) + "\n" + minify_js_safe(cyber_js)
+    with open(os.path.join(OUT_DIR, "static/js/cyber-bundle.min.js"), "w", encoding="utf-8") as f:
+        f.write(bundle_min)
+    print(f"Generated cyber.min.css ({len(css_min)} B) and cyber-bundle.min.js ({len(bundle_min)} B)")
+
     env = Environment(
         loader=FileSystemLoader(TPL_DIR),
         extensions=["jinja2.ext.i18n"],
@@ -711,9 +767,9 @@ def build():
 
     mock_users = SimpleNamespace(
         items=[
-            SimpleNamespace(id=1, name="0xHuelva_Root", bracket_id=1, bracket=SimpleNamespace(name="ETSI UHU"), oauth_id=None, website="https://gdguhu.com", affiliation="Universidad de Huelva", country="ES"),
-            SimpleNamespace(id=2, name="cyber_tartessos", bracket_id=1, bracket=SimpleNamespace(name="ETSI UHU"), oauth_id=None, website=None, affiliation="ETSI · Ingeniería Informática", country="ES"),
-            SimpleNamespace(id=3, name="neo_gdg", bracket_id=2, bracket=SimpleNamespace(name="Invitado"), oauth_id=None, website=None, affiliation="GDG on Campus", country="ES"),
+            SimpleNamespace(id=1, name="0xHuelva_Root", bracket_id=1, bracket=SimpleNamespace(name="ETSI UHU"), oauth_id=None, website="https://github.com/arixlariel", affiliation="Google Developer Group on Campus UHU", country="ES"),
+            SimpleNamespace(id=2, name="cyber_tartessos", bracket_id=1, bracket=SimpleNamespace(name="ETSI UHU"), oauth_id=None, website="https://gdguhu.com", affiliation="ETSI · Ingeniería Informática", country="ES"),
+            SimpleNamespace(id=3, name="neo_gdg", bracket_id=2, bracket=SimpleNamespace(name="Invitado"), oauth_id=None, website=None, affiliation="Universidad de Huelva", country="PT"),
         ],
         page=1,
         pages=1,

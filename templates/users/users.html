@@ -43,10 +43,10 @@
       <table class="table table-striped align-middle">
         <thead>
           <tr>
-            <th>{% trans %}User{% endtrans %}</th>
-            <th class="text-center">{% trans %}Website{% endtrans %}</th>
+            <th>{% trans %}Username{% endtrans %}</th>
+            <th class="text-center" style="width: 105px;">{% trans %}Country{% endtrans %}</th>
             <th class="d-none d-md-table-cell">{% trans %}Affiliation{% endtrans %}</th>
-            <th class="d-none d-md-table-cell">{% trans %}Country{% endtrans %}</th>
+            <th class="d-none d-sm-table-cell">{% trans %}Website{% endtrans %}</th>
           </tr>
         </thead>
         <tbody>
@@ -72,26 +72,49 @@
                 {% endif %}
               </td>
 
-              <td class="text-center" style="width: 60px;">
-                {% if user.website and (user.website.startswith('http://') or user.website.startswith('https://')) %}
-                  <a href="{{ user.website }}" target="_blank" rel="noopener">
-                    <i class="fas fa-external-link-alt" data-toggle="tooltip" data-placement="top" title="{{ user.website }}"></i>
-                  </a>
+              <td class="text-center">
+                {% if user.country %}
+                  {% set country_label = lookup_country_code(user.country) %}
+                  <span
+                    class="cyber-flag-tooltip"
+                    tabindex="0"
+                    data-tooltip="{{ country_label }}"
+                    title="{{ country_label }}"
+                    aria-label="{{ country_label }}"
+                  >
+                    <i class="flag-{{ user.country.lower() }}"></i>
+                  </span>
+                {% else %}
+                  <span class="theme-text-secondary opacity-50">—</span>
                 {% endif %}
               </td>
 
               <td class="d-none d-md-table-cell">
                 {% if user.affiliation %}
-                  <span data-toggle="tooltip" data-placement="top" title="{{ user.affiliation }}">
-                    {{ user.affiliation | truncate(50) }}
+                  <span title="{{ user.affiliation }}">
+                    {{ user.affiliation | truncate(55) }}
                   </span>
+                {% else %}
+                  <span class="theme-text-secondary opacity-50">—</span>
                 {% endif %}
               </td>
 
-              <td class="d-none d-md-table-cell">
-                {% if user.country %}
-                  <i class="flag-{{ user.country.lower() }}"></i>
-                  {{ lookup_country_code(user.country) }}
+              <td class="d-none d-sm-table-cell">
+                {% if user.website and (user.website.startswith('http://') or user.website.startswith('https://')) %}
+                  {% set preview = user.website | replace('https://', '') | replace('http://', '') | replace('www.', '') %}
+                  <a
+                    href="{{ user.website }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="cyber-web-preview"
+                    title="{{ user.website }}"
+                  >
+                    <i class="fas fa-globe"></i>
+                    <span class="cyber-web-preview-text">{{ preview.rstrip('/') | truncate(34, True, '…') }}</span>
+                    <i class="fas fa-external-link-alt cyber-web-preview-ext"></i>
+                  </a>
+                {% else %}
+                  <span class="theme-text-secondary opacity-50">—</span>
                 {% endif %}
               </td>
             </tr>

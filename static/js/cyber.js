@@ -1,8 +1,8 @@
 /* ============================================================================
-   GDG on Campus Universidad de Huelva · CTFd Cyber Interactive Enhancements
-   - Fuerza el modo oscuro/cyber sin parpadeo
-   - Desactiva estilos antiguos de Theme Header (#gdg-custom-theme) y limpia notas obsoletas
-   - Motor 3D Perspective Tilt + Specular Glare (mismo algoritmo corregido que Open Badges)
+   GDG on Campus Universidad de Huelva · CTFd Theme: Cyber
+   - Fuerza el modo Cyber sin parpadeo
+   - Proxy de EventSource (/events) que cierra streams SSE al cambiar de apartado
+   - Motor 3D Perspective Tilt + Specular Glare (mismo algoritmo que Open Badges)
    - Paleta Cyber Neon para gráficas Apache ECharts (Scoreboard, Users, Teams)
    ============================================================================ */
 
@@ -12,6 +12,75 @@
   // 1. Forzar siempre el modo Cyber oscuro
   document.documentElement.setAttribute("data-theme", "cyber");
   document.documentElement.setAttribute("data-bs-theme", "dark");
+
+  // 1b. Proxy de EventSource para evitar bloqueos HTTP/1.1 al navegar rápido (si no lo aplicó cyber-bridge)
+  if (!window.__cyberEventSourcePatched && typeof window.EventSource === "function") {
+    window.__cyberEventSourcePatched = true;
+    var NativeES = window.EventSource;
+    var activeStreams = [];
+    function closeAllStreams() {
+      for (var i = 0; i < activeStreams.length; i++) {
+        try { activeStreams[i].close(); } catch (_) {}
+      }
+      activeStreams.length = 0;
+    }
+    function ManagedES(url, cfg) {
+      var self = this;
+      this.url = url;
+      this.readyState = 0;
+      this._closed = false;
+      this._real = null;
+      this._listeners = [];
+      this._timer = setTimeout(function () {
+        self._timer = null;
+        if (self._closed || document.visibilityState === "hidden") return;
+        try {
+          var real = cfg ? new NativeES(url, cfg) : new NativeES(url);
+          self._real = real;
+          self.readyState = real.readyState;
+          if (typeof self.onopen === "function") real.onopen = self.onopen;
+          if (typeof self.onmessage === "function") real.onmessage = self.onmessage;
+          if (typeof self.onerror === "function") real.onerror = self.onerror;
+          for (var j = 0; j < self._listeners.length; j++) {
+            var it = self._listeners[j];
+            real.addEventListener(it[0], it[1], it[2]);
+          }
+          self._listeners.length = 0;
+        } catch (_) {}
+      }, 350);
+      activeStreams.push(this);
+    }
+    ManagedES.CONNECTING = 0;
+    ManagedES.OPEN = 1;
+    ManagedES.CLOSED = 2;
+    ManagedES.prototype.addEventListener = function (t, f, o) {
+      if (this._closed) return;
+      if (this._real) this._real.addEventListener(t, f, o);
+      else this._listeners.push([t, f, o]);
+    };
+    ManagedES.prototype.removeEventListener = function (t, f, o) {
+      if (this._real) this._real.removeEventListener(t, f, o);
+      else this._listeners = this._listeners.filter(function (it) { return it[0] !== t || it[1] !== f; });
+    };
+    ManagedES.prototype.close = function () {
+      this._closed = true;
+      this.readyState = 2;
+      if (this._timer !== null) { clearTimeout(this._timer); this._timer = null; }
+      if (this._real) { try { this._real.close(); } catch (_) {} this._real = null; }
+    };
+    window.EventSource = ManagedES;
+    document.addEventListener("click", function (e) {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+      if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+      var h = a.getAttribute("href") || "";
+      if (!h || h.charAt(0) === "#" || h.indexOf("javascript:") === 0) return;
+      try { if (new URL(a.href, window.location.origin).origin === window.location.origin) closeAllStreams(); } catch (_) {}
+    }, true);
+    document.addEventListener("submit", closeAllStreams, true);
+    window.addEventListener("pagehide", closeAllStreams);
+    window.addEventListener("beforeunload", closeAllStreams);
+  }
 
   // 2. Configuración Cyber Neon para gráficas Apache ECharts nativas de CTFd
   var cyberChartTheme = {

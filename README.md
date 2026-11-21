@@ -1,43 +1,46 @@
-# ⚡ GDGoC UHU · Tema Oficial Cyber para CTFd
+# ⚡ Cyber · Tema Oficial para CTFd (GDGoC UHU)
 
-Tema personalizado **Cyber Neon** para la plataforma **CyberTrainer CTF** de **Google Developer Groups on Campus — Universidad de Huelva (GDGoC UHU)**, diseñado con exactamente la misma estética visual que el modo *Cyber* de nuestra web oficial de certificados ([gdguhu.com](https://gdguhu.com)).
+Tema **Cyber** para la plataforma **CyberTrainer CTF** de **Google Developer Groups on Campus — Universidad de Huelva (GDGoC UHU)**, con el mismo estilo **Cyber** unificado que nuestra web de Open Badges ([gdguhu.com](https://gdguhu.com)).
 
 ---
 
 ## Características
 
 - **100% compatible con CTFd 3.7 / 3.8+** (`core` / `core-beta`, Alpine.js, Apache ECharts, Bootstrap 5 JS y todos los endpoints nativos).
-- **Cero compilación en servidor**: todos los assets (`static/manifest.json`, `static/assets/*`, `static/css/gdgoc-cyber.css`, `static/js/gdgoc-cyber.js`) ya vienen listos para usar con un simple `git clone` / `git pull`.
-- **Estética Cyber exclusiva de Open Badges**:
-  - Fondo animado con rejilla perspectiva neón, línea láser *scanline* y tokens flotantes (`#theme-fx-container`), respetando `prefers-reduced-motion`.
-  - Cabecera sticky *glassmorphism* con barra superior neón multicolor, logo oficial GDGoC UHU, navegación CTF completa (`Users`, `Scoreboard`, `Challenges`, `Notifications`), controles de sesión (`Admin`, `Profile`, `Settings`, `Logout` / `Login` y `Register`), selector de idioma y enlace rápido a `Comunidad` (`gdguhu.com`).
-  - Portada completa (`/`) estilizada en Cyber Neon de arriba abajo (Hero, formato de flag, cuenta atrás en vivo, tarjetas de categorías con 3D tilt, reglas de competición y cronograma) y compatibilidad automática con el HTML existente en base de datos.
-  - Tarjetas de retos con efecto **3D Perspective Tilt + Specular Glare**, buscador en vivo, filtro por categoría y barra de progreso del jugador.
-  - Páginas de **Perfil privado y público**, **Notificaciones**, **Ajustes / Access Tokens**, **Directorio de usuarios**, **Scoreboard** y **Login / Register** completamente estilizadas en paleta Cyber Neon con gráficas Apache ECharts.
+- **Cero compilación en servidor**: todos los assets (`static/manifest.json`, `static/assets/*`, `static/css/cyber.css`, `static/js/cyber.js`) vienen listos para usar con un simple `git clone` / `git pull`.
+- **Optimizado para navegación instantánea y cero flash**:
+  - Bundle minificado (`cyber.min.css` + `cyber-bundle.min.js`) + CSS crítico inline + fuentes Google Fonts no bloqueantes.
+  - Proxy inteligente de `EventSource` (`/events`) que cierra automáticamente los streams SSE al navegar entre apartados para evitar saturación en HTTP/1.1.
+  - Animaciones en capa GPU (`will-change: transform`, sin `background-attachment: fixed`) y `content-visibility: auto` en el tablero de retos.
+- **Diseño Cyber completo de arriba abajo**:
+  - Cabecera sticky *glassmorphism* con barra superior neón multicolor, logo GDGoC UHU, navegación CTF completa (`Users`, `Scoreboard`, `Challenges`, `Notifications`), controles de sesión (`Admin`, `Profile`, `Settings`, `Logout` / `Login` y `Register`), selector de idioma y enlace rápido a `Comunidad` (`gdguhu.com`).
+  - Directorio de **Users** ordenado por **Username → Country (bandera con tooltip) → Affiliation → Website preview**.
+  - Página de **Settings** unificada (Perfil, Seguridad y Access Tokens en una sola vista limpia sin pestañas innecesarias).
+  - Tablero de retos con buscador en vivo, filtros por categoría, barra de progreso y tarjetas con **3D Perspective Tilt + Specular Glare**.
 
 ---
 
 ## Sincronización automática con la instancia CTFd en producción (GitHub Actions)
 
-Además de poder montarse como tema nativo en servidor, este repositorio incluye un **puente ligero zero-flicker** (`static/js/gdgoc-cyber-bridge.js`) y un job automático (`sync-live-ctfd`) en [`.github/workflows/pages.yml`](.github/workflows/pages.yml):
+Además de poder montarse como tema nativo en servidor, este repositorio incluye un **puente *zero-flicker*** (`static/js/cyber-bridge.js`) y un job automático (`sync-live-ctfd`) en [`.github/workflows/pages.yml`](.github/workflows/pages.yml):
 
-1. Cada `git push` a `main` despliega los assets actualizados (`gdgoc-cyber.css`, `gdgoc-cyber.js`, `gdgoc-cyber-bridge.js`, logos y favicons) en GitHub Pages (`https://arixlariel.github.io/GDGoC-UHU-CTFd/static/...`).
-2. Al finalizar el despliegue, el script [`.github/scripts/sync_ctfd_theme.py`](.github/scripts/sync_ctfd_theme.py) llama a `PATCH /api/v1/configs` en la instancia CTFd configurada mediante los **GitHub Actions Secrets** (`CTFD_URL` y `CTFD_API_TOKEN`) para actualizar `theme_header` con cache-busting automático (`?v=<commit_sha>`).
-3. El puente nunca modifica `/admin` y se desactiva automáticamente si en el futuro se monta e instala el tema Jinja nativo `gdgoc-cyber` en el servidor.
-4. Para desactivar o rotar el acceso en cualquier momento, basta con revocar el token en `/settings#tokens` dentro de CTFd o eliminar el secreto `CTFD_API_TOKEN` en GitHub.
+1. Cada `git push` a `main` compila y minifica los assets (`cyber.min.css`, `cyber-bundle.min.js`, logos y favicons) y los despliega en GitHub Pages (`https://arixlariel.github.io/GDGoC-UHU-CTFd/static/...`).
+2. Al finalizar el despliegue, [`.github/scripts/sync_ctfd_theme.py`](.github/scripts/sync_ctfd_theme.py) llama a `PATCH /api/v1/configs` mediante los **GitHub Actions Secrets** (`CTFD_URL` y `CTFD_API_TOKEN`) para actualizar `theme_header` con cache-busting (`?v=<commit_sha>`).
+3. El puente nunca modifica `/admin` y se desactiva automáticamente si se instala el tema Jinja nativo `cyber` en el servidor.
+4. Para desactivar o rotar el acceso en cualquier momento, revoca el token en `/settings#tokens` dentro de CTFd o elimina el secreto `CTFD_API_TOKEN` en GitHub.
 
 ---
 
-## Instalación en el servidor de CTFd (opcional · tema Jinja nativo)
+## Instalación en el servidor de CTFd (opcional · tema Jinja nativo `cyber`)
 
 Este repositorio **es directamente una carpeta de tema de CTFd** (`templates/` + `static/`).
 
 ### Opción A · CTFd con Docker Compose (recomendada)
 
-1. Clona este repositorio en el servidor junto a tu `docker-compose.yml`:
+1. Clona este repositorio junto a tu `docker-compose.yml`:
 
 ```bash
-git clone https://github.com/arixlariel/GDGoC-UHU-CTFd.git themes/gdgoc-cyber
+git clone https://github.com/arixlariel/GDGoC-UHU-CTFd.git themes/cyber
 ```
 
 2. Añade el volumen de solo lectura al servicio `ctfd` en tu `docker-compose.yml`:
@@ -47,7 +50,7 @@ services:
   ctfd:
     image: ctfd/ctfd:latest
     volumes:
-      - ./themes/gdgoc-cyber:/opt/CTFd/CTFd/themes/gdgoc-cyber:ro
+      - ./themes/cyber:/opt/CTFd/CTFd/themes/cyber:ro
 ```
 
 3. Recrea/reinicia el contenedor:
@@ -56,46 +59,27 @@ services:
 docker compose up -d ctfd
 ```
 
-### Opción B · CTFd instalado directamente desde código fuente
+### Opción B · CTFd instalado desde código fuente
 
 ```bash
-git clone https://github.com/arixlariel/GDGoC-UHU-CTFd.git CTFd/themes/gdgoc-cyber
+git clone https://github.com/arixlariel/GDGoC-UHU-CTFd.git CTFd/themes/cyber
 ```
 
 Y reinicia el servicio de CTFd (`systemctl restart ctfd` o equivalente).
 
----
-
-## Activación en el Panel de Administración
+### Activación en el Panel de Administración
 
 1. Entra en **`/admin/config`** → pestaña **Theme**.
-2. En el desplegable **Theme**, selecciona **`gdgoc-cyber`** (el nombre de la carpeta donde clonaste el repo).
-3. Pulsa **Update**.
-4. *(Opcional, recomendado)* En **Theme Header**, puedes vaciar el bloque antiguo `<style id="gdg-custom-theme">...</style>` para dejar el HTML aún más limpio (aunque el tema ya lo desactiva automáticamente para evitar conflictos).
-
----
-
-## Cómo actualizar el tema en el futuro (`git pull`)
-
-Cada vez que se suban mejoras de diseño o nuevas funcionalidades a este repositorio, solo hay que ejecutar en el servidor:
-
-```bash
-cd themes/gdgoc-cyber
-git pull
-docker compose restart ctfd
-```
-
-*(Si no usas Docker, haz `git pull` dentro de `CTFd/themes/gdgoc-cyber` y reinicia el servicio de CTFd).*
+2. En **Theme**, selecciona **`cyber`**.
+3. Pulsa **Update** y vacía **Theme Header** (opcional; el puente ya se desactiva solo).
 
 ---
 
 ## Vista previa en vivo (GitHub Pages)
 
-Cada `git push` a `main` publica automáticamente una vista previa interactiva (usando directamente las plantillas reales de `templates/` y `static/`) en:
+Cada `git push` a `main` publica automáticamente la vista previa interactiva en:
 
 - **https://arixlariel.github.io/GDGoC-UHU-CTFd/**
-
-*(Este entorno en `github.io` es independiente de `gdguhu.com` y sirve solo para revisar el diseño visual del tema; el dominio final bajo `gdguhu.com` apunta al servidor CTFd real mediante Cloudflare).*
 
 ---
 
@@ -103,15 +87,15 @@ Cada `git push` a `main` publica automáticamente una vista previa interactiva (
 
 ```text
 GDGoC-UHU-CTFd/
-├── .github/                       # Workflow de GitHub Pages + auto-sync con CTFd en vivo
+├── .github/                       # Workflow de GitHub Pages + minificación + auto-sync CTFd
 ├── static/
 │   ├── manifest.json              # Vite manifest oficial de CTFd core-beta
 │   ├── assets/                    # Bundles JS/CSS oficiales de CTFd (Alpine.js, ECharts, Bootstrap)
-│   ├── css/gdgoc-cyber.css        # Hoja maestra del diseño Cyber GDGoC UHU
-│   ├── js/gdgoc-cyber.js          # 3D tilt, glare, ECharts Cyber Neon y utilidades UI
-│   ├── js/gdgoc-cyber-bridge.js   # Puente zero-flicker para adaptar el tema `core` en caliente
+│   ├── css/cyber.css              # Hoja maestra del estilo Cyber
+│   ├── js/cyber.js                # 3D tilt, glare, ECharts Cyber Neon y proxy EventSource
+│   ├── js/cyber-bridge.js         # Puente zero-flicker para adaptar el tema `core` en caliente
 │   ├── img/                       # Logos y favicons oficiales de GDGoC UHU
 │   ├── sounds/                    # Sonidos de notificación de CTFd
 │   └── webfonts/                  # Iconografía FontAwesome
-└── templates/                     # Plantillas Jinja2 completas de CTFd (base, challenges, challenge, scoreboard, login, register, settings, users, teams, errors...)
+└── templates/                     # Plantillas Jinja2 completas de CTFd
 ```

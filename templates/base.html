@@ -13,13 +13,21 @@
 
   {{ meta | safe }}
 
-  <!-- Google Fonts (idénticas a Open Badges GDGoC UHU) -->
+  <!-- Google Fonts no bloqueantes (mismas fuentes base que Open Badges Cyber) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Display:wght@400;500;700&family=Google+Sans+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    media="print"
+    onload="this.media='all'"
   >
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+    >
+  </noscript>
 
   {% block stylesheets %}
     {{ Assets.css("assets/scss/main.scss") }}
@@ -52,9 +60,9 @@
 
   {{ Configs.theme_header }}
 
-  <!-- Hoja maestra Cyber GDGoC UHU (siempre cargada al final para prioridad visual) -->
-  <link rel="stylesheet" href="{{ url_for('views.themes', path='css/gdgoc-cyber.css') }}">
-  <script src="{{ url_for('views.themes', path='js/gdgoc-cyber.js') }}"></script>
+  <!-- Hoja maestra del tema Cyber (siempre cargada al final para prioridad visual) -->
+  <link rel="stylesheet" href="{{ url_for('views.themes', path='css/cyber.css') }}">
+  <script src="{{ url_for('views.themes', path='js/cyber.js') }}"></script>
 </head>
 <body>
   <!-- Fondo Animado Cyber (idéntico a Open Badges GDGoC UHU) -->

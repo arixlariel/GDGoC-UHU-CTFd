@@ -1,6 +1,6 @@
 /* ============================================================================
-   GDG on Campus Universidad de Huelva · CTFd Cyber Theme
-   Estética Cyber exclusiva sincronizada con Open Badges (gdguhu.com)
+   GDG on Campus Universidad de Huelva · CTFd Theme: Cyber
+   Mismo estilo Cyber oficial que nuestra web de Open Badges (gdguhu.com)
    Paleta: #05070F · #00F0FF (Cyan) · #FF007F (Magenta) · #00FF66 (Green) · #FFE600
    ============================================================================ */
 
@@ -94,11 +94,8 @@ html[data-theme="cyber"] {
 }
 
 html[data-theme="cyber"] body {
-  font-family: 'Google Sans', 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, -apple-system, sans-serif !important;
-  background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.16), transparent 50%),
-              radial-gradient(circle at 85% 80%, rgba(255, 0, 127, 0.15), transparent 45%),
-              #05070F !important;
-  background-attachment: fixed !important;
+  font-family: 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, -apple-system, sans-serif !important;
+  background-color: #05070F !important;
   color: var(--cyber-text-body) !important;
   min-height: 100vh;
   display: flex;
@@ -231,6 +228,9 @@ html[data-theme="cyber"] hr {
   overflow: hidden;
   z-index: 0;
   contain: strict;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.16), transparent 50%),
+    radial-gradient(circle at 85% 80%, rgba(255, 0, 127, 0.15), transparent 45%);
 }
 
 .fx-cyber-grid {
@@ -239,11 +239,12 @@ html[data-theme="cyber"] hr {
   left: 0;
   right: 0;
   bottom: 0;
-  opacity: 0.25;
+  opacity: 0.24;
   background-image:
     linear-gradient(rgba(0, 240, 255, 0.22) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 0, 127, 0.18) 1px, transparent 1px);
   background-size: 60px 60px;
+  will-change: transform;
   animation: cyberGridMove 3s linear infinite;
 }
 
@@ -255,6 +256,7 @@ html[data-theme="cyber"] hr {
   height: 3px;
   background: linear-gradient(90deg, transparent, #00F0FF, transparent);
   box-shadow: 0 0 20px #00F0FF;
+  will-change: transform, opacity;
   animation: scanlineSweep 6s linear infinite;
 }
 
@@ -315,12 +317,11 @@ html[data-theme="cyber"] hr {
   position: sticky;
   top: 0;
   z-index: 1030;
-  background: var(--cyber-header-bg) !important;
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  background: rgba(6, 9, 20, 0.9) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0, 240, 255, 0.35) !important;
   box-shadow: 0 0 25px rgba(0, 240, 255, 0.15) !important;
-  transition: all 0.3s ease;
 }
 
 html[data-theme="cyber"] .theme-header .navbar {
@@ -396,7 +397,7 @@ html[data-theme="cyber"] .theme-header .nav-link {
   padding: 0.45rem 0.85rem !important;
   border-radius: 9999px !important;
   border: 1px solid transparent !important;
-  transition: all 0.25s ease !important;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
   display: inline-flex;
   align-items: center;
   gap: 0.38rem;
@@ -529,7 +530,7 @@ html[data-theme="cyber"] .navbar-toggler:focus {
   border: 1px solid rgba(0, 240, 255, 0.5) !important;
   color: #00F0FF !important;
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.2) !important;
-  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
   text-decoration: none !important;
   cursor: pointer;
 }
@@ -657,9 +658,7 @@ html[data-theme="cyber"] .btn-warning {
    ============================================================================ */
 html[data-theme="cyber"] .jumbotron,
 html[data-theme="cyber"] .theme-hero-section {
-  background: rgba(8, 12, 26, 0.65) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background: rgba(8, 12, 26, 0.82) !important;
   border: none !important;
   border-bottom: 1px solid rgba(0, 240, 255, 0.3) !important;
   border-radius: 0 !important;
@@ -693,16 +692,14 @@ html[data-theme="cyber"] .jumbotron h1 {
    ============================================================================ */
 .theme-card,
 html[data-theme="cyber"] .card {
-  background: rgba(11, 17, 36, 0.82) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background: rgba(11, 17, 36, 0.9) !important;
   border: 1px solid rgba(0, 240, 255, 0.35) !important;
   border-radius: 20px !important;
   color: #E2F1FF !important;
   box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.05) !important;
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.3s ease,
-              border-color 0.3s ease !important;
+              box-shadow 0.25s ease,
+              border-color 0.25s ease !important;
   position: relative;
   overflow: hidden;
 }
@@ -888,6 +885,11 @@ html[data-theme="cyber"] .card:hover {
   color: #00F0FF;
 }
 
+.category-challenges {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
+
 /* Tarjeta de Reto (.challenge-button) */
 html[data-theme="cyber"] .challenge-button {
   position: relative !important;
@@ -899,15 +901,13 @@ html[data-theme="cyber"] .challenge-button {
   padding: 1.35rem 1.25rem 1.2rem !important;
   min-height: 152px;
   border-radius: 18px !important;
-  background: rgba(11, 17, 36, 0.84) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: rgba(11, 17, 36, 0.9) !important;
   border: 1px solid rgba(0, 240, 255, 0.35) !important;
   color: #F0F9FF !important;
-  box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.05) !important;
+  box-shadow: 0 0 22px rgba(0, 240, 255, 0.09), inset 0 0 18px rgba(0, 240, 255, 0.04) !important;
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.3s ease,
-              border-color 0.3s ease !important;
+              box-shadow 0.25s ease,
+              border-color 0.25s ease !important;
 }
 
 html[data-theme="cyber"] .challenge-button::before {
@@ -1294,14 +1294,163 @@ html[data-theme="cyber"] .nav-pills .nav-link.active {
   box-shadow: 0 0 22px rgba(0, 240, 255, 0.45) !important;
 }
 
-/* Tablas Cyber */
+/* Tablas Cyber (overflow visible para no recortar tooltips de banderas en fila 1) */
 .cyber-table-wrap {
-  background: rgba(11, 17, 36, 0.82);
-  backdrop-filter: blur(14px);
+  background: rgba(11, 17, 36, 0.9);
   border: 1px solid rgba(0, 240, 255, 0.35);
   border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 0 25px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.04);
+}
+
+@media (max-width: 767.98px) {
+  .cyber-table-wrap {
+    overflow-x: auto;
+  }
+}
+
+html[data-theme="cyber"] .cyber-table-wrap .table thead th:first-child {
+  border-top-left-radius: 19px;
+}
+
+html[data-theme="cyber"] .cyber-table-wrap .table thead th:last-child {
+  border-top-right-radius: 19px;
+}
+
+html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child td:first-child,
+html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:first-child {
+  border-bottom-left-radius: 19px;
+}
+
+html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child td:last-child,
+html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:last-child {
+  border-bottom-right-radius: 19px;
+}
+
+/* Bandera con tooltip Cyber al pasar el cursor (/users) */
+.cyber-flag-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.28);
+  cursor: default;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cyber-flag-tooltip:hover,
+.cyber-flag-tooltip:focus-visible {
+  border-color: #00F0FF;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.4);
+  transform: scale(1.08);
+  outline: none;
+}
+
+.cyber-flag-tooltip[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 0.32rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(6, 10, 24, 0.97);
+  border: 1px solid #00F0FF;
+  color: #F0F9FF;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 240, 255, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 60;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.cyber-flag-tooltip[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  border: 5px solid transparent;
+  border-top-color: #00F0FF;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 60;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.cyber-flag-tooltip[data-tooltip]:hover::after,
+.cyber-flag-tooltip[data-tooltip]:focus-visible::after,
+.cyber-flag-tooltip[data-tooltip]:hover::before,
+.cyber-flag-tooltip[data-tooltip]:focus-visible::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Preview visual del enlace web de usuario (/users) */
+.cyber-web-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  max-width: 240px;
+  padding: 0.28rem 0.72rem;
+  border-radius: 9999px;
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.32);
+  color: #00F0FF !important;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cyber-web-preview:hover {
+  background: rgba(255, 0, 127, 0.16);
+  border-color: #FF007F;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.35);
+  text-shadow: none !important;
+}
+
+.cyber-web-preview-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cyber-web-preview-ext {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+/* Vista unificada de Settings (Perfil + Access Tokens sin pestañas separadas) */
+.cyber-settings-unified .tab-content > .tab-pane {
+  display: block !important;
+  opacity: 1 !important;
+}
+
+.cyber-settings-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #F0F9FF;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.22);
 }
 
 html[data-theme="cyber"] .table {
@@ -1474,9 +1623,9 @@ html[data-theme="cyber"] .progress {
   position: relative;
   z-index: 10;
   margin-top: auto;
-  background: var(--cyber-footer-bg) !important;
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  background: rgba(6, 9, 20, 0.94) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid rgba(0, 240, 255, 0.3) !important;
   padding: 2.25rem 0;
   font-size: 0.78rem;
@@ -1558,9 +1707,7 @@ html[data-theme="cyber"] main > .container > .container {
 html[data-theme="cyber"] .gdg-hero {
   background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.16), transparent 55%),
               radial-gradient(circle at 85% 90%, rgba(255, 0, 127, 0.12), transparent 50%),
-              rgba(11, 17, 36, 0.84) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+              rgba(11, 17, 36, 0.9) !important;
   border: 1px solid rgba(0, 240, 255, 0.4) !important;
   border-radius: 24px !important;
   padding: clamp(2.25rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 2.5rem) !important;
@@ -1706,9 +1853,7 @@ html[data-theme="cyber"] .gdg-hero .btn-info:hover {
 }
 
 html[data-theme="cyber"] .feature-card {
-  background: rgba(11, 17, 36, 0.84) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background: rgba(11, 17, 36, 0.9) !important;
   border: 1px solid rgba(0, 240, 255, 0.35) !important;
   border-radius: 20px !important;
   padding: 1.65rem !important;
@@ -1798,17 +1943,22 @@ html[data-theme="cyber"] .gdg-filter-hidden {
 }
 
 /* ============================================================================
-   ADAPTACIÓN ZERO-FLICKER PARA TEMA NATIVO `core` (gdgoc-cyber-bridge.js)
+   ADAPTACIÓN ZERO-FLICKER PARA TEMA NATIVO `core` (cyber-bridge.js)
    ============================================================================ */
 html[data-theme="cyber"] body > nav.navbar {
   position: sticky !important;
   top: 0 !important;
   z-index: 1030 !important;
-  background: var(--cyber-header-bg) !important;
-  backdrop-filter: blur(22px) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
+  min-height: 68px !important;
+  background: rgba(6, 9, 20, 0.92) !important;
   border-bottom: 1px solid rgba(0, 240, 255, 0.35) !important;
   box-shadow: 0 0 25px rgba(0, 240, 255, 0.15) !important;
+}
+
+html.cyber-bridging body > nav.navbar > *,
+html.cyber-bridging body > main,
+html.cyber-bridging body > footer.footer {
+  opacity: 0 !important;
 }
 
 html[data-theme="cyber"] .theme-switch {

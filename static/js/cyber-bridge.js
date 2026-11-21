@@ -1,9 +1,12 @@
 /* ============================================================================
    GDG on Campus Universidad de Huelva · CTFd `core` → Cyber Theme Bridge
-   Transforma en caliente el tema nativo `core` de CTFd en el diseño completo
-   GDGoC UHU Cyber (idéntico al repositorio GDGoC-UHU-CTFd y a gdguhu.com),
-   manteniendo 100% intactos Alpine.js, Bootstrap 5, ECharts y el panel /admin.
-   Si el tema Jinja `gdgoc-cyber` ya está instalado en disco, no duplica nada.
+   - Cero flash (actualiza <nav> en cuanto se parsea, antes del primer paint)
+   - Proxy diferido de EventSource (/events) que cierra streams al navegar
+     (evita bloqueos en HTTP/1.1 al cambiar rápido entre pestañas/apartados)
+   - Tablero /challenges optimizado sin bucles de MutationObserver
+   - Tabla /users: Username · Country (bandera + tooltip) · Affiliation · Website preview
+   - Vista /settings unificada (Perfil + Access Tokens sin pestañas separadas)
+   - Guardia absoluta sobre /admin y auto-desactivación con tema nativo `cyber`
    ============================================================================ */
 
 (function () {
@@ -11,20 +14,23 @@
 
   // Guardia absoluta: nunca tocar el panel de administración de CTFd
   if (window.location.pathname.indexOf("/admin") === 0) {
+    document.documentElement.classList.remove("cyber-bridging");
     return;
   }
 
   var ASSET_BASE = (
+    window.CYBER_ASSET_BASE ||
     window.GDGOC_ASSET_BASE ||
     "https://arixlariel.github.io/GDGoC-UHU-CTFd/static"
   ).replace(/\/+$/, "");
-  var ASSET_VER = window.GDGOC_ASSET_VER ? "?v=" + window.GDGOC_ASSET_VER : "";
+  var ASSET_VER = window.CYBER_ASSET_VER || window.GDGOC_ASSET_VER || "";
+  var ASSET_Q = ASSET_VER ? "?v=" + ASSET_VER : "";
 
   function assetUrl(rel) {
-    return ASSET_BASE + "/" + rel.replace(/^\/+/, "") + ASSET_VER;
+    return ASSET_BASE + "/" + rel.replace(/^\/+/, "") + ASSET_Q;
   }
 
-  // 1. Forzar Cyber Dark inmediatamente (antes del primer paint) y bloquear vueltas a modo claro
+  // 1. Forzar Cyber Dark inmediatamente y bloquear cualquier intento de modo claro
   function enforceCyberMode() {
     var root = document.documentElement;
     if (root.getAttribute("data-theme") !== "cyber") {
@@ -43,11 +49,123 @@
   enforceCyberMode();
 
   if (typeof MutationObserver !== "undefined") {
-    var htmlObserver = new MutationObserver(enforceCyberMode);
-    htmlObserver.observe(document.documentElement, {
+    new MutationObserver(enforceCyberMode).observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-bs-theme", "data-theme"],
     });
+  }
+
+  // 2. Proxy de EventSource: evita que /events (SSE) sature HTTP/1.1 al cambiar rápido de apartado
+  if (!window.__cyberEventSourcePatched && typeof window.EventSource === "function") {
+    window.__cyberEventSourcePatched = true;
+    var NativeES = window.EventSource;
+    var activeStreams = [];
+
+    function closeAllStreams() {
+      for (var i = 0; i < activeStreams.length; i++) {
+        try {
+          activeStreams[i].close();
+        } catch (_) {}
+      }
+      activeStreams.length = 0;
+    }
+
+    function ManagedEventSource(url, config) {
+      var self = this;
+      this.url = url;
+      this.withCredentials = Boolean(config && config.withCredentials);
+      this.readyState = 0;
+      this._closed = false;
+      this._real = null;
+      this._listeners = [];
+      this._timer = null;
+
+      // Diferir 350ms la apertura real: si el usuario cambia rápido de apartado, no se abre conexión SSE
+      this._timer = setTimeout(function () {
+        self._timer = null;
+        if (self._closed || document.visibilityState === "hidden") return;
+        try {
+          var real = config ? new NativeES(url, config) : new NativeES(url);
+          self._real = real;
+          self.readyState = real.readyState;
+          if (typeof self.onopen === "function") real.onopen = self.onopen;
+          if (typeof self.onmessage === "function") real.onmessage = self.onmessage;
+          if (typeof self.onerror === "function") real.onerror = self.onerror;
+          for (var j = 0; j < self._listeners.length; j++) {
+            var item = self._listeners[j];
+            real.addEventListener(item[0], item[1], item[2]);
+          }
+          self._listeners.length = 0;
+        } catch (_) {}
+      }, 350);
+
+      activeStreams.push(this);
+    }
+
+    ManagedEventSource.CONNECTING = 0;
+    ManagedEventSource.OPEN = 1;
+    ManagedEventSource.CLOSED = 2;
+
+    ManagedEventSource.prototype.addEventListener = function (type, fn, opts) {
+      if (this._closed) return;
+      if (this._real) {
+        this._real.addEventListener(type, fn, opts);
+      } else {
+        this._listeners.push([type, fn, opts]);
+      }
+    };
+
+    ManagedEventSource.prototype.removeEventListener = function (type, fn, opts) {
+      if (this._real) {
+        this._real.removeEventListener(type, fn, opts);
+      } else {
+        this._listeners = this._listeners.filter(function (item) {
+          return item[0] !== type || item[1] !== fn;
+        });
+      }
+    };
+
+    ManagedEventSource.prototype.close = function () {
+      this._closed = true;
+      this.readyState = 2;
+      if (this._timer !== null) {
+        clearTimeout(this._timer);
+        this._timer = null;
+      }
+      if (this._real) {
+        try {
+          this._real.close();
+        } catch (_) {}
+        this._real = null;
+      }
+    };
+
+    window.EventSource = ManagedEventSource;
+
+    // Cerrar streams inmediatamente al hacer clic en cualquier enlace interno o al salir
+    document.addEventListener(
+      "click",
+      function (e) {
+        if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+          return;
+        }
+        var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+        if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+        var href = a.getAttribute("href") || "";
+        if (!href || href.charAt(0) === "#" || href.indexOf("javascript:") === 0) return;
+        try {
+          var dest = new URL(a.href, window.location.origin);
+          if (dest.origin === window.location.origin) {
+            closeAllStreams();
+          }
+        } catch (_) {}
+      },
+      true
+    );
+
+    document.addEventListener("submit", closeAllStreams, true);
+    window.addEventListener("pagehide", closeAllStreams);
+    window.addEventListener("beforeunload", closeAllStreams);
   }
 
   function getUrlRoot() {
@@ -79,9 +197,21 @@
     return text || fallback;
   }
 
-  // 2. Fondo animado Cyber (#theme-fx-container)
+  function formatWebsitePreview(rawUrl) {
+    try {
+      var u = new URL(rawUrl);
+      var host = u.hostname.replace(/^www\./i, "");
+      var path = (u.pathname || "").replace(/\/+$/, "");
+      var preview = host + (path && path !== "/" ? path : "");
+      return preview.length > 34 ? preview.slice(0, 33) + "…" : preview;
+    } catch (_) {
+      return rawUrl.replace(/^https?:\/\//i, "").replace(/\/+$/, "").slice(0, 34);
+    }
+  }
+
+  // 3. Fondo animado Cyber (#theme-fx-container)
   function injectBackgroundFx() {
-    if (document.getElementById("theme-fx-container")) return;
+    if (!document.body || document.getElementById("theme-fx-container")) return;
     var fx = document.createElement("div");
     fx.id = "theme-fx-container";
     fx.setAttribute("aria-hidden", "true");
@@ -95,11 +225,41 @@
     document.body.insertBefore(fx, document.body.firstChild);
   }
 
-  // 3. Upgrade del Navbar de `core` a `<header class="theme-header">`
+  // 4. Upgrade inmediato del Navbar de `core` a `<header class="theme-header">`
+  var navUpgraded = false;
+
+  function highlightActiveNav() {
+    var cur = normPath(window.location.href) || "/";
+    document
+      .querySelectorAll(".theme-header a.nav-link[href], .theme-header a.theme-pill-btn[href]")
+      .forEach(function (link) {
+        link.classList.remove("active");
+        var lp = normPath(link.href);
+        if (!lp) return;
+        if (lp === cur) {
+          link.classList.add("active");
+        } else if (lp !== "/" && cur.indexOf(lp + "/") === 0) {
+          link.classList.add("active");
+        }
+      });
+  }
+
   function upgradeNavbar() {
-    if (document.querySelector("header.theme-header")) return;
-    var nav = document.querySelector("body > nav.navbar") || document.querySelector("nav.navbar");
-    if (!nav) return;
+    if (navUpgraded || document.querySelector("header.theme-header")) {
+      navUpgraded = true;
+      return true;
+    }
+    var nav = document.querySelector("body > nav.navbar");
+    if (!nav) return false;
+    var collapse = nav.querySelector(".navbar-collapse");
+    if (!collapse) return false;
+    var uls = collapse.querySelectorAll(":scope > ul.navbar-nav");
+    if (uls.length < 2) return false;
+    // Esperar hasta que termine de parsearse el último bloque del nav (dropdown de idioma o siguiente hermano)
+    if (!nav.nextSibling && document.readyState === "loading") return false;
+
+    navUpgraded = true;
+    injectBackgroundFx();
 
     var header = document.createElement("header");
     header.className = "theme-header";
@@ -115,7 +275,6 @@
     nav.classList.remove("fixed-top", "bg-dark", "navbar-expand-md");
     nav.classList.add("navbar-expand-lg", "navbar-dark");
 
-    // Brand con logo GDGoC UHU + GDGoC UHU / CyberTrainer
     var brand = nav.querySelector(".navbar-brand");
     if (brand) {
       brand.classList.add("gdg-brand-link");
@@ -131,17 +290,11 @@
         "</div>";
     }
 
-    var collapse = nav.querySelector(".navbar-collapse");
-    if (!collapse) return;
-
-    var uls = collapse.querySelectorAll(":scope > ul.navbar-nav");
     var leftUl = uls[0];
     var rightUl = uls[1];
 
     var hr = collapse.querySelector(":scope > hr");
-    if (hr) {
-      hr.className = "d-lg-none my-3";
-    }
+    if (hr) hr.className = "d-lg-none my-3";
 
     var leftIcons = {
       "/users": "fas fa-user-astronaut fa-fw",
@@ -154,143 +307,146 @@
     var notifHref = getUrlRoot() + "/notifications";
     var notifLabel = "Notifications";
 
-    // Buscar si Notifications ya está en rightUl (usuario autenticado) para moverlo a leftUl preservando Alpine
-    if (rightUl) {
-      Array.prototype.slice.call(rightUl.children).forEach(function (li) {
-        var a = li.querySelector("a[href]");
-        if (a && normPath(a.href) === "/notifications") {
-          notifHref = a.getAttribute("href") || notifHref;
-          notifLabel = cleanLabel(a, "Notifications");
-          var badge = a.querySelector("[x-text*='unread_count'], .badge-notification");
-          if (badge) {
-            badge.className = "badge rounded-pill badge-notification ms-1";
-            unreadBadge = badge;
-          }
-          li.remove();
+    Array.prototype.slice.call(rightUl.children).forEach(function (li) {
+      var a = li.querySelector("a[href]");
+      if (a && normPath(a.href) === "/notifications") {
+        notifHref = a.getAttribute("href") || notifHref;
+        notifLabel = cleanLabel(a, "Notifications");
+        var badge = a.querySelector("[x-text*='unread_count'], .badge-notification");
+        if (badge) {
+          badge.className = "badge rounded-pill badge-notification ms-1";
+          unreadBadge = badge;
         }
-      });
+        li.remove();
+      }
+    });
+
+    leftUl.className = "navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1";
+    var hasNotifications = false;
+    Array.prototype.slice.call(leftUl.querySelectorAll(":scope > li > a.nav-link")).forEach(function (a) {
+      var p = normPath(a.href);
+      if (p === "/notifications") hasNotifications = true;
+      var iconCls = leftIcons[p];
+      if (iconCls && !a.querySelector("i")) {
+        var txt = cleanLabel(a, a.textContent.trim());
+        a.innerHTML = '<i class="' + iconCls + '"></i><span>' + txt + "</span>";
+      }
+    });
+
+    if (!hasNotifications) {
+      var notifLi = document.createElement("li");
+      notifLi.className = "nav-item";
+      var notifA = document.createElement("a");
+      notifA.className = "nav-link position-relative";
+      notifA.href = notifHref;
+      notifA.title = notifLabel;
+      notifA.innerHTML = '<i class="fas fa-bell fa-fw"></i><span>' + notifLabel + "</span>";
+      if (unreadBadge) notifA.appendChild(unreadBadge);
+      notifLi.appendChild(notifA);
+      leftUl.appendChild(notifLi);
     }
 
-    // Estilizar enlaces de la izquierda + asegurar Notifications siempre visible
-    if (leftUl) {
-      leftUl.className = "navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1";
-      var hasNotifications = false;
-      Array.prototype.slice.call(leftUl.querySelectorAll(":scope > li > a.nav-link")).forEach(function (a) {
-        var p = normPath(a.href);
-        if (p === "/notifications") hasNotifications = true;
-        var iconCls = leftIcons[p];
-        if (iconCls && !a.querySelector("i")) {
-          var txt = cleanLabel(a, a.textContent.trim());
-          a.innerHTML = '<i class="' + iconCls + '"></i><span>' + txt + "</span>";
-        }
-      });
+    rightUl.className = "navbar-nav ms-lg-auto align-items-lg-center gap-2 pb-2 pb-lg-0";
 
-      if (!hasNotifications) {
-        var notifLi = document.createElement("li");
-        notifLi.className = "nav-item";
-        var notifA = document.createElement("a");
-        notifA.className = "nav-link position-relative";
-        notifA.href = notifHref;
-        notifA.title = notifLabel;
-        notifA.innerHTML = '<i class="fas fa-bell fa-fw"></i><span>' + notifLabel + "</span>";
-        if (unreadBadge) {
-          notifA.appendChild(unreadBadge);
-        }
-        notifLi.appendChild(notifA);
-        leftUl.appendChild(notifLi);
+    var loginLi = null;
+    var registerLi = null;
+
+    Array.prototype.slice.call(rightUl.children).forEach(function (li) {
+      if (li.querySelector(".theme-switch")) {
+        li.remove();
+        return;
       }
+
+      if (li.classList.contains("dropdown")) {
+        var btn = li.querySelector("button.dropdown-toggle");
+        if (btn) {
+          var langTitle = cleanLabel(btn, "Change language");
+          btn.className = "theme-pill-btn theme-pill-btn--icon dropdown-toggle w-100 w-lg-auto";
+          btn.setAttribute("title", langTitle);
+          btn.innerHTML =
+            '<i class="fas fa-language"></i>' +
+            '<span class="d-lg-none">' + langTitle + "</span>";
+        }
+        return;
+      }
+
+      var a = li.querySelector("a[href]");
+      if (!a) return;
+      var p = normPath(a.href);
+      var lbl = cleanLabel(a, "");
+
+      if (p === "/admin") {
+        var adminLabel = lbl.toLowerCase() === "admin panel" ? "Admin" : lbl || "Admin";
+        a.className = "theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto";
+        a.title = lbl || "Admin Panel";
+        a.innerHTML = '<i class="fas fa-wrench fa-fw"></i><span>' + adminLabel + "</span>";
+      } else if (p === "/team") {
+        a.className = "theme-pill-btn w-100 w-lg-auto";
+        a.title = lbl || "Team";
+        a.innerHTML = '<i class="fas fa-users fa-fw"></i><span>' + (lbl || "Team") + "</span>";
+      } else if (p === "/user") {
+        a.className = "theme-pill-btn w-100 w-lg-auto";
+        a.title = lbl || "Profile";
+        a.innerHTML = '<i class="fas fa-user-circle fa-fw"></i><span>' + (lbl || "Profile") + "</span>";
+      } else if (p === "/settings") {
+        a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
+        a.title = lbl || "Settings";
+        a.innerHTML =
+          '<i class="fas fa-cogs fa-fw"></i>' +
+          '<span class="d-lg-none">' + (lbl || "Settings") + "</span>";
+      } else if (p === "/logout") {
+        a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
+        a.title = lbl || "Logout";
+        a.innerHTML =
+          '<i class="fas fa-sign-out-alt fa-fw"></i>' +
+          '<span class="d-lg-none">' + (lbl || "Logout") + "</span>";
+      } else if (p === "/login") {
+        loginLi = li;
+        a.className = "theme-pill-btn w-100 w-lg-auto";
+        a.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>' + (lbl || "Login") + "</span>";
+      } else if (p === "/register") {
+        registerLi = li;
+        a.className = "theme-primary-btn w-100 w-lg-auto";
+        a.innerHTML = '<i class="fas fa-user-plus"></i><span>' + (lbl || "Register") + "</span>";
+      }
+    });
+
+    if (loginLi && registerLi && loginLi.parentNode === rightUl && registerLi.parentNode === rightUl) {
+      rightUl.insertBefore(loginLi, registerLi);
     }
 
-    // Estilizar controles de la derecha (Admin, Profile, Settings, Logout / Login + Register / Idioma / Comunidad)
-    if (rightUl) {
-      rightUl.className = "navbar-nav ms-lg-auto align-items-lg-center gap-2 pb-2 pb-lg-0";
-
-      var loginLi = null;
-      var registerLi = null;
-
-      Array.prototype.slice.call(rightUl.children).forEach(function (li) {
-        // Eliminar el botón obsoleto claro/oscuro (.theme-switch)
-        if (li.querySelector(".theme-switch")) {
-          li.remove();
-          return;
-        }
-
-        // Selector de idioma oficial de CTFd (mantiene intacto <form x-data="LanguageForm">)
-        if (li.classList.contains("dropdown")) {
-          var btn = li.querySelector("button.dropdown-toggle");
-          if (btn) {
-            var langTitle = cleanLabel(btn, "Change language");
-            btn.className = "theme-pill-btn theme-pill-btn--icon dropdown-toggle w-100 w-lg-auto";
-            btn.setAttribute("title", langTitle);
-            btn.innerHTML =
-              '<i class="fas fa-language"></i>' +
-              '<span class="d-lg-none">' + langTitle + "</span>";
-          }
-          return;
-        }
-
-        var a = li.querySelector("a[href]");
-        if (!a) return;
-        var p = normPath(a.href);
-        var lbl = cleanLabel(a, "");
-
-        if (p === "/admin") {
-          var adminLabel = lbl.toLowerCase() === "admin panel" ? "Admin" : lbl || "Admin";
-          a.className = "theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto";
-          a.title = lbl || "Admin Panel";
-          a.innerHTML = '<i class="fas fa-wrench fa-fw"></i><span>' + adminLabel + "</span>";
-        } else if (p === "/team") {
-          a.className = "theme-pill-btn w-100 w-lg-auto";
-          a.title = lbl || "Team";
-          a.innerHTML = '<i class="fas fa-users fa-fw"></i><span>' + (lbl || "Team") + "</span>";
-        } else if (p === "/user") {
-          a.className = "theme-pill-btn w-100 w-lg-auto";
-          a.title = lbl || "Profile";
-          a.innerHTML = '<i class="fas fa-user-circle fa-fw"></i><span>' + (lbl || "Profile") + "</span>";
-        } else if (p === "/settings") {
-          a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
-          a.title = lbl || "Settings";
-          a.innerHTML =
-            '<i class="fas fa-cogs fa-fw"></i>' +
-            '<span class="d-lg-none">' + (lbl || "Settings") + "</span>";
-        } else if (p === "/logout") {
-          a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
-          a.title = lbl || "Logout";
-          a.innerHTML =
-            '<i class="fas fa-sign-out-alt fa-fw"></i>' +
-            '<span class="d-lg-none">' + (lbl || "Logout") + "</span>";
-        } else if (p === "/login") {
-          loginLi = li;
-          a.className = "theme-pill-btn w-100 w-lg-auto";
-          a.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>' + (lbl || "Login") + "</span>";
-        } else if (p === "/register") {
-          registerLi = li;
-          a.className = "theme-primary-btn w-100 w-lg-auto";
-          a.innerHTML = '<i class="fas fa-user-plus"></i><span>' + (lbl || "Register") + "</span>";
-        }
-      });
-
-      // Ordenar Login ANTES de Register (misma altura visual)
-      if (loginLi && registerLi && loginLi.parentNode === rightUl && registerLi.parentNode === rightUl) {
-        rightUl.insertBefore(loginLi, registerLi);
-      }
-
-      // Añadir botón Comunidad → https://gdguhu.com al final
-      if (!rightUl.querySelector('a[href="https://gdguhu.com"]')) {
-        var comLi = document.createElement("li");
-        comLi.className = "nav-item";
-        comLi.innerHTML =
-          '<a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" ' +
-          'class="theme-pill-btn w-100 w-lg-auto" title="Web oficial de GDG on Campus UHU">' +
-          '<span>Comunidad</span>' +
-          '<i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>' +
-          "</a>";
-        rightUl.appendChild(comLi);
-      }
+    if (!rightUl.querySelector('a[href="https://gdguhu.com"]')) {
+      var comLi = document.createElement("li");
+      comLi.className = "nav-item";
+      comLi.innerHTML =
+        '<a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" ' +
+        'class="theme-pill-btn w-100 w-lg-auto" title="Web oficial de GDG on Campus UHU">' +
+        '<span>Comunidad</span>' +
+        '<i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>' +
+        "</a>";
+      rightUl.appendChild(comLi);
     }
+
+    highlightActiveNav();
+    return true;
   }
 
-  // 4. Upgrade del Footer de `core` al Footer oficial Cyber (clon de gdguhu.com)
+  // Observador temprano: actualiza <nav> al parsearse y termina <main>+<footer> en cuanto aparece </footer> (antes de módulos JS)
+  var earlyObs = null;
+  var bridgeCompleted = false;
+
+  if (document.readyState === "loading" && typeof MutationObserver !== "undefined") {
+    earlyObs = new MutationObserver(function () {
+      upgradeNavbar();
+      var foot = document.querySelector("body > footer.footer");
+      if (foot && foot.nextSibling) {
+        finishBridge();
+      }
+    });
+    earlyObs.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  // 5. Upgrade del Footer de `core` al Footer oficial Cyber
   function upgradeFooter() {
     if (document.querySelector("footer.theme-footer")) return;
     var oldFooter = document.querySelector("footer.footer");
@@ -320,12 +476,12 @@
 
     if (oldFooter && oldFooter.parentNode) {
       oldFooter.parentNode.replaceChild(footer, oldFooter);
-    } else {
+    } else if (document.body) {
       document.body.appendChild(footer);
     }
   }
 
-  // Helpers comunes para páginas interiores de `core`
+  // Helpers comunes para páginas interiores
   function addJumbotronPill(labelText, withDots) {
     var jumboContainer = document.querySelector("main .jumbotron .container");
     if (!jumboContainer || jumboContainer.querySelector(".theme-badge-pill")) return;
@@ -344,7 +500,7 @@
   }
 
   function wrapInThemeCard(el, extraClasses) {
-    if (!el || el.closest(".theme-card")) return;
+    if (!el || el.closest(".theme-card")) return null;
     var card = document.createElement("div");
     card.className = "theme-card " + (extraClasses || "p-4");
     var bar = document.createElement("div");
@@ -352,6 +508,7 @@
     card.appendChild(bar);
     el.parentNode.insertBefore(card, el);
     card.appendChild(el);
+    return card;
   }
 
   function wrapChildrenInThemeCard(parent, extraClasses) {
@@ -378,12 +535,11 @@
     });
   }
 
-  // 5. Mejora interactiva del tablero /challenges de `core` (buscador, filtros, progreso, 3D tilt)
+  // 6. Tablero /challenges (optimizado: desconecta el observer durante mutaciones propias, 0 bucles!)
   function upgradeChallengesPage() {
     var board = document.querySelector('[x-data="ChallengeBoard"]');
     if (!board || document.querySelector(".cyber-filter-bar")) return;
 
-    // Añadir subtítulo y strip de estadísticas en el jumbotron
     var jumboContainer = document.querySelector("main .jumbotron .container");
     var statsWrap = null;
     if (jumboContainer) {
@@ -404,7 +560,6 @@
       jumboContainer.appendChild(statsWrap);
     }
 
-    // Barra de búsqueda, ocultar resueltos y pills de categorías
     var filterBar = document.createElement("div");
     filterBar.className = "cyber-filter-bar";
     filterBar.style.display = "none";
@@ -437,11 +592,22 @@
     var clearBtn = filterBar.querySelector("#gdg-chal-clear");
     var hideSolvedBtn = filterBar.querySelector("#gdg-chal-hide-solved");
     var catsWrap = filterBar.querySelector("#gdg-chal-cats");
+    var boardObs = null;
+
+    function observeBoard() {
+      if (!boardObs) return;
+      boardObs.observe(loadedDiv || board, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    }
 
     function applyFilters() {
+      if (boardObs) boardObs.disconnect();
       var q = state.search.trim().toLowerCase();
-      var sections = board.querySelectorAll(".category-header");
-      sections.forEach(function (header) {
+      board.querySelectorAll(".category-header").forEach(function (header) {
         var section = header.parentElement;
         if (!section) return;
         var h3 = header.querySelector("h3");
@@ -476,6 +642,7 @@
 
         section.classList.toggle("gdg-filter-hidden", visibleInSection === 0);
       });
+      observeBoard();
     }
 
     searchInput.addEventListener("input", function () {
@@ -509,8 +676,13 @@
 
     function syncChallengesBoard() {
       syncScheduled = false;
+      if (boardObs) boardObs.disconnect();
+
       var btns = board.querySelectorAll(".challenge-button");
-      if (!btns.length) return;
+      if (!btns.length) {
+        observeBoard();
+        return;
+      }
 
       var total = btns.length;
       var solved = 0;
@@ -530,23 +702,26 @@
           glare.setAttribute("aria-hidden", "true");
           btn.insertBefore(glare, btn.firstChild);
         }
+        var targetCls =
+          "challenge-status-badge gdg-core-status-badge " +
+          (isSolved ? "challenge-status-badge--solved" : "challenge-status-badge--open");
+        var targetTxt = isSolved ? "✓ SOLVED" : "ACTIVE";
         var statusBadge = btn.querySelector(".gdg-core-status-badge");
         if (!statusBadge) {
           statusBadge = document.createElement("span");
-          statusBadge.className = "challenge-status-badge gdg-core-status-badge";
+          statusBadge.className = targetCls;
+          statusBadge.textContent = targetTxt;
           btn.appendChild(statusBadge);
+        } else {
+          if (statusBadge.className !== targetCls) statusBadge.className = targetCls;
+          if (statusBadge.textContent !== targetTxt) statusBadge.textContent = targetTxt;
         }
-        statusBadge.className =
-          "challenge-status-badge gdg-core-status-badge " +
-          (isSolved ? "challenge-status-badge--solved" : "challenge-status-badge--open");
-        statusBadge.textContent = isSolved ? "✓ SOLVED" : "ACTIVE";
       });
 
       if (typeof window.gdgocScanTiltCards === "function") {
         window.gdgocScanTiltCards(board);
       }
 
-      // Actualizar estadísticas y barra de progreso
       if (statsWrap) {
         statsWrap.style.display = "";
         var totalEl = document.getElementById("gdg-stat-total");
@@ -559,7 +734,6 @@
 
       filterBar.style.display = "";
 
-      // Actualizar cabeceras de categoría y pills
       var catNames = [];
       board.querySelectorAll(".category-header").forEach(function (header) {
         var h3 = header.querySelector("h3");
@@ -572,7 +746,7 @@
           var slash = document.createElement("span");
           slash.className = "gdg-cat-slash";
           slash.style.cssText =
-            "color:#00F0FF;font-family:'Google Sans Mono',monospace;font-weight:700;";
+            "color:#00F0FF;font-family:'JetBrains Mono',monospace;font-weight:700;";
           slash.textContent = "//";
           header.insertBefore(slash, h3);
         }
@@ -586,13 +760,16 @@
             secSolved++;
           }
         });
+        var pillTxt = secSolved + "/" + secBtns.length;
         var pill = header.querySelector(".category-count-pill");
         if (!pill) {
           pill = document.createElement("span");
           pill.className = "category-count-pill";
+          pill.textContent = pillTxt;
           header.appendChild(pill);
+        } else if (pill.textContent !== pillTxt) {
+          pill.textContent = pillTxt;
         }
-        pill.textContent = secSolved + "/" + secBtns.length;
       });
 
       var sig = catNames.join("|");
@@ -630,38 +807,202 @@
         });
       }
 
-      applyFilters();
+      applyFilters(); // Reconecta boardObs al terminar
     }
 
-    function scheduleSync() {
+    function scheduleSync(mutations) {
       if (syncScheduled) return;
+      if (mutations && mutations.length) {
+        var relevant = false;
+        for (var i = 0; i < mutations.length; i++) {
+          var m = mutations[i];
+          if (m.type === "childList") {
+            relevant = true;
+            break;
+          }
+          if (m.type === "attributes" && m.target && m.target.classList && m.target.classList.contains("challenge-button")) {
+            relevant = true;
+            break;
+          }
+        }
+        if (!relevant) return;
+      }
       syncScheduled = true;
       requestAnimationFrame(syncChallengesBoard);
     }
 
-    scheduleSync();
     if (typeof MutationObserver !== "undefined") {
-      var boardObs = new MutationObserver(scheduleSync);
-      boardObs.observe(board, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["class"],
-      });
+      boardObs = new MutationObserver(scheduleSync);
     }
+    scheduleSync();
   }
 
-  // 6. Mejora de páginas interiores de `core` (Login, Register, Notifications, Scoreboard, Users, Profile, Settings)
+  // 7. Reordenar tabla /users y /teams: Username | Country (bandera + tooltip) | Affiliation | Website preview
+  function upgradeUsersDirectoryTable() {
+    var table = document.querySelector("main table.table");
+    if (!table || table.dataset.cyberUsersUpgraded === "1") return;
+    var headerRow = table.querySelector("thead tr");
+    if (!headerRow) return;
+    var ths = Array.prototype.slice.call(headerRow.querySelectorAll("th"));
+    if (ths.length !== 4) return;
+
+    table.dataset.cyberUsersUpgraded = "1";
+    table.classList.add("align-middle");
+
+    // CTFd core orden original: [0: User, 1: Website, 2: Affiliation, 3: Country]
+    // Nuevo orden solicitado:   [0: Username, 1: Country (bandera+tooltip), 2: Affiliation, 3: Website preview]
+    var thUser = ths[0];
+    var thWeb = ths[1];
+    var thAff = ths[2];
+    var thCountry = ths[3];
+
+    thUser.textContent = "Username";
+    thUser.className = "";
+
+    thCountry.textContent = "Country";
+    thCountry.className = "text-center";
+    thCountry.style.width = "105px";
+
+    thAff.textContent = "Affiliation";
+    thAff.className = "d-none d-md-table-cell";
+
+    thWeb.textContent = "Website";
+    thWeb.className = "d-none d-sm-table-cell";
+
+    headerRow.innerHTML = "";
+    headerRow.appendChild(thUser);
+    headerRow.appendChild(thCountry);
+    headerRow.appendChild(thAff);
+    headerRow.appendChild(thWeb);
+
+    table.querySelectorAll("tbody tr").forEach(function (tr) {
+      var tds = Array.prototype.slice.call(tr.querySelectorAll("td"));
+      if (tds.length !== 4) return;
+      var tdUser = tds[0];
+      var tdWeb = tds[1];
+      var tdAff = tds[2];
+      var tdCountry = tds[3];
+
+      tdUser.className = "fw-semibold";
+
+      // Country: solo bandera + tooltip con nombre completo del país
+      var flagIcon = tdCountry.querySelector('i[class*="flag-"]');
+      var countryName = (tdCountry.textContent || "").replace(/\s+/g, " ").trim();
+      tdCountry.className = "text-center";
+      tdCountry.innerHTML = "";
+      if (flagIcon) {
+        var wrap = document.createElement("span");
+        wrap.className = "cyber-flag-tooltip";
+        wrap.setAttribute("tabindex", "0");
+        if (countryName) {
+          wrap.setAttribute("data-tooltip", countryName);
+          wrap.setAttribute("title", countryName);
+          wrap.setAttribute("aria-label", countryName);
+        }
+        wrap.appendChild(flagIcon);
+        tdCountry.appendChild(wrap);
+      } else if (countryName) {
+        tdCountry.innerHTML = '<span class="theme-text-secondary small">' + countryName + "</span>";
+      } else {
+        tdCountry.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
+      }
+
+      // Affiliation
+      tdAff.className = "d-none d-md-table-cell";
+      if (!(tdAff.textContent || "").trim()) {
+        tdAff.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
+      }
+
+      // Website: preview visual clicable si existe enlace
+      var webLink = tdWeb.querySelector("a[href]");
+      tdWeb.className = "d-none d-sm-table-cell";
+      tdWeb.style.width = "";
+      if (webLink && webLink.href) {
+        var href = webLink.getAttribute("href");
+        var preview = formatWebsitePreview(href);
+        tdWeb.innerHTML = "";
+        var a = document.createElement("a");
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.className = "cyber-web-preview";
+        a.title = href;
+        a.innerHTML =
+          '<i class="fas fa-globe"></i>' +
+          '<span class="cyber-web-preview-text"></span>' +
+          '<i class="fas fa-external-link-alt cyber-web-preview-ext"></i>';
+        a.querySelector(".cyber-web-preview-text").textContent = preview;
+        tdWeb.appendChild(a);
+      } else {
+        tdWeb.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
+      }
+
+      tr.innerHTML = "";
+      tr.appendChild(tdUser);
+      tr.appendChild(tdCountry);
+      tr.appendChild(tdAff);
+      tr.appendChild(tdWeb);
+    });
+  }
+
+  // 8. Settings unificado (Perfil + Access Tokens en una sola página sin pestañas separadas)
+  function upgradeSettingsPage() {
+    addJumbotronPill("ACCOUNT::CONFIG", false);
+    var mainContainer = document.querySelector("main > .container");
+    if (!mainContainer) return;
+
+    mainContainer.classList.add("cyber-settings-unified");
+
+    var navPills = mainContainer.querySelector(".nav-pills");
+    if (navPills) {
+      var navCol = navPills.closest('[class*="col-"]');
+      if (navCol) navCol.classList.add("d-none");
+    }
+
+    var tabContent = mainContainer.querySelector(".tab-content");
+    if (tabContent) {
+      var contentCol = tabContent.closest('[class*="col-"]');
+      if (contentCol) {
+        contentCol.className = "col-lg-9 col-xl-8 mx-auto";
+      }
+
+      var profilePane = tabContent.querySelector("#profile");
+      if (profilePane) {
+        profilePane.classList.add("show", "active");
+        var profileCard = wrapInThemeCard(profilePane, "p-4 p-sm-5 mb-4");
+        if (profileCard && !profileCard.querySelector(".cyber-settings-section-title")) {
+          var h = document.createElement("h3");
+          h.className = "cyber-settings-section-title";
+          h.innerHTML = '<i class="fas fa-user-cog" style="color:#00F0FF;"></i><span>Configuración de Perfil y Seguridad</span>';
+          profilePane.insertBefore(h, profilePane.firstChild);
+        }
+      }
+
+      var tokensPane = tabContent.querySelector("#tokens");
+      if (tokensPane) {
+        tokensPane.classList.add("show", "active");
+        var tokensCard = wrapInThemeCard(tokensPane, "p-4 p-sm-5");
+        if (tokensCard && !tokensCard.querySelector(".cyber-settings-section-title")) {
+          var th = document.createElement("h3");
+          th.className = "cyber-settings-section-title";
+          th.innerHTML = '<i class="fas fa-key" style="color:#FF007F;"></i><span>Access Tokens (API)</span>';
+          tokensPane.insertBefore(th, tokensPane.firstChild);
+        }
+      }
+    }
+
+    wrapTablesInCyberWrap(document);
+  }
+
+  // 9. Mejora de páginas interiores de `core`
   function upgradeInnerPages() {
     var path = normPath(window.location.href) || "/";
 
-    // /challenges
     if (path === "/challenges") {
       upgradeChallengesPage();
       return;
     }
 
-    // /login, /register, /reset_password, /confirm
     if (
       path === "/login" ||
       path === "/register" ||
@@ -697,7 +1038,6 @@
       return;
     }
 
-    // /notifications
     if (path === "/notifications") {
       addJumbotronPill("SYSTEM::BROADCASTS", false);
       var emptyH2 = document.querySelector("main > .container > h2.text-center");
@@ -721,7 +1061,6 @@
       return;
     }
 
-    // /scoreboard
     if (path === "/scoreboard") {
       addJumbotronPill("LIVE RANKING · TELEMETRY", true);
       var graph = document.getElementById("score-graph");
@@ -730,16 +1069,15 @@
       return;
     }
 
-    // /users, /teams (directorios)
     if (path === "/users" || path === "/teams") {
       addJumbotronPill(path === "/teams" ? "DIRECTORY::TEAMS" : "DIRECTORY::PLAYERS", false);
       var searchForm = document.querySelector("main form");
       if (searchForm) wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");
+      upgradeUsersDirectoryTable();
       wrapTablesInCyberWrap(document);
       return;
     }
 
-    // /user, /users/<id>, /team, /teams/<id> (perfiles)
     if (
       path === "/user" ||
       path.indexOf("/users/") === 0 ||
@@ -753,50 +1091,40 @@
       return;
     }
 
-    // /settings
     if (path === "/settings") {
-      addJumbotronPill("ACCOUNT::CONFIG", false);
-      var navPills = document.querySelector("main .nav-pills");
-      if (navPills) wrapInThemeCard(navPills, "p-3");
-      var tabContent = document.querySelector("main .tab-content");
-      if (tabContent) wrapInThemeCard(tabContent, "p-4 p-sm-5");
-      wrapTablesInCyberWrap(document);
+      upgradeSettingsPage();
       return;
     }
 
-    // Resto de páginas (p. ej. / o páginas CMS personalizadas)
     wrapTablesInCyberWrap(document);
   }
 
-  // 7. Resaltado activo en el navbar (ejecutado tras upgradeNavbar)
-  function highlightActiveNav() {
-    var cur = normPath(window.location.href) || "/";
-    document
-      .querySelectorAll(".theme-header a.nav-link[href], .theme-header a.theme-pill-btn[href]")
-      .forEach(function (link) {
-        link.classList.remove("active");
-        var lp = normPath(link.href);
-        if (!lp) return;
-        if (lp === cur) {
-          link.classList.add("active");
-        } else if (lp !== "/" && cur.indexOf(lp + "/") === 0) {
-          link.classList.add("active");
-        }
-      });
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
+  function finishBridge() {
+    if (bridgeCompleted) return;
+    bridgeCompleted = true;
+    if (earlyObs) {
+      earlyObs.disconnect();
+      earlyObs = null;
+    }
     enforceCyberMode();
     var legacyStyle = document.getElementById("gdg-custom-theme");
     if (legacyStyle) legacyStyle.disabled = true;
 
-    // Solo actuar como puente cuando no esté activo el tema Jinja nativo `gdgoc-cyber`
-    if (!document.querySelector("header.theme-header")) {
+    // Solo actuar como puente cuando no esté activo el tema Jinja nativo `cyber`
+    if (!document.querySelector("header.theme-header") || navUpgraded) {
       injectBackgroundFx();
       upgradeNavbar();
       upgradeFooter();
       upgradeInnerPages();
       highlightActiveNav();
     }
-  });
+
+    document.documentElement.classList.remove("cyber-bridging");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", finishBridge);
+  } else {
+    finishBridge();
+  }
 })();
