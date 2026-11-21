@@ -52,7 +52,7 @@ html[data-bs-theme="dark"] {
   --bs-tertiary-bg: rgba(8, 12, 28, 0.9);
   --bs-emphasis-color: #F0F9FF;
 
-  /* Compatibilidad con la portada existente de CyberTrainer (remapeo automático a Cyber) */
+  /* Compatibilidad con la portada existente de Cyber Trainer (remapeo automático a Cyber) */
   --gdg-burdeos: #FF007F;
   --gdg-burdeos-light: #FF3399;
   --gdg-burdeos-subtle: rgba(255, 0, 127, 0.16);
@@ -112,17 +112,17 @@ html[data-theme="cyber"] main {
   padding-bottom: 3rem;
 }
 
-/* Ancho unificado con la web de Open Badges (max-w-[1320px] px-4 sm:px-6) */
+/* Ancho generoso para aprovechar laterales en monitores amplios */
 html[data-theme="cyber"] .container {
-  max-width: 1320px !important;
+  max-width: 1440px !important;
   padding-left: 1rem;
   padding-right: 1rem;
 }
 
 @media (min-width: 640px) {
   html[data-theme="cyber"] .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
   }
 }
 
@@ -188,25 +188,25 @@ html[data-theme="cyber"] hr {
    ANIMACIONES CYBER (EXACTAS DE OPEN BADGES)
    ============================================================================ */
 @keyframes floatSlow {
-  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-  50% { transform: translateY(-22px) rotate(6deg) scale(1.06); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -18px, 0); }
 }
 
 @keyframes floatReverse {
-  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  50% { transform: translateY(20px) translateX(-15px) rotate(-8deg); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-12px, 16px, 0); }
 }
 
 @keyframes scanlineSweep {
-  0% { transform: translateY(-10vh); opacity: 0; }
-  20% { opacity: 0.75; }
-  80% { opacity: 0.75; }
-  100% { transform: translateY(110vh); opacity: 0; }
+  0% { transform: translate3d(0, -10vh, 0); opacity: 0; }
+  20% { opacity: 0.55; }
+  80% { opacity: 0.55; }
+  100% { transform: translate3d(0, 110vh, 0); opacity: 0; }
 }
 
 @keyframes cyberGridMove {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(60px); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, 60px, 0); }
 }
 
 @keyframes cyberPulse {
@@ -239,13 +239,13 @@ html[data-theme="cyber"] hr {
   left: 0;
   right: 0;
   bottom: 0;
-  opacity: 0.24;
+  opacity: 0.2;
   background-image:
-    linear-gradient(rgba(0, 240, 255, 0.22) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 0, 127, 0.18) 1px, transparent 1px);
+    linear-gradient(rgba(0, 240, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 127, 0.16) 1px, transparent 1px);
   background-size: 60px 60px;
   will-change: transform;
-  animation: cyberGridMove 3s linear infinite;
+  animation: cyberGridMove 7s linear infinite;
 }
 
 .fx-cyber-scanline {
@@ -253,11 +253,10 @@ html[data-theme="cyber"] hr {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #00F0FF, transparent);
-  box-shadow: 0 0 20px #00F0FF;
+  height: 6px;
+  background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.55), transparent);
   will-change: transform, opacity;
-  animation: scanlineSweep 6s linear infinite;
+  animation: scanlineSweep 9s linear infinite;
 }
 
 .fx-cyber-token {
@@ -317,11 +316,9 @@ html[data-theme="cyber"] hr {
   position: sticky;
   top: 0;
   z-index: 1030;
-  background: rgba(6, 9, 20, 0.9) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 240, 255, 0.35) !important;
-  box-shadow: 0 0 25px rgba(0, 240, 255, 0.15) !important;
+  background: rgba(6, 9, 20, 0.96) !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.32) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
 }
 
 html[data-theme="cyber"] .theme-header .navbar {
@@ -389,53 +386,168 @@ html[data-theme="cyber"] .navbar-brand::before {
   color: var(--cyber-text-secondary);
 }
 
-/* Enlaces del Navbar */
+/* Enlaces del Navbar (misma altura simétrica 38px en izquierda y derecha, sin hover pegado en :focus) */
+html[data-theme="cyber"] .theme-header .navbar-nav {
+  align-items: center;
+}
+
+html[data-theme="cyber"] .theme-header .nav-item {
+  display: inline-flex;
+  align-items: center;
+}
+
 html[data-theme="cyber"] .theme-header .nav-link {
   color: #CBD5E1 !important;
   font-weight: 600 !important;
-  font-size: 0.86rem !important;
-  padding: 0.45rem 0.85rem !important;
+  font-size: 0.85rem !important;
+  height: 38px !important;
+  line-height: 1 !important;
+  padding: 0 0.92rem !important;
   border-radius: 9999px !important;
   border: 1px solid transparent !important;
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.38rem;
-  white-space: nowrap;
+  box-sizing: border-box !important;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.42rem !important;
+  white-space: nowrap !important;
+}
+
+html[data-theme="cyber"] .theme-header .nav-link:focus:not(:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 html[data-theme="cyber"] .theme-header .theme-pill-btn,
 html[data-theme="cyber"] .theme-header .theme-primary-btn {
-  white-space: nowrap;
+  height: 38px !important;
+  line-height: 1 !important;
+  padding: 0 0.95rem !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
 }
 
-.theme-pill-btn--icon {
-  padding: 0.5rem 0.78rem !important;
+html[data-theme="cyber"] .theme-header .theme-pill-btn--icon {
+  min-width: 38px !important;
+  padding: 0 0.72rem !important;
 }
 
 .theme-pill-btn--admin {
   background: rgba(255, 0, 127, 0.14) !important;
-  border-color: rgba(255, 0, 127, 0.55) !important;
+  border: 1px solid rgba(255, 0, 127, 0.55) !important;
   color: #FF85C0 !important;
-  box-shadow: 0 0 12px rgba(255, 0, 127, 0.2) !important;
+  box-shadow: 0 0 12px rgba(255, 0, 127, 0.18) !important;
 }
 
 .theme-pill-btn--admin:hover,
+.theme-pill-btn--admin:focus-visible,
 .theme-pill-btn--admin.active {
   background: rgba(255, 0, 127, 0.28) !important;
   border-color: #FF007F !important;
   color: #FFFFFF !important;
-  box-shadow: 0 0 22px rgba(255, 0, 127, 0.55) !important;
+  box-shadow: 0 0 18px rgba(255, 0, 127, 0.48) !important;
+}
+
+/* Botón Comunidad con color Cyber llamativo (Cyan → Green neón) */
+.theme-pill-btn--community {
+  background: linear-gradient(135deg, #00F0FF 0%, #00FF66 100%) !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  border: 0 !important;
+  color: #05070F !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.32), 0 0 10px rgba(0, 255, 102, 0.22) !important;
+  text-shadow: none !important;
+}
+
+.theme-pill-btn--community:hover,
+.theme-pill-btn--community:focus-visible {
+  background: linear-gradient(135deg, #3DF5FF 0%, #33FF85 100%) !important;
+  color: #05070F !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.5), 0 0 18px rgba(0, 255, 102, 0.42) !important;
+  text-shadow: none !important;
 }
 
 html[data-theme="cyber"] .theme-header .nav-link:hover,
-html[data-theme="cyber"] .theme-header .nav-link:focus,
+html[data-theme="cyber"] .theme-header .nav-link:focus-visible,
 html[data-theme="cyber"] .theme-header .nav-link.active {
   color: #00F0FF !important;
   background: rgba(0, 240, 255, 0.12) !important;
   border-color: rgba(0, 240, 255, 0.45) !important;
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.22) !important;
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5) !important;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.2) !important;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.45) !important;
+}
+
+/* Tooltips Cyber unificados para toda la web (navbar hacia abajo, contenido hacia arriba) */
+[data-cyber-tooltip] {
+  position: relative;
+}
+
+[data-cyber-tooltip]::after {
+  content: attr(data-cyber-tooltip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 0.34rem 0.72rem;
+  border-radius: 8px;
+  background: rgba(6, 10, 24, 0.98);
+  border: 1px solid #00F0FF;
+  color: #F0F9FF;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), 0 0 14px rgba(0, 240, 255, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1080;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+[data-cyber-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  border: 5px solid transparent;
+  border-top-color: #00F0FF;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1080;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.theme-header [data-cyber-tooltip]::after {
+  bottom: auto;
+  top: calc(100% + 9px);
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.theme-header [data-cyber-tooltip]::before {
+  bottom: auto;
+  top: calc(100% + 4px);
+  transform: translateX(-50%) translateY(-4px);
+  border-top-color: transparent;
+  border-bottom-color: #00F0FF;
+}
+
+[data-cyber-tooltip]:hover::after,
+[data-cyber-tooltip]:focus-visible::after,
+[data-cyber-tooltip]:hover::before,
+[data-cyber-tooltip]:focus-visible::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.theme-header .dropdown.show > [data-cyber-tooltip]::after,
+.theme-header .dropdown.show > [data-cyber-tooltip]::before {
+  opacity: 0 !important;
 }
 
 html[data-theme="cyber"] .navbar-toggler {
@@ -521,127 +633,162 @@ html[data-theme="cyber"] .navbar-toggler:focus {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.5rem 1.05rem;
+  padding: 0.48rem 1.05rem;
   border-radius: 9999px;
-  font-size: 0.84rem;
-  line-height: 1.4;
+  font-size: 0.85rem;
+  line-height: 1.35;
   font-weight: 600;
-  background: rgba(12, 18, 38, 0.9) !important;
-  border: 1px solid rgba(0, 240, 255, 0.5) !important;
+  background: rgba(12, 18, 38, 0.92) !important;
+  border: 1px solid rgba(0, 240, 255, 0.48) !important;
   color: #00F0FF !important;
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2) !important;
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.16) !important;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease !important;
   text-decoration: none !important;
   cursor: pointer;
 }
 
 .theme-pill-btn:hover,
+.theme-pill-btn:focus-visible,
 .theme-pill-btn.active {
   background: rgba(255, 0, 127, 0.2) !important;
   border-color: #FF007F !important;
   color: #FFFFFF !important;
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 0 24px #FF007F, 0 0 40px rgba(0, 240, 255, 0.45) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(255, 0, 127, 0.45), 0 0 24px rgba(0, 240, 255, 0.25) !important;
   text-shadow: none !important;
 }
 
-/* Botón Primario Cyber (Degradado Cyan → Magenta, mismo tamaño que .theme-pill-btn en navbar) */
+/* Botón Primario Cyber (border: 0 + background-origin: border-box para evitar borde blanco/oscuro de gradiente) */
 .theme-primary-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
-  padding: 0.5rem 1.05rem !important;
+  padding: 0.48rem 1.05rem !important;
   border-radius: 9999px !important;
-  font-size: 0.84rem !important;
-  line-height: 1.4 !important;
+  font-size: 0.85rem !important;
+  line-height: 1.35 !important;
   background: var(--cyber-gradient-cta) !important;
-  border: 1px solid transparent !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  border: 0 !important;
   color: #05070F !important;
   font-weight: 800 !important;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.45) !important;
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35) !important;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease !important;
   text-decoration: none !important;
   text-shadow: none !important;
   cursor: pointer;
 }
 
+/* Normalización simétrica de todos los botones Bootstrap (.btn) */
+html[data-theme="cyber"] .btn:not(.challenge-button):not(.btn-close) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.5rem 1.25rem !important;
+  font-size: 0.88rem !important;
+  line-height: 1.35 !important;
+  border-radius: 9999px !important;
+  box-sizing: border-box !important;
+  appearance: none;
+  -webkit-appearance: none;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+}
+
+html[data-theme="cyber"] .btn.btn-sm:not(.challenge-button):not(.btn-close) {
+  min-height: 32px;
+  padding: 0.28rem 0.85rem !important;
+  font-size: 0.8rem !important;
+}
+
+html[data-theme="cyber"] .btn.btn-lg:not(.challenge-button):not(.btn-close) {
+  min-height: 46px;
+  padding: 0.65rem 1.55rem !important;
+  font-size: 0.96rem !important;
+}
+
 html[data-theme="cyber"] .btn-primary {
   background: var(--cyber-gradient-cta) !important;
-  border: 1px solid transparent !important;
+  border: 0 !important;
   color: #05070F !important;
   font-weight: 800 !important;
-  border-radius: 9999px !important;
-  padding: 0.55rem 1.3rem !important;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.45) !important;
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.36) !important;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease !important;
   text-shadow: none !important;
 }
 
 .theme-primary-btn:hover,
+.theme-primary-btn:focus-visible,
 html[data-theme="cyber"] .btn-primary:hover,
-html[data-theme="cyber"] .btn-primary:focus {
+html[data-theme="cyber"] .btn-primary:focus-visible {
   color: #05070F !important;
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 0 32px #00F0FF, 0 0 50px #FF007F !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.55), 0 0 28px rgba(255, 0, 127, 0.42) !important;
 }
 
 html[data-theme="cyber"] .btn-info {
   background: rgba(0, 240, 255, 0.16) !important;
   border: 1px solid #00F0FF !important;
   color: #00F0FF !important;
-  border-radius: 9999px !important;
   font-weight: 700 !important;
-  box-shadow: 0 0 14px rgba(0, 240, 255, 0.22) !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2) !important;
 }
 
-html[data-theme="cyber"] .btn-info:hover {
+html[data-theme="cyber"] .btn-info:hover,
+html[data-theme="cyber"] .btn-info:focus-visible {
   background: rgba(0, 240, 255, 0.28) !important;
   color: #FFFFFF !important;
   transform: translateY(-1px);
-  box-shadow: 0 0 24px rgba(0, 240, 255, 0.55) !important;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.48) !important;
 }
 
 html[data-theme="cyber"] .btn-secondary,
 html[data-theme="cyber"] .btn-outline-secondary,
 html[data-theme="cyber"] .btn-outline-info,
 html[data-theme="cyber"] .btn-dark:not(.challenge-button) {
-  background: rgba(12, 18, 38, 0.88) !important;
+  background: rgba(12, 18, 38, 0.9) !important;
   border: 1px solid rgba(0, 240, 255, 0.45) !important;
   color: #E2F1FF !important;
-  border-radius: 9999px !important;
   font-weight: 600 !important;
-  transition: all 0.25s ease !important;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease !important;
 }
 
 html[data-theme="cyber"] .btn-secondary:hover,
 html[data-theme="cyber"] .btn-outline-secondary:hover,
-html[data-theme="cyber"] .btn-outline-info:hover {
+html[data-theme="cyber"] .btn-outline-info:hover,
+html[data-theme="cyber"] .btn-secondary:focus-visible,
+html[data-theme="cyber"] .btn-outline-secondary:focus-visible {
   background: rgba(255, 0, 127, 0.2) !important;
   border-color: #FF007F !important;
   color: #FFFFFF !important;
-  box-shadow: 0 0 20px rgba(255, 0, 127, 0.45) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(255, 0, 127, 0.4) !important;
 }
 
 html[data-theme="cyber"] .btn-danger {
-  background: rgba(255, 0, 127, 0.22) !important;
+  background: rgba(255, 0, 127, 0.18) !important;
   border: 1px solid #FF007F !important;
   color: #FF85C0 !important;
-  border-radius: 9999px !important;
   font-weight: 700 !important;
+  transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease !important;
 }
 
-html[data-theme="cyber"] .btn-danger:hover {
+html[data-theme="cyber"] .btn-danger:hover,
+html[data-theme="cyber"] .btn-danger:focus-visible {
   background: #FF007F !important;
   color: #05070F !important;
-  box-shadow: 0 0 22px rgba(255, 0, 127, 0.65) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(255, 0, 127, 0.55) !important;
 }
 
 html[data-theme="cyber"] .btn-success {
   background: rgba(0, 255, 102, 0.18) !important;
   border: 1px solid #00FF66 !important;
   color: #00FF66 !important;
-  border-radius: 9999px !important;
   font-weight: 700 !important;
 }
 
@@ -649,7 +796,6 @@ html[data-theme="cyber"] .btn-warning {
   background: rgba(255, 230, 0, 0.16) !important;
   border: 1px solid #FFE600 !important;
   color: #FFE600 !important;
-  border-radius: 9999px !important;
   font-weight: 700 !important;
 }
 
@@ -707,20 +853,15 @@ html[data-theme="cyber"] .card {
 
 .theme-card:hover,
 html[data-theme="cyber"] .card:hover {
-  border-color: #FF007F !important;
-  box-shadow: -6px 0 30px rgba(0, 240, 255, 0.45),
-              6px 0 30px rgba(255, 0, 127, 0.45),
-              inset 0 0 25px rgba(255, 0, 127, 0.15) !important;
+  border-color: rgba(255, 0, 127, 0.72) !important;
+  box-shadow: 0 8px 28px rgba(0, 240, 255, 0.14),
+              0 0 20px rgba(255, 0, 127, 0.18),
+              inset 0 0 18px rgba(255, 0, 127, 0.06) !important;
 }
 
+/* Barras multicolor en tarjetas eliminadas: solo se mantiene .theme-top-strip arriba del todo */
 .cyber-card-accent-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  border-radius: 19px 19px 0 0;
-  background: var(--cyber-gradient-accent);
+  display: none !important;
 }
 
 /* Evitar que tarjetas 3D o con overflow atrapen/recorten modales de Bootstrap (Delete Token, API Key, Retos) */
@@ -757,9 +898,14 @@ html[data-theme="cyber"] .theme-card:has(.modal.show) {
   pointer-events: none;
   z-index: 20;
   border-radius: inherit;
-  background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(255, 255, 255, 0.22), transparent 60%);
+  background: radial-gradient(
+    260px circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(0, 240, 255, 0.075),
+    rgba(255, 0, 127, 0.025) 48%,
+    transparent 72%
+  );
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .tilt-card:hover .tilt-glare {
@@ -926,40 +1072,25 @@ html[data-theme="cyber"] .challenge-button {
               border-color 0.25s ease !important;
 }
 
-html[data-theme="cyber"] .challenge-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #00F0FF, #FF007F, #00FF66);
-}
-
 html[data-theme="cyber"] .challenge-button:hover {
-  border-color: #FF007F !important;
-  box-shadow: -6px 0 30px rgba(0, 240, 255, 0.55),
-              6px 0 30px rgba(255, 0, 127, 0.55),
-              inset 0 0 25px rgba(255, 0, 127, 0.2) !important;
+  border-color: rgba(255, 0, 127, 0.78) !important;
+  box-shadow: 0 8px 26px rgba(0, 240, 255, 0.18),
+              0 0 22px rgba(255, 0, 127, 0.24),
+              inset 0 0 18px rgba(255, 0, 127, 0.08) !important;
 }
 
 /* Reto Resuelto */
 html[data-theme="cyber"] .challenge-button.challenge-solved,
 html[data-theme="cyber"] .challenge-button.solved-challenge {
-  background: linear-gradient(145deg, rgba(0, 255, 102, 0.14), rgba(11, 17, 36, 0.9)) !important;
+  background: linear-gradient(145deg, rgba(0, 255, 102, 0.14), rgba(11, 17, 36, 0.92)) !important;
   border-color: rgba(0, 255, 102, 0.7) !important;
-  box-shadow: 0 0 24px rgba(0, 255, 102, 0.2), inset 0 0 20px rgba(0, 255, 102, 0.08) !important;
-}
-
-html[data-theme="cyber"] .challenge-button.challenge-solved::before,
-html[data-theme="cyber"] .challenge-button.solved-challenge::before {
-  background: linear-gradient(90deg, #00FF66, #00F0FF);
+  box-shadow: 0 0 20px rgba(0, 255, 102, 0.16), inset 0 0 16px rgba(0, 255, 102, 0.06) !important;
 }
 
 html[data-theme="cyber"] .challenge-button.challenge-solved:hover,
 html[data-theme="cyber"] .challenge-button.solved-challenge:hover {
   border-color: #00FF66 !important;
-  box-shadow: 0 0 32px rgba(0, 255, 102, 0.55), inset 0 0 24px rgba(0, 255, 102, 0.2) !important;
+  box-shadow: 0 8px 26px rgba(0, 255, 102, 0.3), inset 0 0 18px rgba(0, 255, 102, 0.12) !important;
 }
 
 .challenge-card-top {
@@ -1085,26 +1216,13 @@ html[data-theme="cyber"] .modal-backdrop.show {
 }
 
 html[data-theme="cyber"] .modal-content {
-  background: rgba(8, 12, 28, 0.96) !important;
-  backdrop-filter: blur(22px) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
-  border: 1px solid #00F0FF !important;
+  background: rgba(8, 12, 28, 0.98) !important;
+  border: 1px solid rgba(0, 240, 255, 0.75) !important;
   border-radius: 22px !important;
   color: #E2F1FF !important;
-  box-shadow: 0 0 45px rgba(0, 240, 255, 0.32), 0 0 80px rgba(255, 0, 127, 0.16) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.65), 0 0 30px rgba(0, 240, 255, 0.24) !important;
   overflow: hidden;
   position: relative;
-}
-
-html[data-theme="cyber"] .modal-content::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: var(--cyber-gradient-strip);
-  z-index: 2;
 }
 
 html[data-theme="cyber"] .modal-header,
@@ -1261,12 +1379,11 @@ html[data-theme="cyber"] .challenge-input {
 
 /* Dropdowns (selector de idioma, etc.) */
 html[data-theme="cyber"] .dropdown-menu {
-  background: rgba(8, 12, 28, 0.97) !important;
-  backdrop-filter: blur(22px) !important;
-  border: 1px solid #00F0FF !important;
+  background: rgba(8, 12, 28, 0.98) !important;
+  border: 1px solid rgba(0, 240, 255, 0.65) !important;
   border-radius: 16px !important;
   padding: 0.45rem !important;
-  box-shadow: 0 0 35px rgba(0, 240, 255, 0.35) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 0 22px rgba(0, 240, 255, 0.22) !important;
   max-height: 320px;
   overflow-y: auto;
 }
@@ -1278,44 +1395,49 @@ html[data-theme="cyber"] .dropdown-item {
   font-weight: 600;
   padding: 0.45rem 0.8rem !important;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
 html[data-theme="cyber"] .dropdown-item:hover,
-html[data-theme="cyber"] .dropdown-item:focus {
+html[data-theme="cyber"] .dropdown-item:focus-visible {
   background: rgba(0, 240, 255, 0.18) !important;
   color: #00F0FF !important;
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 html[data-theme="cyber"] .dropdown-item.bg-primary {
   background: var(--cyber-gradient-cta) !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
   color: #05070F !important;
   font-weight: 800;
 }
 
-/* Nav Pills (Scoreboard brackets, Settings tabs) */
+/* Nav Pills (Scoreboard brackets) */
 html[data-theme="cyber"] .nav-pills .nav-link {
-  background: rgba(12, 18, 38, 0.85) !important;
+  background: rgba(12, 18, 38, 0.88) !important;
   border: 1px solid rgba(0, 240, 255, 0.35) !important;
   color: #94A3B8 !important;
   border-radius: 9999px !important;
   font-weight: 600 !important;
   margin: 0.2rem;
-  transition: all 0.25s ease;
+  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
-html[data-theme="cyber"] .nav-pills .nav-link:hover {
+html[data-theme="cyber"] .nav-pills .nav-link:hover,
+html[data-theme="cyber"] .nav-pills .nav-link:focus-visible {
   color: #00F0FF !important;
   border-color: #00F0FF !important;
 }
 
 html[data-theme="cyber"] .nav-pills .nav-link.active {
   background: var(--cyber-gradient-cta) !important;
-  border-color: transparent !important;
+  background-origin: border-box !important;
+  background-clip: border-box !important;
+  border: 0 !important;
   color: #05070F !important;
   font-weight: 800 !important;
-  box-shadow: 0 0 22px rgba(0, 240, 255, 0.45) !important;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35) !important;
 }
 
 /* Tablas Cyber (overflow visible para no recortar tooltips de banderas en fila 1) */
@@ -1589,7 +1711,6 @@ html[data-theme="cyber"] .table tbody tr:hover > * {
 /* Alertas & Toasts */
 html[data-theme="cyber"] .alert {
   border-radius: 14px !important;
-  backdrop-filter: blur(12px);
   font-weight: 600;
 }
 
@@ -1673,11 +1794,9 @@ html[data-theme="cyber"] .progress {
    ============================================================================ */
 .theme-footer {
   position: relative;
-  z-index: 10;
+  z-index: 1;
   margin-top: auto;
-  background: rgba(6, 9, 20, 0.94) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(6, 9, 20, 0.96) !important;
   border-top: 1px solid rgba(0, 240, 255, 0.3) !important;
   padding: 2.25rem 0;
   font-size: 0.78rem;
@@ -1770,14 +1889,8 @@ html[data-theme="cyber"] .gdg-hero {
 }
 
 html[data-theme="cyber"] .gdg-hero::before {
-  content: "" !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  height: 5px !important;
-  background: var(--cyber-gradient-strip) !important;
-  box-shadow: 0 0 16px #00F0FF;
+  display: none !important;
+  content: none !important;
 }
 
 html[data-theme="cyber"] .gdg-hero h1 {
@@ -1916,32 +2029,15 @@ html[data-theme="cyber"] .feature-card {
 }
 
 html[data-theme="cyber"] .feature-card::before {
-  content: "" !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 4px !important;
-  height: 100% !important;
-  background: var(--cyber-gradient-accent);
-}
-
-html[data-theme="cyber"] .feature-card.border-burdeos::before {
-  background: linear-gradient(180deg, #FF007F, #00F0FF) !important;
-}
-
-html[data-theme="cyber"] .feature-card.border-turquesa::before {
-  background: linear-gradient(180deg, #00F0FF, #00FF66) !important;
-}
-
-html[data-theme="cyber"] .feature-card.border-mostaza::before {
-  background: linear-gradient(180deg, #FFE600, #FF007F) !important;
+  display: none !important;
+  content: none !important;
 }
 
 html[data-theme="cyber"] .feature-card:hover {
-  border-color: #FF007F !important;
-  box-shadow: -6px 0 30px rgba(0, 240, 255, 0.45),
-              6px 0 30px rgba(255, 0, 127, 0.45),
-              inset 0 0 22px rgba(255, 0, 127, 0.12) !important;
+  border-color: rgba(255, 0, 127, 0.72) !important;
+  box-shadow: 0 8px 28px rgba(0, 240, 255, 0.14),
+              0 0 20px rgba(255, 0, 127, 0.18),
+              inset 0 0 18px rgba(255, 0, 127, 0.06) !important;
 }
 
 html[data-theme="cyber"] .feature-card:not(.tilt-card):hover {

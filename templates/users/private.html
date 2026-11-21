@@ -106,7 +106,6 @@
               <div class="col-md-3 col-sm-6">
                 <div class="theme-card tilt-card p-4 text-center h-100" data-tilt-max="2.2">
                   <div class="tilt-glare" aria-hidden="true"></div>
-                  <div class="cyber-card-accent-bar"></div>
                   <div class="mb-2" style="color: #FFE600; filter: drop-shadow(0 0 10px rgba(255,230,0,0.45));">
                     <i class="award-icon award-{{ award.icon }} fa-2x"></i>
                   </div>
@@ -129,7 +128,6 @@
       <div class="row g-4 mb-5" x-data="UserGraphs">
         <div class="col-md-6 d-none d-md-block">
           <div class="theme-card p-4 h-100">
-            <div class="cyber-card-accent-bar"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.06em;">
               <i class="fas fa-crosshairs me-2" style="color: #00FF66;"></i>Precisión de envíos
             </h4>
@@ -160,7 +158,6 @@
 
         <div class="col-md-6 d-none d-md-block">
           <div class="theme-card p-4 h-100">
-            <div class="cyber-card-accent-bar"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.06em;">
               <i class="fas fa-chart-pie me-2" style="color: #00F0FF;"></i>Desglose por categoría
             </h4>
@@ -188,7 +185,6 @@
 
         <div class="col-12 d-none d-md-block">
           <div class="theme-card p-3 p-md-4">
-            <div class="cyber-card-accent-bar"></div>
             <div id="score-graph" x-ref="scoregraph" class="w-100 d-flex align-items-center">
               <div class="text-center w-100 py-5">
                 <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
@@ -243,7 +239,6 @@
       {% endif %}
     {% else %}
       <div class="theme-card p-5 text-center my-4">
-        <div class="cyber-card-accent-bar"></div>
         <i class="fas fa-flag fa-3x mb-3" style="color: #00F0FF; opacity: 0.7;"></i>
         <h3 class="theme-text-primary fw-bold mb-2">{% trans %}No solves yet{% endtrans %}</h3>
         <p class="theme-text-secondary mb-4">Todavía no has resuelto ningún reto. ¡Explora el tablero y captura tu primera flag!</p>

@@ -1,5 +1,5 @@
 <header class="theme-header">
-  <!-- Barra superior neón Cyber (idéntica a Open Badges) -->
+  <!-- Barra superior neón Cyber (única barra multicolor del sitio) -->
   <div class="theme-top-strip" aria-hidden="true"></div>
 
   <nav class="navbar navbar-expand-lg navbar-dark">
@@ -26,7 +26,7 @@
         </div>
         <div class="text-truncate">
           <div class="gdg-brand-title text-truncate">GDGoC UHU</div>
-          <div class="gdg-brand-subtitle text-truncate">CyberTrainer</div>
+          <div class="gdg-brand-subtitle text-truncate">Cyber Trainer</div>
         </div>
       </a>
 
@@ -44,7 +44,7 @@
 
       <div class="collapse navbar-collapse" id="base-navbars">
         <!-- Enlaces principales de navegación CTF -->
-        <ul class="navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1">
+        <ul class="navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1 align-items-lg-center">
           {% for page in Plugins.user_menu_pages %}
             <li class="nav-item">
               <a class="nav-link" href="{{ page.route }}" {% if page.link_target %}target="{{ page.link_target }}"{% endif %}>
@@ -87,9 +87,8 @@
             </a>
           </li>
 
-          <!-- Notificaciones (siempre accesible: /notifications es pública en CTFd) -->
           <li class="nav-item">
-            <a class="nav-link position-relative" href="{{ url_for('views.notifications') }}" title="{% trans %}Notifications{% endtrans %}">
+            <a class="nav-link position-relative" href="{{ url_for('views.notifications') }}">
               <i class="fas fa-bell fa-fw"></i>
               <span>{% trans %}Notifications{% endtrans %}</span>
               <span
@@ -110,7 +109,7 @@
           {% if authed() %}
             {% if is_admin() %}
               <li class="nav-item">
-                <a class="theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}">
+                <a class="theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto" href="{{ url_for('admin.view') }}" data-cyber-tooltip="{% trans %}Admin Panel{% endtrans %}" aria-label="{% trans %}Admin Panel{% endtrans %}">
                   <i class="fas fa-wrench fa-fw"></i>
                   <span>{% trans %}Admin{% endtrans %}</span>
                 </a>
@@ -119,7 +118,7 @@
 
             {% if Configs.user_mode == "teams" %}
               <li class="nav-item">
-                <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('teams.private') }}" title="{% trans %}Team{% endtrans %}">
+                <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('teams.private') }}" data-cyber-tooltip="{% trans %}Team{% endtrans %}" aria-label="{% trans %}Team{% endtrans %}">
                   <i class="fas fa-users fa-fw"></i>
                   <span>{% trans %}Team{% endtrans %}</span>
                 </a>
@@ -127,28 +126,28 @@
             {% endif %}
 
             <li class="nav-item">
-              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('users.private') }}" title="{% trans %}Profile{% endtrans %}">
+              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('users.private') }}" data-cyber-tooltip="{% trans %}Profile{% endtrans %}" aria-label="{% trans %}Profile{% endtrans %}">
                 <i class="fas fa-user-circle fa-fw"></i>
                 <span>{% trans %}Profile{% endtrans %}</span>
               </a>
             </li>
 
             <li class="nav-item">
-              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('views.settings') }}" title="{% trans %}Settings{% endtrans %}">
+              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('views.settings') }}" data-cyber-tooltip="{% trans %}Settings{% endtrans %}" aria-label="{% trans %}Settings{% endtrans %}">
                 <i class="fas fa-cogs fa-fw"></i>
                 <span class="d-lg-none">{% trans %}Settings{% endtrans %}</span>
               </a>
             </li>
 
             <li class="nav-item">
-              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}">
+              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('auth.logout') }}" data-cyber-tooltip="{% trans %}Logout{% endtrans %}" aria-label="{% trans %}Logout{% endtrans %}">
                 <i class="fas fa-sign-out-alt fa-fw"></i>
                 <span class="d-lg-none">{% trans %}Logout{% endtrans %}</span>
               </a>
             </li>
           {% else %}
             <li class="nav-item">
-              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('auth.login') }}">
+              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('auth.login') }}" data-cyber-tooltip="Register or Login" aria-label="Register or Login">
                 <i class="fas fa-sign-in-alt"></i>
                 <span>{% trans %}Login{% endtrans %}</span>
               </a>
@@ -156,7 +155,7 @@
 
             {% if registration_visible() %}
               <li class="nav-item">
-                <a class="theme-primary-btn w-100 w-lg-auto" href="{{ url_for('auth.register') }}">
+                <a class="theme-primary-btn w-100 w-lg-auto" href="{{ url_for('auth.register') }}" data-cyber-tooltip="Register or Login" aria-label="Register or Login">
                   <i class="fas fa-user-plus"></i>
                   <span>{% trans %}Register{% endtrans %}</span>
                 </a>
@@ -171,10 +170,11 @@
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
-              title="{% trans %}Change language{% endtrans %}"
+              data-cyber-tooltip="Language"
+              aria-label="Language"
             >
               <i class="fas fa-language"></i>
-              <span class="d-lg-none">{% trans %}Change language{% endtrans %}</span>
+              <span class="d-lg-none">Language</span>
             </button>
             <form x-data="LanguageForm">
               <ul class="dropdown-menu dropdown-menu-end">
@@ -196,8 +196,9 @@
               href="https://gdguhu.com"
               target="_blank"
               rel="noopener noreferrer"
-              class="theme-pill-btn w-100 w-lg-auto"
-              title="Web oficial de GDG on Campus UHU"
+              class="theme-pill-btn theme-pill-btn--community w-100 w-lg-auto"
+              data-cyber-tooltip="GDGoC UHU · gdguhu.com"
+              aria-label="GDGoC UHU · gdguhu.com"
             >
               <span>Comunidad</span>
               <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>

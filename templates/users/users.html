@@ -9,7 +9,6 @@
 
   <div class="container">
     <div class="theme-card p-3 p-md-4 mb-4">
-      <div class="cyber-card-accent-bar"></div>
       {% if q and field %}
         <h5 class="theme-text-secondary text-center mb-1">
           {% trans %}Searching for users with <strong>{{ field }}</strong> matching <strong>{{ q }}</strong>{% endtrans %}
@@ -76,7 +75,6 @@
                     class="cyber-flag-tooltip"
                     tabindex="0"
                     data-tooltip="{{ country_label }}"
-                    title="{{ country_label }}"
                     aria-label="{{ country_label }}"
                   >
                     <i class="flag-{{ user.country.lower() }}"></i>
@@ -104,7 +102,7 @@
                     target="_blank"
                     rel="noopener noreferrer"
                     class="cyber-web-preview"
-                    title="{{ user.website }}"
+                    data-cyber-tooltip="{{ user.website }}" aria-label="{{ user.website }}"
                   >
                     <i class="fas fa-globe"></i>
                     <span class="cyber-web-preview-text">{{ preview.rstrip('/') | truncate(34, True, '…') }}</span>

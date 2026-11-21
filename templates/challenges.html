@@ -11,7 +11,7 @@
       <div class="container position-relative">
         <h1>{% trans %}Challenges{% endtrans %}</h1>
         <p class="cyber-hero-sub">
-          <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU CyberTrainer' }}</span>
+          <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU Cyber Trainer' }}</span>
         </p>
 
         <!-- Chips de resumen y barra de progreso (visible cuando cargan los retos) -->
@@ -136,7 +136,6 @@
 
         <!-- Estado vacío cuando aún no hay retos visibles -->
         <div x-show="challenges.length === 0" class="theme-card p-5 text-center my-4">
-          <div class="cyber-card-accent-bar"></div>
           <i class="fas fa-shield-alt fa-3x mb-3" style="color: #00F0FF; filter: drop-shadow(0 0 12px rgba(0,240,255,0.5));"></i>
           <h3 class="theme-text-primary fw-bold mb-2">Sin retos disponibles todavía</h3>
           <p class="theme-text-secondary mb-0">

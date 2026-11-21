@@ -187,11 +187,11 @@
       legacyStyle.disabled = true;
     }
 
-    // Potenciar automáticamente .feature-card en la portada con tilt 3D + glare
+    // Potenciar automáticamente .feature-card en la portada con tilt 3D sutil + glare
     document.querySelectorAll("main .feature-card").forEach(function (card) {
       if (!card.classList.contains("tilt-card")) {
         card.classList.add("tilt-card");
-        card.setAttribute("data-tilt-max", "1.8");
+        card.setAttribute("data-tilt-max", card.offsetWidth > 500 ? "0.9" : "1.6");
         if (!card.querySelector(".tilt-glare")) {
           var glare = document.createElement("div");
           glare.className = "tilt-glare";
@@ -352,16 +352,29 @@
     highlightActiveNav();
     scanTiltCards(document);
 
-    // Observar nuevos nodos inyectados dinámicamente por Alpine.js (retos, modales)
+    // Observar nuevos nodos inyectados dinámicamente por Alpine.js (retos, modales) con debounce ligero
     if (!prefersReducedMotion && typeof MutationObserver !== "undefined") {
+      var pendingNodes = [];
+      var scanRaf = null;
       var observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-          mutation.addedNodes.forEach(function (node) {
-            if (node.nodeType === 1) {
-              scanTiltCards(node);
+        for (var i = 0; i < mutations.length; i++) {
+          var added = mutations[i].addedNodes;
+          for (var j = 0; j < added.length; j++) {
+            var node = added[j];
+            if (node.nodeType === 1 && (node.classList.contains("tilt-card") || node.childElementCount > 0)) {
+              pendingNodes.push(node);
+            }
+          }
+        }
+        if (pendingNodes.length && scanRaf === null) {
+          scanRaf = requestAnimationFrame(function () {
+            scanRaf = null;
+            var batch = pendingNodes.splice(0, pendingNodes.length);
+            for (var k = 0; k < batch.length; k++) {
+              scanTiltCards(batch[k]);
             }
           });
-        });
+        }
       });
       observer.observe(document.body, { childList: true, subtree: true });
     }

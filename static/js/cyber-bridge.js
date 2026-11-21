@@ -1,12 +1,12 @@
 /* ============================================================================
    GDG on Campus Universidad de Huelva · CTFd `core` → Cyber Theme Bridge
-   - Cero flash (actualiza <nav> en cuanto se parsea, antes del primer paint)
+   - Cero flash (actualiza <nav>, <main> y <footer> antes de módulos JS)
    - Proxy diferido de EventSource (/events) que cierra streams al navegar
-     (evita bloqueos en HTTP/1.1 al cambiar rápido entre pestañas/apartados)
-   - Tablero /challenges optimizado sin bucles de MutationObserver
+   - Navbar simétrico (38px uniformes, tooltips Cyber consistentes, Comunidad a color)
+   - Cajas más amplias, sin barras multicolor sobre tarjetas, tilt 3D uniforme
    - Tabla /users: Username · Country (bandera + tooltip) · Affiliation · Website preview
-   - Vista /settings unificada (Perfil + Access Tokens sin pestañas separadas)
-   - Guardia absoluta sobre /admin y auto-desactivación con tema nativo `cyber`
+   - /settings unificado y multilingüe (Profile → Passwords → Access Tokens en 3 cajas 3D)
+   - /login y /register con "Username" unificado y subtítulo claro en Registration Code
    ============================================================================ */
 
 (function () {
@@ -78,9 +78,6 @@
       this._closed = false;
       this._real = null;
       this._listeners = [];
-      this._timer = null;
-
-      // Diferir 350ms la apertura real: si el usuario cambia rápido de apartado, no se abre conexión SSE
       this._timer = setTimeout(function () {
         self._timer = null;
         if (self._closed || document.visibilityState === "hidden") return;
@@ -98,7 +95,6 @@
           self._listeners.length = 0;
         } catch (_) {}
       }, 350);
-
       activeStreams.push(this);
     }
 
@@ -108,17 +104,13 @@
 
     ManagedEventSource.prototype.addEventListener = function (type, fn, opts) {
       if (this._closed) return;
-      if (this._real) {
-        this._real.addEventListener(type, fn, opts);
-      } else {
-        this._listeners.push([type, fn, opts]);
-      }
+      if (this._real) this._real.addEventListener(type, fn, opts);
+      else this._listeners.push([type, fn, opts]);
     };
 
     ManagedEventSource.prototype.removeEventListener = function (type, fn, opts) {
-      if (this._real) {
-        this._real.removeEventListener(type, fn, opts);
-      } else {
+      if (this._real) this._real.removeEventListener(type, fn, opts);
+      else {
         this._listeners = this._listeners.filter(function (item) {
           return item[0] !== type || item[1] !== fn;
         });
@@ -142,7 +134,6 @@
 
     window.EventSource = ManagedEventSource;
 
-    // Cerrar streams inmediatamente al hacer clic en cualquier enlace interno o al salir
     document.addEventListener(
       "click",
       function (e) {
@@ -155,9 +146,7 @@
         if (!href || href.charAt(0) === "#" || href.indexOf("javascript:") === 0) return;
         try {
           var dest = new URL(a.href, window.location.origin);
-          if (dest.origin === window.location.origin) {
-            closeAllStreams();
-          }
+          if (dest.origin === window.location.origin) closeAllStreams();
         } catch (_) {}
       },
       true
@@ -178,9 +167,7 @@
       if (u.origin !== window.location.origin) return null;
       var root = getUrlRoot();
       var p = u.pathname;
-      if (root && p.indexOf(root) === 0) {
-        p = p.slice(root.length) || "/";
-      }
+      if (root && p.indexOf(root) === 0) p = p.slice(root.length) || "/";
       return p.replace(/\/+$/, "") || "/";
     } catch (_) {
       return null;
@@ -197,6 +184,21 @@
     return text || fallback;
   }
 
+  function setCyberTooltip(el, text) {
+    if (!el || !text) return;
+    el.removeAttribute("title");
+    el.removeAttribute("data-bs-toggle");
+    el.removeAttribute("data-bs-placement");
+    el.setAttribute("data-cyber-tooltip", text);
+    el.setAttribute("aria-label", text);
+  }
+
+  function getActiveLocale() {
+    var activeLang = document.querySelector('form[x-data="LanguageForm"] .dropdown-item.bg-primary[value]');
+    if (activeLang) return (activeLang.getAttribute("value") || "en").toLowerCase();
+    return ((document.documentElement.getAttribute("lang") || "en").split("-")[0]).toLowerCase();
+  }
+
   function formatWebsitePreview(rawUrl) {
     try {
       var u = new URL(rawUrl);
@@ -206,6 +208,18 @@
       return preview.length > 34 ? preview.slice(0, 33) + "…" : preview;
     } catch (_) {
       return rawUrl.replace(/^https?:\/\//i, "").replace(/\/+$/, "").slice(0, 34);
+    }
+  }
+
+  function makeTiltable(card, maxTilt) {
+    if (!card) return;
+    card.classList.add("tilt-card");
+    card.setAttribute("data-tilt-max", String(maxTilt || 0.9));
+    if (!card.querySelector(":scope > .tilt-glare")) {
+      var glare = document.createElement("div");
+      glare.className = "tilt-glare";
+      glare.setAttribute("aria-hidden", "true");
+      card.insertBefore(glare, card.firstChild);
     }
   }
 
@@ -219,7 +233,7 @@
       '<div class="fx-cyber-grid"></div>' +
       '<div class="fx-cyber-scanline"></div>' +
       '<span class="fx-cyber-token fx-cyber-token--1">0xFA92_FLAG //⚡</span>' +
-      '<span class="fx-cyber-token fx-cyber-token--2">&lt;CYBERTRAINER_CTF /&gt;</span>' +
+      '<span class="fx-cyber-token fx-cyber-token--2">&lt;CYBER_TRAINER_CTF /&gt;</span>' +
       '<span class="fx-cyber-token fx-cyber-token--3">ROOT::ACCESS_GRANTED</span>' +
       '<span class="fx-cyber-token fx-cyber-token--4">[GDG_UHU::CYBER_NODE]</span>';
     document.body.insertBefore(fx, document.body.firstChild);
@@ -255,7 +269,6 @@
     if (!collapse) return false;
     var uls = collapse.querySelectorAll(":scope > ul.navbar-nav");
     if (uls.length < 2) return false;
-    // Esperar hasta que termine de parsearse el último bloque del nav (dropdown de idioma o siguiente hermano)
     if (!nav.nextSibling && document.readyState === "loading") return false;
 
     navUpgraded = true;
@@ -286,7 +299,7 @@
         "</div>" +
         '<div class="text-truncate">' +
         '<div class="gdg-brand-title text-truncate">GDGoC UHU</div>' +
-        '<div class="gdg-brand-subtitle text-truncate">CyberTrainer</div>' +
+        '<div class="gdg-brand-subtitle text-truncate">Cyber Trainer</div>' +
         "</div>";
     }
 
@@ -315,21 +328,26 @@
         var badge = a.querySelector("[x-text*='unread_count'], .badge-notification");
         if (badge) {
           badge.className = "badge rounded-pill badge-notification ms-1";
+          badge.style.display = "none";
           unreadBadge = badge;
         }
         li.remove();
       }
     });
 
-    leftUl.className = "navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1";
+    leftUl.className = "navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1 align-items-lg-center";
     var hasNotifications = false;
     Array.prototype.slice.call(leftUl.querySelectorAll(":scope > li > a.nav-link")).forEach(function (a) {
+      a.removeAttribute("title");
+      a.removeAttribute("data-bs-toggle");
       var p = normPath(a.href);
       if (p === "/notifications") hasNotifications = true;
       var iconCls = leftIcons[p];
-      if (iconCls && !a.querySelector("i")) {
+      if (iconCls) {
         var txt = cleanLabel(a, a.textContent.trim());
-        a.innerHTML = '<i class="' + iconCls + '"></i><span>' + txt + "</span>";
+        a.className = "nav-link";
+        a.innerHTML = '<i class="' + iconCls + '"></i><span></span>';
+        a.querySelector("span").textContent = txt;
       }
     });
 
@@ -339,8 +357,8 @@
       var notifA = document.createElement("a");
       notifA.className = "nav-link position-relative";
       notifA.href = notifHref;
-      notifA.title = notifLabel;
-      notifA.innerHTML = '<i class="fas fa-bell fa-fw"></i><span>' + notifLabel + "</span>";
+      notifA.innerHTML = '<i class="fas fa-bell fa-fw"></i><span></span>';
+      notifA.querySelector("span").textContent = notifLabel;
       if (unreadBadge) notifA.appendChild(unreadBadge);
       notifLi.appendChild(notifA);
       leftUl.appendChild(notifLi);
@@ -360,12 +378,11 @@
       if (li.classList.contains("dropdown")) {
         var btn = li.querySelector("button.dropdown-toggle");
         if (btn) {
-          var langTitle = cleanLabel(btn, "Change language");
           btn.className = "theme-pill-btn theme-pill-btn--icon dropdown-toggle w-100 w-lg-auto";
-          btn.setAttribute("title", langTitle);
+          setCyberTooltip(btn, "Language");
           btn.innerHTML =
             '<i class="fas fa-language"></i>' +
-            '<span class="d-lg-none">' + langTitle + "</span>";
+            '<span class="d-lg-none">Language</span>';
         }
         return;
       }
@@ -378,36 +395,41 @@
       if (p === "/admin") {
         var adminLabel = lbl.toLowerCase() === "admin panel" ? "Admin" : lbl || "Admin";
         a.className = "theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto";
-        a.title = lbl || "Admin Panel";
-        a.innerHTML = '<i class="fas fa-wrench fa-fw"></i><span>' + adminLabel + "</span>";
+        setCyberTooltip(a, lbl || "Admin Panel");
+        a.innerHTML = '<i class="fas fa-wrench fa-fw"></i><span></span>';
+        a.querySelector("span").textContent = adminLabel;
       } else if (p === "/team") {
         a.className = "theme-pill-btn w-100 w-lg-auto";
-        a.title = lbl || "Team";
-        a.innerHTML = '<i class="fas fa-users fa-fw"></i><span>' + (lbl || "Team") + "</span>";
+        setCyberTooltip(a, lbl || "Team");
+        a.innerHTML = '<i class="fas fa-users fa-fw"></i><span></span>';
+        a.querySelector("span").textContent = lbl || "Team";
       } else if (p === "/user") {
         a.className = "theme-pill-btn w-100 w-lg-auto";
-        a.title = lbl || "Profile";
-        a.innerHTML = '<i class="fas fa-user-circle fa-fw"></i><span>' + (lbl || "Profile") + "</span>";
+        setCyberTooltip(a, lbl || "Profile");
+        a.innerHTML = '<i class="fas fa-user-circle fa-fw"></i><span></span>';
+        a.querySelector("span").textContent = lbl || "Profile";
       } else if (p === "/settings") {
         a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
-        a.title = lbl || "Settings";
-        a.innerHTML =
-          '<i class="fas fa-cogs fa-fw"></i>' +
-          '<span class="d-lg-none">' + (lbl || "Settings") + "</span>";
+        setCyberTooltip(a, lbl || "Settings");
+        a.innerHTML = '<i class="fas fa-cogs fa-fw"></i><span class="d-lg-none"></span>';
+        a.querySelector("span").textContent = lbl || "Settings";
       } else if (p === "/logout") {
         a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
-        a.title = lbl || "Logout";
-        a.innerHTML =
-          '<i class="fas fa-sign-out-alt fa-fw"></i>' +
-          '<span class="d-lg-none">' + (lbl || "Logout") + "</span>";
+        setCyberTooltip(a, lbl || "Logout");
+        a.innerHTML = '<i class="fas fa-sign-out-alt fa-fw"></i><span class="d-lg-none"></span>';
+        a.querySelector("span").textContent = lbl || "Logout";
       } else if (p === "/login") {
         loginLi = li;
         a.className = "theme-pill-btn w-100 w-lg-auto";
-        a.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>' + (lbl || "Login") + "</span>";
+        setCyberTooltip(a, "Register or Login");
+        a.innerHTML = '<i class="fas fa-sign-in-alt"></i><span></span>';
+        a.querySelector("span").textContent = lbl || "Login";
       } else if (p === "/register") {
         registerLi = li;
         a.className = "theme-primary-btn w-100 w-lg-auto";
-        a.innerHTML = '<i class="fas fa-user-plus"></i><span>' + (lbl || "Register") + "</span>";
+        setCyberTooltip(a, "Register or Login");
+        a.innerHTML = '<i class="fas fa-user-plus"></i><span></span>';
+        a.querySelector("span").textContent = lbl || "Register";
       }
     });
 
@@ -420,7 +442,8 @@
       comLi.className = "nav-item";
       comLi.innerHTML =
         '<a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" ' +
-        'class="theme-pill-btn w-100 w-lg-auto" title="Web oficial de GDG on Campus UHU">' +
+        'class="theme-pill-btn theme-pill-btn--community w-100 w-lg-auto" ' +
+        'data-cyber-tooltip="GDGoC UHU · gdguhu.com" aria-label="GDGoC UHU · gdguhu.com">' +
         '<span>Comunidad</span>' +
         '<i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>' +
         "</a>";
@@ -431,7 +454,7 @@
     return true;
   }
 
-  // Observador temprano: actualiza <nav> al parsearse y termina <main>+<footer> en cuanto aparece </footer> (antes de módulos JS)
+  // Observador temprano: actualiza <nav> al parsearse y termina <main>+<footer> al aparecer </footer>
   var earlyObs = null;
   var bridgeCompleted = false;
 
@@ -459,7 +482,7 @@
       '      <img src="' + assetUrl("img/gdgoc-uhu-logo-sm.webp") + '" alt="GDG on Campus UHU" width="40" height="40" loading="lazy" decoding="async">' +
       '      <div>' +
       '        <div class="fw-bold theme-text-primary" style="font-size: 0.9rem;">GDGoC UHU</div>' +
-      '        <div class="theme-text-secondary" style="font-size: 0.76rem;">CyberTrainer</div>' +
+      '        <div class="theme-text-secondary" style="font-size: 0.76rem;">Cyber Trainer</div>' +
       '      </div>' +
       '    </div>' +
       '    <div class="theme-footer-links">' +
@@ -481,34 +504,10 @@
     }
   }
 
-  // Helpers comunes para páginas interiores
-  function getActiveLocale() {
-    var activeLang = document.querySelector('form[x-data="LanguageForm"] .dropdown-item.bg-primary[value]');
-    if (activeLang) {
-      return (activeLang.getAttribute("value") || "en").toLowerCase();
-    }
-    return ((document.documentElement.getAttribute("lang") || "en").split("-")[0]).toLowerCase();
-  }
-
-  function makeTiltable(card, maxTilt) {
-    if (!card) return;
-    card.classList.add("tilt-card");
-    card.setAttribute("data-tilt-max", String(maxTilt || 1.1));
-    if (!card.querySelector(":scope > .tilt-glare")) {
-      var glare = document.createElement("div");
-      glare.className = "tilt-glare";
-      glare.setAttribute("aria-hidden", "true");
-      card.insertBefore(glare, card.firstChild);
-    }
-  }
-
   function wrapInThemeCard(el, extraClasses) {
     if (!el || el.closest(".theme-card")) return null;
     var card = document.createElement("div");
     card.className = "theme-card " + (extraClasses || "p-4");
-    var bar = document.createElement("div");
-    bar.className = "cyber-card-accent-bar";
-    card.appendChild(bar);
     el.parentNode.insertBefore(card, el);
     card.appendChild(el);
     return card;
@@ -518,9 +517,6 @@
     if (!parent || parent.querySelector(":scope > .theme-card")) return null;
     var card = document.createElement("div");
     card.className = "theme-card " + (extraClasses || "p-4 p-sm-5");
-    var bar = document.createElement("div");
-    bar.className = "cyber-card-accent-bar";
-    card.appendChild(bar);
     while (parent.firstChild) {
       card.appendChild(parent.firstChild);
     }
@@ -538,7 +534,18 @@
     });
   }
 
-  // 6. Tablero /challenges (optimizado: desconecta el observer durante mutaciones propias, 0 bucles!)
+  function normalizeUsernameLabels(root) {
+    var locale = getActiveLocale();
+    if (locale !== "en" && locale.indexOf("en") !== 0) return;
+    (root || document).querySelectorAll("label.form-label").forEach(function (lbl) {
+      var t = lbl.textContent || "";
+      if (/User Name/i.test(t)) {
+        lbl.textContent = t.replace(/User Name/g, "Username");
+      }
+    });
+  }
+
+  // 6. Tablero /challenges (optimizado: sin bucles de MutationObserver)
   function upgradeChallengesPage() {
     var board = document.querySelector('[x-data="ChallengeBoard"]');
     if (!board || document.querySelector(".cyber-filter-bar")) return;
@@ -548,7 +555,7 @@
     if (jumboContainer) {
       var sub = document.createElement("p");
       sub.className = "cyber-hero-sub";
-      sub.innerHTML = '<span class="theme-accent-text fw-bold">GDGoC UHU CyberTrainer</span>';
+      sub.innerHTML = '<span class="theme-accent-text fw-bold">GDGoC UHU Cyber Trainer</span>';
       jumboContainer.appendChild(sub);
 
       statsWrap = document.createElement("div");
@@ -556,8 +563,8 @@
       statsWrap.style.display = "none";
       statsWrap.innerHTML =
         '<div class="cyber-stats-strip">' +
-        '  <span class="cyber-stat-chip"><i class="fas fa-terminal" style="color:#FF007F;"></i><span>Retos:</span><strong id="gdg-stat-total">0</strong></span>' +
-        '  <span class="cyber-stat-chip cyber-stat-chip--solved"><i class="fas fa-check-circle" style="color:#00FF66;"></i><span>Resueltos:</span><strong id="gdg-stat-solved">0 / 0</strong></span>' +
+        '  <span class="cyber-stat-chip"><i class="fas fa-terminal" style="color:#FF007F;"></i><span>Challenges:</span><strong id="gdg-stat-total">0</strong></span>' +
+        '  <span class="cyber-stat-chip cyber-stat-chip--solved"><i class="fas fa-check-circle" style="color:#00FF66;"></i><span>Solved:</span><strong id="gdg-stat-solved">0 / 0</strong></span>' +
         "</div>" +
         '<div class="cyber-progress-wrap"><div class="cyber-progress-track"><div class="cyber-progress-fill" id="gdg-stat-bar" style="width:0%"></div></div></div>';
       jumboContainer.appendChild(statsWrap);
@@ -568,16 +575,16 @@
     filterBar.style.display = "none";
     filterBar.innerHTML =
       '<div class="row g-3 align-items-center">' +
-      '  <div class="col-lg-7">' +
+      '  <div class="col-lg-8">' +
       '    <div class="theme-search-box">' +
       '      <i class="fas fa-search ms-2" style="color:#00F0FF;"></i>' +
-      '      <input type="text" id="gdg-chal-search" placeholder="Buscar reto por nombre, categoría o etiqueta..." aria-label="Buscar reto">' +
-      '      <button type="button" id="gdg-chal-clear" class="btn btn-sm p-1 border-0 bg-transparent text-secondary" style="display:none;" aria-label="Limpiar búsqueda"><i class="fas fa-times"></i></button>' +
+      '      <input type="text" id="gdg-chal-search" placeholder="Search challenge by name, category or tag..." aria-label="Search challenge">' +
+      '      <button type="button" id="gdg-chal-clear" class="btn btn-sm p-1 border-0 bg-transparent text-secondary" style="display:none;min-height:auto;padding:0.25rem!important;" aria-label="Clear search"><i class="fas fa-times"></i></button>' +
       "    </div>" +
       "  </div>" +
-      '  <div class="col-lg-5 d-flex justify-content-lg-end">' +
+      '  <div class="col-lg-4 d-flex justify-content-lg-end">' +
       '    <button type="button" id="gdg-chal-hide-solved" class="theme-pill-btn">' +
-      '      <i class="fas fa-filter"></i><span>Ocultar resueltos</span>' +
+      '      <i class="fas fa-filter"></i><span>Hide solved</span>' +
       "    </button>" +
       "  </div>" +
       "</div>" +
@@ -669,7 +676,7 @@
         '<i class="fas ' +
         (state.hideSolved ? "fa-eye-slash" : "fa-filter") +
         '"></i><span>' +
-        (state.hideSolved ? "Mostrando pendientes" : "Ocultar resueltos") +
+        (state.hideSolved ? "Showing unsolved" : "Hide solved") +
         "</span>";
       applyFilters();
     });
@@ -697,7 +704,7 @@
 
         if (!btn.classList.contains("tilt-card")) {
           btn.classList.add("tilt-card");
-          btn.setAttribute("data-tilt-max", "2.2");
+          btn.setAttribute("data-tilt-max", "1.8");
         }
         if (!btn.querySelector(".tilt-glare")) {
           var glare = document.createElement("div");
@@ -782,7 +789,7 @@
         var allBtn = document.createElement("button");
         allBtn.type = "button";
         allBtn.className = "theme-pill-btn" + (state.category === "ALL" ? " active" : "");
-        allBtn.innerHTML = "<span>⚡ Todas</span>";
+        allBtn.innerHTML = "<span>⚡ All</span>";
         allBtn.addEventListener("click", function () {
           state.category = "ALL";
           catsWrap.querySelectorAll("button").forEach(function (b) {
@@ -810,7 +817,7 @@
         });
       }
 
-      applyFilters(); // Reconecta boardObs al terminar
+      applyFilters();
     }
 
     function scheduleSync(mutations) {
@@ -852,8 +859,6 @@
     table.dataset.cyberUsersUpgraded = "1";
     table.classList.add("align-middle");
 
-    // CTFd core orden original: [0: User, 1: Website, 2: Affiliation, 3: Country]
-    // Nuevo orden solicitado:   [0: Username, 1: Country (bandera+tooltip), 2: Affiliation, 3: Website preview]
     var thUser = ths[0];
     var thWeb = ths[1];
     var thAff = ths[2];
@@ -888,7 +893,6 @@
 
       tdUser.className = "fw-semibold";
 
-      // Country: solo bandera + tooltip con nombre completo del país
       var flagIcon = tdCountry.querySelector('i[class*="flag-"]');
       var countryName = (tdCountry.textContent || "").replace(/\s+/g, " ").trim();
       tdCountry.className = "text-center";
@@ -899,24 +903,29 @@
         wrap.setAttribute("tabindex", "0");
         if (countryName) {
           wrap.setAttribute("data-tooltip", countryName);
-          wrap.setAttribute("title", countryName);
           wrap.setAttribute("aria-label", countryName);
         }
         wrap.appendChild(flagIcon);
         tdCountry.appendChild(wrap);
       } else if (countryName) {
-        tdCountry.innerHTML = '<span class="theme-text-secondary small">' + countryName + "</span>";
+        tdCountry.innerHTML = '<span class="theme-text-secondary small"></span>';
+        tdCountry.querySelector("span").textContent = countryName;
       } else {
         tdCountry.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
       }
 
-      // Affiliation
       tdAff.className = "d-none d-md-table-cell";
-      if (!(tdAff.textContent || "").trim()) {
+      var affText = (tdAff.textContent || "").trim();
+      if (!affText) {
         tdAff.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
+      } else {
+        var affSpan = tdAff.querySelector("span[data-toggle='tooltip'], span[data-bs-toggle='tooltip']");
+        if (affSpan) {
+          affSpan.removeAttribute("data-toggle");
+          affSpan.removeAttribute("data-bs-toggle");
+        }
       }
 
-      // Website: preview visual clicable si existe enlace
       var webLink = tdWeb.querySelector("a[href]");
       tdWeb.className = "d-none d-sm-table-cell";
       tdWeb.style.width = "";
@@ -929,7 +938,8 @@
         a.target = "_blank";
         a.rel = "noopener noreferrer";
         a.className = "cyber-web-preview";
-        a.title = href;
+        a.setAttribute("data-cyber-tooltip", href);
+        a.setAttribute("aria-label", href);
         a.innerHTML =
           '<i class="fas fa-globe"></i>' +
           '<span class="cyber-web-preview-text"></span>' +
@@ -948,7 +958,22 @@
     });
   }
 
-  // 8. Settings unificado y multilingüe (3 cajas 3D: Profile → Passwords → Access Tokens)
+  // Helper para organizar pares de campos .mb-3 en rejilla 2 columnas limpia dentro de formularios anchos
+  function arrangeFieldsIntoGrid(formEl, colClass) {
+    if (!formEl) return;
+    var groups = Array.prototype.slice.call(formEl.querySelectorAll(":scope > .mb-3"));
+    if (groups.length < 2) return;
+    var grid = document.createElement("div");
+    grid.className = "row g-3 mb-2";
+    formEl.insertBefore(grid, groups[0]);
+    groups.forEach(function (g) {
+      g.classList.remove("mb-3");
+      g.classList.add(colClass || "col-md-6");
+      grid.appendChild(g);
+    });
+  }
+
+  // 8. Settings unificado y multilingüe (3 cajas 3D amplias: Profile → Passwords → Access Tokens)
   function upgradeSettingsPage() {
     var mainContainer = document.querySelector("main > .container");
     if (!mainContainer || mainContainer.dataset.cyberSettingsUpgraded === "1") return;
@@ -970,7 +995,6 @@
       pl: "Hasła",
     };
 
-    // Leer los textos ya traducidos por CTFd en las pestañas originales antes de ocultarlas
     var profileTab = mainContainer.querySelector("#settings-profile-tab");
     var tokensTab = mainContainer.querySelector("#settings-tokens-tab");
     var profileTitleText = (profileTab && profileTab.textContent.trim()) || "Profile";
@@ -988,7 +1012,7 @@
 
     var contentCol = tabContent.closest('[class*="col-"]');
     if (contentCol) {
-      contentCol.className = "col-lg-9 col-xl-8 mx-auto";
+      contentCol.className = "col-12 col-xl-11 mx-auto";
     }
 
     var profilePane = tabContent.querySelector("#profile");
@@ -1006,12 +1030,8 @@
 
     if (profilePane) {
       profilePane.classList.add("show", "active");
+      normalizeUsernameLabels(profilePane);
 
-      // Ajustar etiquetas respetando traducciones activas de CTFd
-      var nameLabel = profilePane.querySelector('label[for="name"]');
-      if (nameLabel && isEn && nameLabel.textContent.trim().toLowerCase() === "user name") {
-        nameLabel.textContent = "Username";
-      }
       var langLabel = profilePane.querySelector('label[for="language"]');
       if (langLabel) {
         if (isEn && langLabel.textContent.trim().toLowerCase() === "language") {
@@ -1021,7 +1041,6 @@
         }
       }
 
-      // Extraer confirm + password a su propia caja independiente "Passwords" antes de Access Tokens
       var profileForm = profilePane.querySelector('form[x-data="SettingsForm"]');
       var confirmInput = profileForm && profileForm.querySelector('#confirm, input[name="confirm"]');
       var passwordInput = profileForm && profileForm.querySelector('#password, input[name="password"]');
@@ -1039,21 +1058,14 @@
           }
         }
 
-        // Eliminar los <hr> que quedaban alrededor del bloque de contraseñas dentro de Profile
-        if (confirmGroup && confirmGroup.previousElementSibling && confirmGroup.previousElementSibling.tagName === "HR") {
-          confirmGroup.previousElementSibling.remove();
-        }
-        if (passwordGroup && passwordGroup.nextElementSibling && passwordGroup.nextElementSibling.tagName === "HR") {
-          passwordGroup.nextElementSibling.remove();
-        }
+        // Quitar los <hr> sobrantes dentro del formulario de Profile
+        profileForm.querySelectorAll(":scope > hr").forEach(function (hr) {
+          hr.remove();
+        });
 
-        // Crear el contenedor independiente Passwords con su propio formulario SettingsForm
         passwordsCard = document.createElement("div");
         passwordsCard.className = "theme-card p-4 p-sm-5 mb-4";
         passwordsCard.id = "passwords";
-        var pBar = document.createElement("div");
-        pBar.className = "cyber-card-accent-bar";
-        passwordsCard.appendChild(pBar);
         passwordsCard.appendChild(
           createSectionHeader("fas fa-lock", "#FFE600", passwordsTitleText, "cyber-settings-section-title--passwords")
         );
@@ -1069,6 +1081,7 @@
 
         if (confirmGroup) pwForm.appendChild(confirmGroup);
         if (passwordGroup) pwForm.appendChild(passwordGroup);
+        arrangeFieldsIntoGrid(pwForm, "col-md-6");
 
         var origResults = profileForm.querySelector("#results");
         if (origResults) {
@@ -1079,17 +1092,27 @@
 
         var origSubmit = profileForm.querySelector('input[type="submit"], button[type="submit"]');
         var submitWrap = document.createElement("div");
-        submitWrap.className = "d-flex justify-content-end pt-2";
+        submitWrap.className = "d-flex justify-content-end pt-3";
         var pwSubmit = document.createElement("input");
         pwSubmit.type = "submit";
         pwSubmit.name = "_submit";
-        pwSubmit.className = "btn btn-primary px-4";
+        pwSubmit.className = "btn btn-primary";
         pwSubmit.value = (origSubmit && (origSubmit.value || origSubmit.textContent.trim())) || "Submit";
         submitWrap.appendChild(pwSubmit);
         pwForm.appendChild(submitWrap);
 
         passwordsCard.appendChild(pwForm);
-        makeTiltable(passwordsCard, 1.1);
+        makeTiltable(passwordsCard, 0.9);
+      }
+
+      if (profileForm) {
+        arrangeFieldsIntoGrid(profileForm, "col-md-6");
+        var pSub = profileForm.querySelector('input[type="submit"], button[type="submit"]');
+        if (pSub) {
+          pSub.classList.remove("float-end", "btn-outlined", "btn-md");
+          var pSubRow = pSub.closest(".mb-3");
+          if (pSubRow) pSubRow.className = "d-flex justify-content-end pt-3";
+        }
       }
 
       var profileCard = wrapInThemeCard(profilePane, "p-4 p-sm-5 mb-4");
@@ -1100,11 +1123,16 @@
             profilePane.firstChild
           );
         }
-        makeTiltable(profileCard, 1.1);
+        makeTiltable(profileCard, 0.9);
         if (passwordsCard && profileCard.parentNode) {
           profileCard.parentNode.insertBefore(passwordsCard, profileCard.nextSibling);
           var insertedPwForm = passwordsCard.querySelector('form[x-data="SettingsForm"]');
-          if (insertedPwForm && window.Alpine && !insertedPwForm._x_dataStack && typeof window.Alpine.initTree === "function") {
+          if (
+            insertedPwForm &&
+            window.Alpine &&
+            !insertedPwForm._x_dataStack &&
+            typeof window.Alpine.initTree === "function"
+          ) {
             window.Alpine.initTree(insertedPwForm);
           }
         }
@@ -1113,6 +1141,31 @@
 
     if (tokensPane) {
       tokensPane.classList.add("show", "active");
+      var tokForm = tokensPane.querySelector('form[x-data="TokensForm"]');
+      if (tokForm) {
+        var tokGroups = Array.prototype.slice.call(tokForm.querySelectorAll(":scope > .mb-3"));
+        if (tokGroups.length >= 2) {
+          var tGrid = document.createElement("div");
+          tGrid.className = "row g-3 mb-2";
+          tokForm.insertBefore(tGrid, tokGroups[0]);
+          tokGroups[0].className = "col-md-5";
+          tokGroups[1].className = "col-md-7";
+          tGrid.appendChild(tokGroups[0]);
+          tGrid.appendChild(tokGroups[1]);
+        }
+        var tSub = tokForm.querySelector('input[type="submit"], button[type="submit"]');
+        if (tSub) {
+          tSub.classList.remove("float-end", "btn-outlined", "btn-md");
+          var tWrap = tSub.closest(".mb-3") || tSub.parentElement;
+          if (tWrap && tWrap.tagName === "DIV") tWrap.className = "d-flex justify-content-end pt-2";
+        }
+      }
+
+      // Mejorar el botón de borrar token con tooltip Cyber
+      tokensPane.querySelectorAll(".delete-token").forEach(function (del) {
+        setCyberTooltip(del, "Delete token");
+      });
+
       var tokensCard = wrapInThemeCard(tokensPane, "p-4 p-sm-5");
       if (tokensCard) {
         if (!tokensPane.querySelector(".cyber-settings-section-title")) {
@@ -1121,7 +1174,7 @@
             tokensPane.firstChild
           );
         }
-        makeTiltable(tokensCard, 1.1);
+        makeTiltable(tokensCard, 0.9);
       }
     }
 
@@ -1148,26 +1201,51 @@
     ) {
       var form = document.querySelector("main form");
       if (form) {
+        normalizeUsernameLabels(form);
+
+        if (path === "/register") {
+          var locale = getActiveLocale();
+          var isEs = locale === "es" || locale.indexOf("es") === 0;
+          var regCodeText = isEs
+            ? "Debe ser proporcionado por GDGoC UHU"
+            : "Must be provided by GDGoC UHU";
+
+          form.querySelectorAll(".mb-3").forEach(function (group) {
+            var input = group.querySelector("input, select, textarea");
+            var help = group.querySelector("small.form-text");
+            if (!help) return;
+            var nm = (input && (input.name || input.id) || "").toLowerCase();
+            if (nm === "registration_code") {
+              help.textContent = regCodeText;
+            } else if (nm === "name" || nm === "email" || nm === "password") {
+              help.remove();
+            }
+          });
+        }
+
         var col = form.closest('[class*="col-"]');
         if (col) {
+          col.className = "col-md-10 col-lg-8 col-xl-7 mx-auto";
           var card = wrapChildrenInThemeCard(col, "p-4 p-sm-5");
-          if (card) makeTiltable(card, 1.1);
-          if (card && path === "/login" && !card.querySelector('a[href*="/register"]')) {
-            var footerHint = document.createElement("div");
-            footerHint.innerHTML =
-              '<hr class="my-4"><div class="text-center small theme-text-secondary">' +
-              'Don\'t have an account yet? <a href="' +
-              getUrlRoot() +
-              '/register" class="fw-bold ms-1">Register →</a></div>';
-            card.appendChild(footerHint);
-          } else if (card && path === "/register" && !card.querySelector('a[href*="/login"]')) {
-            var loginHint = document.createElement("div");
-            loginHint.innerHTML =
-              '<hr class="my-4"><div class="text-center small theme-text-secondary">' +
-              'Already have an account? <a href="' +
-              getUrlRoot() +
-              '/login" class="fw-bold ms-1">Login →</a></div>';
-            card.appendChild(loginHint);
+          if (card) {
+            makeTiltable(card, 0.9);
+            if (path === "/login" && !card.querySelector('a[href*="/register"]')) {
+              var footerHint = document.createElement("div");
+              footerHint.innerHTML =
+                '<hr class="my-4"><div class="text-center small theme-text-secondary">' +
+                'Don\'t have an account yet? <a href="' +
+                getUrlRoot() +
+                '/register" class="fw-bold ms-1">Register →</a></div>';
+              card.appendChild(footerHint);
+            } else if (path === "/register" && !card.querySelector('a[href*="/login"]')) {
+              var loginHint = document.createElement("div");
+              loginHint.innerHTML =
+                '<hr class="my-4"><div class="text-center small theme-text-secondary">' +
+                'Already have an account? <a href="' +
+                getUrlRoot() +
+                '/login" class="fw-bold ms-1">Login →</a></div>';
+              card.appendChild(loginHint);
+            }
           }
         }
       }
@@ -1180,34 +1258,34 @@
         var box = document.createElement("div");
         box.className = "theme-card p-5 text-center";
         box.innerHTML =
-          '<div class="cyber-card-accent-bar"></div>' +
           '<i class="fas fa-bell-slash fa-3x mb-3" style="color:#00F0FF;opacity:0.7;"></i>';
         emptyH2.className = "h4 theme-text-primary fw-bold mb-1";
         emptyH2.parentNode.insertBefore(box, emptyH2);
         box.appendChild(emptyH2);
-        makeTiltable(box, 1.1);
+        makeTiltable(box, 0.9);
       }
       document.querySelectorAll("main .card").forEach(function (c) {
-        if (!c.querySelector(".cyber-card-accent-bar")) {
-          var bar = document.createElement("div");
-          bar.className = "cyber-card-accent-bar";
-          c.insertBefore(bar, c.firstChild);
-        }
-        makeTiltable(c, 1.1);
+        makeTiltable(c, 0.9);
       });
       return;
     }
 
     if (path === "/scoreboard") {
       var graph = document.getElementById("score-graph");
-      if (graph) wrapInThemeCard(graph, "p-3 p-md-4 mb-4");
+      if (graph) {
+        var gc = wrapInThemeCard(graph, "p-3 p-md-4 mb-4");
+        if (gc) makeTiltable(gc, 0.8);
+      }
       wrapTablesInCyberWrap(document);
       return;
     }
 
     if (path === "/users" || path === "/teams") {
       var searchForm = document.querySelector("main form");
-      if (searchForm) wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");
+      if (searchForm) {
+        var sc = wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");
+        if (sc) makeTiltable(sc, 0.8);
+      }
       upgradeUsersDirectoryTable();
       wrapTablesInCyberWrap(document);
       return;
@@ -1220,7 +1298,10 @@
       path.indexOf("/teams/") === 0
     ) {
       var profGraph = document.getElementById("score-graph");
-      if (profGraph) wrapInThemeCard(profGraph, "p-3 p-md-4 mb-4");
+      if (profGraph) {
+        var pg = wrapInThemeCard(profGraph, "p-3 p-md-4 mb-4");
+        if (pg) makeTiltable(pg, 0.8);
+      }
       wrapTablesInCyberWrap(document);
       return;
     }
@@ -1244,7 +1325,6 @@
     var legacyStyle = document.getElementById("gdg-custom-theme");
     if (legacyStyle) legacyStyle.disabled = true;
 
-    // Solo actuar como puente cuando no esté activo el tema Jinja nativo `cyber`
     if (!document.querySelector("header.theme-header") || navUpgraded) {
       injectBackgroundFx();
       upgradeNavbar();

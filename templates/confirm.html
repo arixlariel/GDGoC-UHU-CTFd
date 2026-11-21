@@ -9,9 +9,9 @@
 
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-md-10 col-lg-7 col-xl-6">
-        <div class="theme-card p-4 p-sm-5 text-center">
-          <div class="cyber-card-accent-bar"></div>
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="theme-card tilt-card p-4 p-sm-5 text-center" data-tilt-max="0.9">
+          <div class="tilt-glare" aria-hidden="true"></div>
           {% include "components/errors.html" %}
 
           {% if request.args.get('flow') == "init" %}

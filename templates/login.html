@@ -9,9 +9,9 @@
 
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6 col-xl-5">
-        <div class="theme-card p-4 p-sm-5">
-          <div class="cyber-card-accent-bar"></div>
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="theme-card tilt-card p-4 p-sm-5" data-tilt-max="0.9">
+          <div class="tilt-glare" aria-hidden="true"></div>
 
           {% include "components/errors.html" %}
 
@@ -25,7 +25,7 @@
           {% with form = Forms.auth.LoginForm() %}
             <form method="post" accept-charset="utf-8">
               <div class="mb-3">
-                <b>{{ form.name.label(class="form-label") }}</b>
+                <b><label class="form-label" for="name">{% trans %}Username or Email{% endtrans %}</label></b>
                 {{ form.name(class="form-control", value=name, autocomplete="username email") }}
               </div>
 
@@ -39,7 +39,7 @@
                   {% trans %}Forgot your password?{% endtrans %}
                 </a>
 
-                {{ form.submit(class="btn btn-primary px-4") }}
+                {{ form.submit(class="btn btn-primary") }}
               </div>
 
               {{ form.nonce() }}
@@ -49,7 +49,7 @@
           {% if registration_visible() %}
             <hr class="my-4">
             <div class="text-center small theme-text-secondary">
-              ¿Todavía no tienes cuenta?
+              Don't have an account yet?
               <a href="{{ url_for('auth.register') }}" class="fw-bold ms-1">
                 {% trans %}Register{% endtrans %} →
               </a>

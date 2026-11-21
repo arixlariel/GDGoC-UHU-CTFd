@@ -5,7 +5,7 @@
     <div class="container">
       <h1>{% trans %}Scoreboard{% endtrans %}</h1>
       <p class="cyber-hero-sub">
-        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU CyberTrainer' }}</span>
+        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU Cyber Trainer' }}</span>
       </p>
     </div>
   </section>
@@ -20,7 +20,6 @@
       :class="{'d-block': show, 'd-none': !show}"
       @bracket-change.window="activeBracket=$event.detail; update();"
     >
-      <div class="cyber-card-accent-bar"></div>
       <div id="score-graph" class="align-items-center d-flex" x-ref="scoregraph">
         <div class="col-md-12 text-center py-5">
           <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
@@ -94,7 +93,6 @@
 
       <div class="col-md-12" x-show="! standings.length">
         <div class="theme-card p-5 text-center">
-          <div class="cyber-card-accent-bar"></div>
           <i class="fas fa-trophy fa-3x mb-3" style="color: #00F0FF; opacity: 0.7;"></i>
           <h3 class="theme-text-primary fw-bold mb-1">{% trans %}Scoreboard is empty{% endtrans %}</h3>
           <p class="theme-text-secondary mb-0">Aún no hay puntuaciones registradas en la clasificación.</p>

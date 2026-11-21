@@ -1,6 +1,6 @@
 # ⚡ Cyber · Tema Oficial para CTFd (GDGoC UHU)
 
-Tema **Cyber** para la plataforma **CyberTrainer CTF** de **Google Developer Groups on Campus — Universidad de Huelva (GDGoC UHU)**, con el mismo estilo **Cyber** unificado que nuestra web de Open Badges ([gdguhu.com](https://gdguhu.com)).
+Tema **Cyber** para la plataforma **GDGoC UHU Cyber Trainer** de **Google Developer Groups on Campus — Universidad de Huelva (GDGoC UHU)**, con el mismo estilo **Cyber** unificado que nuestra web de Open Badges ([gdguhu.com](https://gdguhu.com)).
 
 ---
 

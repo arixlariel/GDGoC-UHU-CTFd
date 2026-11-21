@@ -275,7 +275,7 @@ HOME_CONTENT = Markup("""
     </div>
 
     <h1 class="display-4 fw-bold mb-3">
-      CyberTrainer <span class="theme-accent-text">CTF 2026</span>
+      Cyber Trainer <span class="theme-accent-text">CTF 2026</span>
     </h1>
 
     <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width: 760px; font-size: 1.12rem;">
@@ -466,7 +466,7 @@ def build():
 
     def make_ctx(authed_state=True, admin_state=True):
         return {
-            "title": "GDGoC UHU CyberTrainer",
+            "title": "GDGoC UHU Cyber Trainer",
             "meta": "",
             "Assets": MockAssets(),
             "url_for": mock_url_for,
@@ -479,7 +479,7 @@ def build():
             "get_mode_as_word": lambda capitalize=False: "User" if capitalize else "user",
             "lookup_country_code": lambda code: {"ES": "Spain", "PT": "Portugal"}.get(code, code),
             "Configs": SimpleNamespace(
-                ctf_name="GDGoC UHU CyberTrainer",
+                ctf_name="GDGoC UHU Cyber Trainer",
                 ctf_logo=None,
                 ctf_small_icon=None,
                 user_mode="users",
@@ -511,16 +511,16 @@ def build():
             "Forms": SimpleNamespace(
                 auth=SimpleNamespace(
                     LoginForm=lambda: SimpleNamespace(
-                        name=MockField("name", "User Name or Email"),
+                        name=MockField("name", "Username or Email"),
                         password=MockField("password", "Password", input_type="password"),
                         submit=MockField("_submit", "Submit", input_type="submit"),
                         nonce=MockField("nonce", "", input_type="hidden"),
                     ),
                     RegistrationForm=lambda: SimpleNamespace(
-                        name=MockField("name", "User Name"),
+                        name=MockField("name", "Username"),
                         email=MockField("email", "Email", input_type="email"),
                         password=MockField("password", "Password", input_type="password"),
-                        extra=[MockField("registration_code", "Registration Code", description="Registration code required to create account")],
+                        extra=[MockField("registration_code", "Registration Code", description="Must be provided by GDGoC UHU")],
                         submit=MockField("_submit", "Submit", input_type="submit"),
                         nonce=MockField("nonce", "", input_type="hidden"),
                     ),
@@ -779,7 +779,7 @@ def build():
 
     mock_notifications = [
         SimpleNamespace(
-            title="🚀 ¡Arranca CyberTrainer CTF 2026!",
+            title="🚀 ¡Arranca Cyber Trainer CTF 2026!",
             date="2026-11-20T18:00:00Z",
             html=Markup("<p>Ya están activos todos los retos de <strong>Criptografía, Reversing con Ghidra, Web y Forense</strong>. Recuerda el formato oficial de flag: <code>CLUB{...}</code>.</p>"),
         ),

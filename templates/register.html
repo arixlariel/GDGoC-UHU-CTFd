@@ -5,16 +5,16 @@
     <div class="container">
       <h1>{% trans %}Register{% endtrans %}</h1>
       <p class="cyber-hero-sub">
-        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU CyberTrainer' }}</span>
+        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU Cyber Trainer' }}</span>
       </p>
     </div>
   </section>
 
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-md-8 col-lg-6">
-        <div class="theme-card p-4 p-sm-5">
-          <div class="cyber-card-accent-bar"></div>
+      <div class="col-md-10 col-lg-8 col-xl-7">
+        <div class="theme-card tilt-card p-4 p-sm-5" data-tilt-max="0.9">
+          <div class="tilt-glare" aria-hidden="true"></div>
 
           {% include "components/errors.html" %}
 
@@ -30,27 +30,18 @@
 
             <form method="post" accept-charset="utf-8" role="form">
               <div class="mb-3">
-                <b>{{ form.name.label(class="form-label") }}</b>
+                <b><label class="form-label" for="name">{% trans %}Username{% endtrans %}</label></b>
                 {{ form.name(class="form-control", value=name, autocomplete="username") }}
-                <small class="form-text text-muted">
-                  {% trans %}Your username on the site{% endtrans %}
-                </small>
               </div>
 
               <div class="mb-3">
                 <b>{{ form.email.label(class="form-label") }}</b>
                 {{ form.email(class="form-control", value=email, autocomplete="email") }}
-                <small class="form-text text-muted">
-                  {% trans %}Never shown to the public{% endtrans %}
-                </small>
               </div>
 
               <div class="mb-3">
                 <b>{{ form.password.label(class="form-label") }}</b>
                 {{ form.password(class="form-control", value=password, autocomplete="new-password") }}
-                <small class="form-text text-muted">
-                  {% trans %}Password used to log into your account{% endtrans %}
-                </small>
               </div>
 
               {{ form.nonce() }}
@@ -58,7 +49,7 @@
               {{ render_extra_fields(form.extra) }}
 
               <div class="d-flex justify-content-end pt-3">
-                {{ form.submit(class="btn btn-primary px-5 w-100 w-sm-auto") }}
+                {{ form.submit(class="btn btn-primary w-100 w-sm-auto") }}
               </div>
 
               {% if Configs.tos_or_privacy %}
@@ -79,7 +70,7 @@
 
           <hr class="my-4">
           <div class="text-center small theme-text-secondary">
-            ¿Ya tienes una cuenta registrada?
+            Already have an account?
             <a href="{{ url_for('auth.login') }}" class="fw-bold ms-1">
               {% trans %}Login{% endtrans %} →
             </a>
