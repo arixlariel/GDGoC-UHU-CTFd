@@ -1048,7 +1048,7 @@
 
     var contentCol = tabContent.closest('[class*="col-"]');
     if (contentCol) {
-      contentCol.className = "col-12 col-xl-11 mx-auto";
+      contentCol.className = "col-12 mx-auto";
     }
 
     var profilePane = tabContent.querySelector("#profile");
@@ -1120,22 +1120,29 @@
         arrangeFieldsIntoGrid(pwForm, "col-md-6");
 
         var origResults = profileForm.querySelector("#results");
-        if (origResults) {
-          var pwResults = origResults.cloneNode(true);
-          pwResults.removeAttribute("id");
-          pwForm.appendChild(pwResults);
-        }
-
         var origSubmit = profileForm.querySelector('input[type="submit"], button[type="submit"]');
-        var submitWrap = document.createElement("div");
-        submitWrap.className = "d-flex justify-content-end pt-3";
+
+        var pwActions = document.createElement("div");
+        pwActions.className = "cyber-form-actions";
+
+        var pwStatus = document.createElement("div");
+        pwStatus.className = "cyber-form-status";
+        if (origResults) {
+          var pwResultsClone = origResults.cloneNode(true);
+          pwResultsClone.removeAttribute("id");
+          pwResultsClone.className = "cyber-form-status";
+          pwStatus = pwResultsClone;
+        }
+        pwActions.appendChild(pwStatus);
+
         var pwSubmit = document.createElement("input");
         pwSubmit.type = "submit";
         pwSubmit.name = "_submit";
         pwSubmit.className = "btn btn-primary";
         pwSubmit.value = (origSubmit && (origSubmit.value || origSubmit.textContent.trim())) || "Submit";
-        submitWrap.appendChild(pwSubmit);
-        pwForm.appendChild(submitWrap);
+        pwActions.appendChild(pwSubmit);
+
+        pwForm.appendChild(pwActions);
 
         passwordsCard.appendChild(pwForm);
         makeTiltable(passwordsCard, 0.9);
@@ -1144,17 +1151,26 @@
       if (profileForm) {
         arrangeFieldsIntoGrid(profileForm, "col-md-6");
         var pSub = profileForm.querySelector('input[type="submit"], button[type="submit"]');
+        var pRes = profileForm.querySelector("#results");
         if (pSub) {
           pSub.classList.remove("float-end", "btn-outlined", "btn-md", "w-100");
-          var pSubRow = pSub.closest(".mb-3, .submit-row, div");
-          if (pSubRow && pSubRow !== profileForm) {
-            pSubRow.className = "d-flex justify-content-end pt-3";
-            profileForm.appendChild(pSubRow);
+          var oldSubRow = pSub.closest(".mb-3, .submit-row, div");
+          var pActions = document.createElement("div");
+          pActions.className = "cyber-form-actions";
+
+          if (pRes) {
+            pRes.className = "cyber-form-status";
+            pActions.appendChild(pRes);
           } else {
-            var newRow = document.createElement("div");
-            newRow.className = "d-flex justify-content-end pt-3";
-            newRow.appendChild(pSub);
-            profileForm.appendChild(newRow);
+            var emptySt = document.createElement("div");
+            emptySt.className = "cyber-form-status";
+            pActions.appendChild(emptySt);
+          }
+          pActions.appendChild(pSub);
+          profileForm.appendChild(pActions);
+
+          if (oldSubRow && oldSubRow !== profileForm && oldSubRow.children.length === 0) {
+            oldSubRow.remove();
           }
         }
       }

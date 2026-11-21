@@ -10,7 +10,7 @@
 
   <div class="container cyber-settings-unified">
     <div class="row justify-content-center">
-      <div class="col-12 col-xl-11">
+      <div class="col-12">
         {% with form = Forms.self.SettingsForm(language=language, country=country) %}
           <!-- 1. Profile -->
           <div class="theme-card tilt-card p-4 p-sm-5 mb-4" id="profile" data-tilt-max="0.9">
@@ -60,28 +60,28 @@
 
               {{ render_extra_fields(form.extra) }}
 
-              <div id="results" class="my-3">
-                <div
-                  class="alert alert-success alert-dismissible submit-row"
-                  role="alert"
-                  x-cloak="success"
-                  x-show="success"
-                >
-                  <strong>Success!</strong>
-                  {% trans %}Your profile has been updated{% endtrans %}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-
-                <template x-for="(msg, idx) in errors" :key="idx">
-                  <div class="alert alert-danger alert-dismissible" role="alert">
-                    <span class="sr-only">{% trans %}Error:{% endtrans %}</span>
-                    <span x-text="msg"></span>
+              <div class="cyber-form-actions">
+                <div id="results" class="cyber-form-status">
+                  <div
+                    class="alert alert-success alert-dismissible submit-row"
+                    role="alert"
+                    x-cloak="success"
+                    x-show="success"
+                  >
+                    <strong>Success!</strong>
+                    <span>{% trans %}Your profile has been updated{% endtrans %}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
-                </template>
-              </div>
 
-              <div class="d-flex justify-content-end pt-2">
+                  <template x-for="(msg, idx) in errors" :key="idx">
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                      <span class="sr-only">{% trans %}Error:{% endtrans %}</span>
+                      <span x-text="msg"></span>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  </template>
+                </div>
+
                 {{ form.submit(class="btn btn-primary") }}
               </div>
             </form>
@@ -115,28 +115,28 @@
                 </div>
               </div>
 
-              <div class="my-3">
-                <div
-                  class="alert alert-success alert-dismissible submit-row"
-                  role="alert"
-                  x-cloak="success"
-                  x-show="success"
-                >
-                  <strong>Success!</strong>
-                  {% trans %}Your profile has been updated{% endtrans %}
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-
-                <template x-for="(msg, idx) in errors" :key="idx">
-                  <div class="alert alert-danger alert-dismissible" role="alert">
-                    <span class="sr-only">{% trans %}Error:{% endtrans %}</span>
-                    <span x-text="msg"></span>
+              <div class="cyber-form-actions">
+                <div class="cyber-form-status">
+                  <div
+                    class="alert alert-success alert-dismissible submit-row"
+                    role="alert"
+                    x-cloak="success"
+                    x-show="success"
+                  >
+                    <strong>Success!</strong>
+                    <span>{% trans %}Your profile has been updated{% endtrans %}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
-                </template>
-              </div>
 
-              <div class="d-flex justify-content-end pt-2">
+                  <template x-for="(msg, idx) in errors" :key="idx">
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                      <span class="sr-only">{% trans %}Error:{% endtrans %}</span>
+                      <span x-text="msg"></span>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  </template>
+                </div>
+
                 {{ form.submit(class="btn btn-primary") }}
               </div>
             </form>
