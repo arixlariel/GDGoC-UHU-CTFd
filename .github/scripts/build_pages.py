@@ -113,11 +113,6 @@ def isoformat_filter(val):
     return str(val)
 
 
-def ngettext_fn(singular, plural, n):
-    tpl = singular if n == 1 else plural
-    return tpl % {"num": n}
-
-
 MOCK_CHALLENGES = [
     {
         "id": 1,
@@ -287,7 +282,6 @@ def build():
         "can_send_mail": lambda: False,
         "get_mode_as_word": lambda capitalize=False: "User" if capitalize else "user",
         "lookup_country_code": lambda code: code,
-        "ngettext": ngettext_fn,
         "Configs": SimpleNamespace(
             ctf_name="CyberTrainer GDGoC UHU",
             ctf_logo=None,
