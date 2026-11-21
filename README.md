@@ -10,11 +10,10 @@ Tema personalizado **Cyber Neon** para la plataforma **CyberTrainer CTF** de **G
 - **Cero compilación en servidor**: todos los assets (`static/manifest.json`, `static/assets/*`, `static/css/gdgoc-cyber.css`, `static/js/gdgoc-cyber.js`) ya vienen listos para usar con un simple `git clone` / `git pull`.
 - **Estética Cyber exclusiva de Open Badges**:
   - Fondo animado con rejilla perspectiva neón, línea láser *scanline* y tokens flotantes (`#theme-fx-container`), respetando `prefers-reduced-motion`.
-  - Cabecera sticky *glassmorphism* con barra superior neón multicolor, logo oficial GDGoC UHU, navegación CTF, selector de idioma y enlace rápido a `gdguhu.com`.
-  - Tarjetas de retos con efecto **3D Perspective Tilt + Specular Glare**, buscador en vivo, filtro por categoría, botón de *Ocultar resueltos* y barra de progreso del jugador.
-  - Modal de reto Cyber con pestañas neón, pistas desplegables, bloques de conexión estilo terminal, feedback visual en colores neón y soporte para ratings/soluciones/compartir.
-  - Gráficas Apache ECharts de Scoreboard, Usuarios y Equipos estilizadas automáticamente en paleta Cyber Neon (`window.scoreboardChartOptions`).
-  - **Compatibilidad automática con la portada existente** (`/`): remapea las clases `.gdg-hero`, `.flag-box`, `.countdown-box`, `.feature-card` y desactiva el viejo CSS inline `#gdg-custom-theme` si todavía está en *Theme Header*.
+  - Cabecera sticky *glassmorphism* con barra superior neón multicolor, logo oficial GDGoC UHU, navegación CTF completa (`Users`, `Scoreboard`, `Challenges`, `Notifications`), controles de sesión (`Admin`, `Profile`, `Settings`, `Logout` / `Login` y `Register`), selector de idioma y enlace rápido a `Comunidad` (`gdguhu.com`).
+  - Portada completa (`/`) estilizada en Cyber Neon de arriba abajo (Hero, formato de flag, cuenta atrás en vivo, tarjetas de categorías con 3D tilt, reglas de competición y cronograma) y compatibilidad automática con el HTML existente en base de datos.
+  - Tarjetas de retos con efecto **3D Perspective Tilt + Specular Glare**, buscador en vivo, filtro por categoría y barra de progreso del jugador.
+  - Páginas de **Perfil privado y público**, **Notificaciones**, **Ajustes / Access Tokens**, **Directorio de usuarios**, **Scoreboard** y **Login / Register** completamente estilizadas en paleta Cyber Neon con gráficas Apache ECharts.
 
 ---
 

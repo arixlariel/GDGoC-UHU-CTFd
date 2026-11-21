@@ -1,8 +1,8 @@
 /* ============================================================================
    GDG on Campus Universidad de Huelva · CTFd Cyber Interactive Enhancements
    - Fuerza el modo oscuro/cyber sin parpadeo
-   - Desactiva estilos antiguos de Theme Header (#gdg-custom-theme) si quedaron
-   - Efecto 3D Perspective Tilt + Specular Glare (idéntico a Open Badges)
+   - Desactiva estilos antiguos de Theme Header (#gdg-custom-theme) y limpia notas obsoletas
+   - Motor 3D Perspective Tilt + Specular Glare (mismo algoritmo corregido que Open Badges)
    - Paleta Cyber Neon para gráficas Apache ECharts (Scoreboard, Users, Teams)
    ============================================================================ */
 
@@ -84,7 +84,7 @@
       {
         axisLine: { lineStyle: { color: "rgba(0, 240, 255, 0.35)" } },
         axisLabel: { color: "#94A3B8", fontFamily: "'Google Sans Mono', monospace" },
-        splitLine: { lineStyle: { color: "rgba(0, 240, 255, 0.1)" } },
+        splitLine: { show: true, lineStyle: { color: "rgba(0, 240, 255, 0.1)" } },
       },
     ],
     dataZoom: [
@@ -111,15 +111,51 @@
   window.userScoreGraphChartOptions = Object.assign({}, cyberChartTheme, window.userScoreGraphChartOptions || {});
   window.teamScoreGraphChartOptions = Object.assign({}, cyberChartTheme, window.teamScoreGraphChartOptions || {});
 
-  // 3. Limpiar el viejo bloque inline de Theme Header si el admin aún no lo borró
+  // 3. Limpiar el viejo bloque inline de Theme Header y adaptar la portada de BD (/)
   function cleanupLegacyThemeHeader() {
     var legacyStyle = document.getElementById("gdg-custom-theme");
     if (legacyStyle) {
       legacyStyle.disabled = true;
     }
+
+    // Potenciar automáticamente .feature-card en la portada con tilt 3D + glare
+    document.querySelectorAll("main .feature-card").forEach(function (card) {
+      if (!card.classList.contains("tilt-card")) {
+        card.classList.add("tilt-card");
+        card.setAttribute("data-tilt-max", "1.8");
+        if (!card.querySelector(".tilt-glare")) {
+          var glare = document.createElement("div");
+          glare.className = "tilt-glare";
+          glare.setAttribute("aria-hidden", "true");
+          card.insertBefore(glare, card.firstChild);
+        }
+      }
+    });
+
+    // Ocultar el aviso obsoleto del selector claro/oscuro y el mini-footer duplicado si siguen en la BD de /
+    var mainEl = document.querySelector("main");
+    if (mainEl) {
+      mainEl.querySelectorAll("p, div").forEach(function (el) {
+        if (el.children.length > 3) return;
+        var txt = (el.textContent || "").trim();
+        if (
+          txt.indexOf("Modo Claro") !== -1 &&
+          txt.indexOf("barra de navegación") !== -1
+        ) {
+          el.classList.add("gdg-legacy-hidden");
+        }
+        if (
+          el.tagName === "DIV" &&
+          txt.indexOf("Diseñado con") !== -1 &&
+          txt.indexOf("GDG on Campus Universidad de Huelva") !== -1
+        ) {
+          el.classList.add("gdg-legacy-hidden");
+        }
+      });
+    }
   }
 
-  // 4. Efecto 3D Perspective Tilt + Specular Glare (mismo algoritmo que Open Badges)
+  // 4. Motor 3D Perspective Tilt + Specular Glare (inmune al scroll y pausa en inputs)
   var prefersReducedMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -127,40 +163,68 @@
     if (prefersReducedMotion || !card || card.dataset.tiltBound === "1") return;
     card.dataset.tiltBound = "1";
 
-    var maxTilt = Math.min(Number(card.getAttribute("data-tilt-max") || "2.2"), 2.8);
-    var baseRect = null;
+    var maxTilt = Math.min(Number(card.getAttribute("data-tilt-max") || "2.2"), 2.5);
+    var rafId = null;
 
-    card.addEventListener("pointerenter", function () {
-      if (window.innerWidth < 768) return;
+    function resetTilt() {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      card.classList.remove("is-tilting");
       card.style.transform = "";
-      baseRect = card.getBoundingClientRect();
-    });
+    }
 
     card.addEventListener("pointermove", function (e) {
-      if (window.innerWidth < 768) return;
-      if (!baseRect || baseRect.width === 0) {
-        baseRect = card.getBoundingClientRect();
+      if (window.innerWidth < 768 || e.pointerType === "touch") return;
+      var activeEl = document.activeElement;
+      if (
+        activeEl &&
+        card.contains(activeEl) &&
+        (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA")
+      ) {
+        resetTilt();
+        return;
       }
-      var x = e.clientX - baseRect.left;
-      var y = e.clientY - baseRect.top;
-      var pctX = Math.max(0, Math.min(1, x / baseRect.width));
-      var pctY = Math.max(0, Math.min(1, y / baseRect.height));
-      var rotateY = (pctX - 0.5) * maxTilt * 2;
-      var rotateX = (0.5 - pctY) * maxTilt * 2;
-      card.style.transform =
-        "perspective(1200px) rotateX(" +
-        rotateX.toFixed(2) +
-        "deg) rotateY(" +
-        rotateY.toFixed(2) +
-        "deg) scale3d(1.015, 1.015, 1)";
-      card.style.setProperty("--glare-x", (pctX * 100).toFixed(1) + "%");
-      card.style.setProperty("--glare-y", (pctY * 100).toFixed(1) + "%");
+
+      var clientX = e.clientX;
+      var clientY = e.clientY;
+      if (rafId !== null) cancelAnimationFrame(rafId);
+
+      rafId = requestAnimationFrame(function () {
+        rafId = null;
+        var rect = card.getBoundingClientRect();
+        var w = card.offsetWidth || rect.width;
+        var h = card.offsetHeight || rect.height;
+        if (!w || !h) return;
+
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var pctX = Math.max(0, Math.min(1, (clientX - cx) / w + 0.5));
+        var pctY = Math.max(0, Math.min(1, (clientY - cy) / h + 0.5));
+        var rotateY = (pctX - 0.5) * maxTilt * 2;
+        var rotateX = (0.5 - pctY) * maxTilt * 2;
+
+        card.classList.add("is-tilting");
+        card.style.transform =
+          "perspective(1200px) rotateX(" +
+          rotateX.toFixed(2) +
+          "deg) rotateY(" +
+          rotateY.toFixed(2) +
+          "deg) scale3d(1.008, 1.008, 1)";
+        card.style.setProperty("--glare-x", (pctX * 100).toFixed(1) + "%");
+        card.style.setProperty("--glare-y", (pctY * 100).toFixed(1) + "%");
+      });
     });
 
-    card.addEventListener("pointerleave", function () {
-      baseRect = null;
-      card.style.transform = "";
+    card.addEventListener("focusin", function (e) {
+      if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
+        resetTilt();
+      }
     });
+
+    card.addEventListener("pointerleave", resetTilt);
+    card.addEventListener("pointercancel", resetTilt);
   }
 
   function scanTiltCards(root) {
@@ -173,13 +237,13 @@
     cards.forEach(bindTiltCard);
   }
 
-  // 5. Marcar el enlace activo en el navbar (sin marcar nunca el root en subrutas)
+  // 5. Marcar el enlace activo en el navbar (incluyendo nav-link y botones pill de Profile/Settings/Login)
   function highlightActiveNav() {
     var path = window.location.pathname.replace(/\/+$/, "") || "/";
     var rootPath =
       (window.init && window.init.urlRoot ? window.init.urlRoot : "").replace(/\/+$/, "") || "/";
 
-    document.querySelectorAll(".theme-header .nav-link[href]").forEach(function (link) {
+    document.querySelectorAll(".theme-header a.nav-link[href], .theme-header a.theme-pill-btn[href]").forEach(function (link) {
       link.classList.remove("active");
       try {
         var url = new URL(link.href, window.location.origin);

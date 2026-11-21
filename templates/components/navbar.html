@@ -43,7 +43,7 @@
       </button>
 
       <div class="collapse navbar-collapse" id="base-navbars">
-        <!-- Enlaces principales de navegación CTF (orden oficial CTFd: Users -> Teams -> Scoreboard -> Challenges) -->
+        <!-- Enlaces principales de navegación CTF -->
         <ul class="navbar-nav me-auto ms-lg-3 mt-3 mt-lg-0 gap-1">
           {% for page in Plugins.user_menu_pages %}
             <li class="nav-item">
@@ -86,65 +86,74 @@
               <span>{% trans %}Challenges{% endtrans %}</span>
             </a>
           </li>
+
+          <!-- Notificaciones (siempre accesible: /notifications es pública en CTFd) -->
+          <li class="nav-item">
+            <a class="nav-link position-relative" href="{{ url_for('views.notifications') }}" title="{% trans %}Notifications{% endtrans %}">
+              <i class="fas fa-bell fa-fw"></i>
+              <span>{% trans %}Notifications{% endtrans %}</span>
+              <span
+                x-data
+                x-show="$store.unread_count > 0"
+                x-text="$store.unread_count"
+                class="badge rounded-pill badge-notification ms-1"
+                style="display: none;"
+              ></span>
+            </a>
+          </li>
         </ul>
 
         <hr class="d-lg-none my-3">
 
-        <!-- Controles de sesión, idioma y enlaces GDGoC -->
+        <!-- Controles de sesión, perfil, idioma y Comunidad -->
         <ul class="navbar-nav ms-lg-auto align-items-lg-center gap-2 pb-2 pb-lg-0">
           {% if authed() %}
             {% if is_admin() %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}">
+                <a class="theme-pill-btn theme-pill-btn--admin w-100 w-lg-auto" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}">
                   <i class="fas fa-wrench fa-fw"></i>
-                  <span class="d-lg-none d-xl-inline">{% trans %}Admin Panel{% endtrans %}</span>
+                  <span>{% trans %}Admin{% endtrans %}</span>
                 </a>
               </li>
             {% endif %}
-
-            <li class="nav-item">
-              <a class="nav-link position-relative" href="{{ url_for('views.notifications') }}" title="{% trans %}Notifications{% endtrans %}">
-                <i class="fas fa-bell fa-fw"></i>
-                <span
-                  x-data
-                  x-show="$store.unread_count > 0"
-                  x-text="$store.unread_count"
-                  class="badge rounded-pill badge-notification ms-1"
-                ></span>
-                <span class="d-lg-none">{% trans %}Notifications{% endtrans %}</span>
-              </a>
-            </li>
 
             {% if Configs.user_mode == "teams" %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('teams.private') }}" title="{% trans %}Team{% endtrans %}">
+                <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('teams.private') }}" title="{% trans %}Team{% endtrans %}">
                   <i class="fas fa-users fa-fw"></i>
-                  <span class="d-lg-none d-xl-inline">{% trans %}Team{% endtrans %}</span>
+                  <span>{% trans %}Team{% endtrans %}</span>
                 </a>
               </li>
             {% endif %}
 
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('users.private') }}" title="{% trans %}Profile{% endtrans %}">
+              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('users.private') }}" title="{% trans %}Profile{% endtrans %}">
                 <i class="fas fa-user-circle fa-fw"></i>
-                <span class="d-lg-none d-xl-inline">{% trans %}Profile{% endtrans %}</span>
+                <span>{% trans %}Profile{% endtrans %}</span>
               </a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('views.settings') }}" title="{% trans %}Settings{% endtrans %}">
+              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('views.settings') }}" title="{% trans %}Settings{% endtrans %}">
                 <i class="fas fa-cogs fa-fw"></i>
                 <span class="d-lg-none">{% trans %}Settings{% endtrans %}</span>
               </a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}">
+              <a class="theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}">
                 <i class="fas fa-sign-out-alt fa-fw"></i>
                 <span class="d-lg-none">{% trans %}Logout{% endtrans %}</span>
               </a>
             </li>
           {% else %}
+            <li class="nav-item">
+              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('auth.login') }}">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>{% trans %}Login{% endtrans %}</span>
+              </a>
+            </li>
+
             {% if registration_visible() %}
               <li class="nav-item">
                 <a class="theme-primary-btn w-100 w-lg-auto" href="{{ url_for('auth.register') }}">
@@ -153,19 +162,12 @@
                 </a>
               </li>
             {% endif %}
-
-            <li class="nav-item">
-              <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('auth.login') }}">
-                <i class="fas fa-sign-in-alt"></i>
-                <span>{% trans %}Login{% endtrans %}</span>
-              </a>
-            </li>
           {% endif %}
 
           <!-- Selector de idioma oficial de CTFd -->
           <li class="nav-item dropdown">
             <button
-              class="theme-pill-btn dropdown-toggle w-100 w-lg-auto"
+              class="theme-pill-btn theme-pill-btn--icon dropdown-toggle w-100 w-lg-auto"
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"

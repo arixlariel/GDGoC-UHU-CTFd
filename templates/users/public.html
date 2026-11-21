@@ -1,218 +1,252 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="jumbotron">
+  <section class="jumbotron theme-hero-section">
     <div class="container">
+      <div class="theme-badge-pill mb-3">
+        <span class="cyber-dots" aria-hidden="true">
+          <span class="cyber-dot cyber-dot--1"></span>
+          <span class="cyber-dot cyber-dot--2"></span>
+          <span class="cyber-dot cyber-dot--3"></span>
+          <span class="cyber-dot cyber-dot--4"></span>
+        </span>
+        <span>PLAYER::DOSSIER</span>
+      </div>
+
       <h1>{{ user.name }}</h1>
 
       {% if user.team_id %}
-        <h2>
+        <div class="mt-2">
           <a href="{{ url_for('teams.public', team_id=user.team_id) }}">
-            <span class="badge bg-secondary">
-              {{ user.team.name }}
+            <span class="badge bg-secondary px-3 py-2">
+              <i class="fas fa-users me-1"></i>{{ user.team.name }}
             </span>
           </a>
-        </h2>
+        </div>
       {% endif %}
 
-      <div class="pt-2">
+      <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
         {% if user.oauth_id %}
           <a href="https://majorleaguecyber.org/u/{{ user.name }}">
-            <h3 class="d-inline-block mx-1"><span class="badge rounded-pill bg-primary">{% trans %}Official{% endtrans %}</span></h3>
+            <span class="badge rounded-pill bg-primary px-3 py-2">{% trans %}Official{% endtrans %}</span>
           </a>
         {% endif %}
 
         {% if user.affiliation %}
-          <h3 class="d-inline-block mx-1">
-            <span class="badge rounded-pill bg-primary">{{ user.affiliation }}</span>
-          </h3>
+          <span class="badge rounded-pill bg-primary px-3 py-2">
+            <i class="fas fa-university me-1"></i>{{ user.affiliation }}
+          </span>
         {% endif %}
 
         {% if user.country %}
-          <h3 class="d-inline-block mx-1">
-            <span class="badge rounded-pill bg-primary">
-                <i class="flag-{{ user.country.lower() }}"></i>
-                {{ lookup_country_code(user.country) }}
-            </span>
-          </h3>
+          <span class="badge rounded-pill bg-primary px-3 py-2">
+            <i class="flag-{{ user.country.lower() }}"></i>
+            {{ lookup_country_code(user.country) }}
+          </span>
         {% endif %}
-      </div>
 
-      {% if user.bracket_id %}
-        <div class="pt-2">
-          <h2>
-            <span class="badge text-bg-light">
-              {{ user.bracket.name }}
-            </span>
-          </h2>
-        </div>
-      {% endif %}
-
-      <div class="pt-2">
-        {% for field in user.fields %}
-          <h3 class="d-block">
-            {{ field.name }}: {{ field.value }}
-          </h3>
-        {% endfor %}
+        {% if user.bracket_id %}
+          <span class="badge rounded-pill text-bg-light px-3 py-2">
+            <i class="fas fa-layer-group me-1"></i>{{ user.bracket.name }}
+          </span>
+        {% endif %}
       </div>
 
       {% if user.fields %}
-        <hr class="w-50 mx-auto">
+        <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+          {% for field in user.fields %}
+            <span class="cyber-stat-chip">
+              <span>{{ field.name }}:</span>
+              <strong>{{ field.value }}</strong>
+            </span>
+          {% endfor %}
+        </div>
       {% endif %}
 
-      <div>
-        <h2 class="text-center">
-          {% if account.place %}
-            {{ account.place }} <small>place</small>
-          {% endif %}
-        </h2>
-        <h2 class="text-center">
-          {% if account.place %}
-            {{ account.score }} <small>points</small>
-          {% endif %}
-        </h2>
-      </div>
-
-      <div class="pt-3">
-        {% if user.website %}
-          <a href="{{ user.website }}" target="_blank" style="color: inherit;" rel="noopener">
-            <i
-                class="fas fa-external-link-alt fa-2x px-2" data-toggle="tooltip" data-placement="top"
-                title="{{ user.website }}"
-            ></i>
-          </a>
+      <div class="cyber-stats-strip mt-4">
+        {% if account and account.place %}
+          <span class="cyber-stat-chip">
+            <i class="fas fa-trophy" style="color: #FFE600;"></i>
+            <span>{% trans %}Place{% endtrans %}:</span>
+            <strong>{{ account.place }}</strong>
+          </span>
+          <span class="cyber-stat-chip cyber-stat-chip--solved">
+            <i class="fas fa-bolt" style="color: #00FF66;"></i>
+            <span>{% trans %}Points{% endtrans %}:</span>
+            <strong>{{ account.score }} PTS</strong>
+          </span>
         {% endif %}
       </div>
+
+      {% if user.website and (user.website.startswith('http://') or user.website.startswith('https://')) %}
+        <div class="mt-4">
+          <a href="{{ user.website }}" target="_blank" rel="noopener noreferrer" class="theme-pill-btn" title="{{ user.website }}">
+            <i class="fas fa-external-link-alt"></i>
+            <span>{% trans %}Website{% endtrans %}</span>
+          </a>
+        </div>
+      {% endif %}
     </div>
-  </div>
+  </section>
+
   <div class="container">
     {% include "components/errors.html" %}
 
     {% set solves = user.solves %}
     {% set awards = user.awards %}
-    {% if solves or awards %}
 
+    {% if solves or awards %}
       {% if awards %}
-        <div class="row">
-          <div class="col-md-12">
+        <div class="mb-5">
+          <div class="category-header">
+            <span style="color: #00F0FF; font-family: 'Google Sans Mono', monospace; font-weight: 700;">//</span>
             <h3>{% trans %}Awards{% endtrans %}</h3>
+            <span class="category-count-pill">{{ awards | length }}</span>
           </div>
-          {% for award in awards %}
-            <div class="col-md-3 col-sm-6">
-              <p class="text-center">
-                <i class="award-icon award-{{ award.icon }} fa-2x"></i>
-                <br>
-                <strong>{{ award.name }}</strong>
-              </p>
-              <p class="text-center">{{ award.category or "" }}</p>
-              <p class="text-center">{{ award.description or "" }}</p>
-              <p class="text-center">{{ award.value }}</p>
-            </div>
-          {% endfor %}
+
+          <div class="row g-4">
+            {% for award in awards %}
+              <div class="col-md-3 col-sm-6">
+                <div class="theme-card tilt-card p-4 text-center h-100" data-tilt-max="2.2">
+                  <div class="tilt-glare" aria-hidden="true"></div>
+                  <div class="cyber-card-accent-bar"></div>
+                  <div class="mb-2" style="color: #FFE600; filter: drop-shadow(0 0 10px rgba(255,230,0,0.45));">
+                    <i class="award-icon award-{{ award.icon }} fa-2x"></i>
+                  </div>
+                  <h4 class="h6 fw-bold theme-text-primary mb-1">{{ award.name }}</h4>
+                  {% if award.category %}
+                    <div class="small theme-text-secondary mb-1">{{ award.category }}</div>
+                  {% endif %}
+                  {% if award.description %}
+                    <p class="small theme-text-secondary mb-2">{{ award.description }}</p>
+                  {% endif %}
+                  <span class="challenge-points-pill d-inline-block">{{ award.value }} PTS</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
         </div>
       {% endif %}
 
-      <br>
-
-      <div class="row">
-        <div class="col-md-12">
-          <h3>Solves</h3>
-          <table class="table table-striped align-middle">
-            <thead>
-            <tr>
-              <th>{% trans %}Challenge{% endtrans %}</th>
-              <th class="d-none d-md-block d-lg-block">{% trans %}Category{% endtrans %}</th>
-              <th>{% trans %}Value{% endtrans %}</th>
-              <th>{% trans %}Time{% endtrans %}</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for solve in solves %}
-              <tr>
-                <td>
-                  <a href="{{ url_for('challenges.listing') }}#{{ solve.challenge.name }}-{{ solve.challenge.id }}">
-                    {{ solve.challenge.name }}
-                  </a>
-                </td>
-                <td class="d-none d-md-block d-lg-block">{{ solve.challenge.category }}</td>
-                <td>{{ solve.challenge.value }}</td>
-                <td class="solve-time">
-                  <span data-time="{{ solve.date | isoformat }}"></span>
-                </td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="clearfix"></div>
-
-      <div class="row" x-data="UserGraphs">
-        <div class="col-md-6 d-none d-md-block d-lg-block py-4">
-          <div class="progress">
-            <div 
-              class="progress-bar" 
-              role="progressbar" 
-              :style="{ width: `${getSolvePercentage()}%`, 'background-color': 'rgb(0, 209, 64)' }" 
-            >
+      <div class="row g-4 mb-5" x-data="UserGraphs">
+        <div class="col-md-6 d-none d-md-block">
+          <div class="theme-card p-4 h-100">
+            <div class="cyber-card-accent-bar"></div>
+            <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.06em;">
+              <i class="fas fa-crosshairs me-2" style="color: #00FF66;"></i>Precisión de envíos
+            </h4>
+            <div class="progress mb-3">
+              <div
+                class="progress-bar"
+                role="progressbar"
+                :style="{ width: `${getSolvePercentage()}%`, 'background-color': '#00FF66' }"
+              ></div>
+              <div
+                class="progress-bar"
+                role="progressbar"
+                :style="{ width: `${getFailPercentage()}%`, 'background-color': '#FF007F' }"
+              ></div>
             </div>
-            <div 
-              class="progress-bar" 
-              role="progressbar" 
-              :style="{ width: `${getFailPercentage()}%`, 'background-color': 'rgb(207, 38, 0)' }"
-            >
+            <div class="d-flex flex-wrap gap-3 small">
+              <span class="d-inline-flex align-items-center gap-1 theme-text-primary">
+                <span class="cyber-dot cyber-dot--4" style="animation: none;"></span>
+                <span x-text="`Solves (${getSolvePercentage()}%)`"></span>
+              </span>
+              <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">
+                <span class="cyber-dot cyber-dot--2" style="animation: none;"></span>
+                <span x-text="`Fails (${getFailPercentage()}%)`"></span>
+              </span>
             </div>
           </div>
-          <div class="ps-2 float-start">
-            <svg height="16" width="16">
-              <circle cx="8" cy="8" r="5" fill="rgb(0, 209, 64)" />
-            </svg>
-            <small x-text="`Solves (${getSolvePercentage()}%)`"></small>
-          </div>
-          <div class="ps-2 float-start">
-            <svg height="16" width="16">
-              <circle cx="8" cy="8" r="5" fill="rgb(207, 38, 0)" />
-            </svg>
-            <small x-text="`Fails (${getFailPercentage()}%)`"></small>
+        </div>
+
+        <div class="col-md-6 d-none d-md-block">
+          <div class="theme-card p-4 h-100">
+            <div class="cyber-card-accent-bar"></div>
+            <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.06em;">
+              <i class="fas fa-chart-pie me-2" style="color: #00F0FF;"></i>Desglose por categoría
+            </h4>
+            <div class="progress mb-3">
+              <template x-for="category in getCategoryBreakdown()" :key="category.name">
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  :style="{ width: `${category.percent}%`, 'background-color': category.color }"
+                ></div>
+              </template>
+            </div>
+            <div class="d-flex flex-wrap gap-3 small">
+              <template x-for="category in getCategoryBreakdown()" :key="category.name">
+                <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">
+                  <svg height="12" width="12">
+                    <circle cx="6" cy="6" r="5" :fill="category.color" />
+                  </svg>
+                  <span x-text="`${category.name} (${category.percent}%)`"></span>
+                </span>
+              </template>
+            </div>
           </div>
         </div>
-        <div class="col-md-6 d-none d-md-block d-lg-block py-4">
-          <div class="progress">
-            <template x-for="category in getCategoryBreakdown()" :key="category.name">
-              <div 
-                class="progress-bar" 
-                role="progressbar" 
-                :style="{ width: `${category.percent}%`, 'background-color': category.color }"
-              >
+
+        <div class="col-12 d-none d-md-block">
+          <div class="theme-card p-3 p-md-4">
+            <div class="cyber-card-accent-bar"></div>
+            <div id="score-graph" x-ref="scoregraph" class="w-100 d-flex align-items-center">
+              <div class="text-center w-100 py-5">
+                <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
               </div>
-            </template>
-          </div>
-          <template x-for="category in getCategoryBreakdown()" :key="category.name">
-            <div class="ps-2 float-start">
-              <svg height="16" width="16">
-                <circle cx="8" cy="8" r="5" :fill="category.color" />
-              </svg>
-              <small x-text="`${category.name} (${category.percent}%)`"></small>
-            </div>
-          </template>
-        </div>
-
-        <br class="clearfix">
-
-        <div class="col-md-12 d-none d-md-block d-lg-block py-4">
-          <div id="score-graph" x-ref="scoregraph" class="w-100 d-flex align-items-center">
-            <div class="text-center w-100">
-              <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
             </div>
           </div>
         </div>
       </div>
+
+      {% if solves %}
+        <div class="mb-4">
+          <div class="category-header">
+            <span style="color: #00FF66; font-family: 'Google Sans Mono', monospace; font-weight: 700;">//</span>
+            <h3>{% trans %}Solves{% endtrans %}</h3>
+            <span class="category-count-pill">{{ solves | length }}</span>
+          </div>
+
+          <div class="cyber-table-wrap">
+            <table class="table table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>{% trans %}Challenge{% endtrans %}</th>
+                  <th class="d-none d-md-table-cell">{% trans %}Category{% endtrans %}</th>
+                  <th class="text-end">{% trans %}Value{% endtrans %}</th>
+                  <th class="text-end">{% trans %}Time{% endtrans %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for solve in solves %}
+                  <tr>
+                    <td class="fw-semibold">
+                      <a href="{{ url_for('challenges.listing') }}#{{ solve.challenge.name }}-{{ solve.challenge.id }}">
+                        {{ solve.challenge.name }}
+                      </a>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                      <span class="badge bg-primary">{{ solve.challenge.category }}</span>
+                    </td>
+                    <td class="text-end font-mono fw-bold" style="color: #00FF66;">
+                      {{ solve.challenge.value }} <small style="color: #94A3B8;">PTS</small>
+                    </td>
+                    <td class="solve-time text-end font-mono small theme-text-secondary">
+                      <span data-time="{{ solve.date | isoformat }}">{{ solve.date }}</span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
     {% else %}
-      <div class="row min-vh-25">
-        <h3 class="opacity-50 text-center w-100 justify-content-center align-self-center">
-          {% trans %}No solves yet{% endtrans %}
-        </h3>
+      <div class="theme-card p-5 text-center my-4">
+        <div class="cyber-card-accent-bar"></div>
+        <i class="fas fa-flag fa-3x mb-3" style="color: #00F0FF; opacity: 0.7;"></i>
+        <h3 class="theme-text-primary fw-bold mb-1">{% trans %}No solves yet{% endtrans %}</h3>
       </div>
     {% endif %}
   </div>
