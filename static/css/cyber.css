@@ -108,7 +108,7 @@ html[data-theme="cyber"] body {
 html[data-theme="cyber"] main {
   flex: 1 0 auto;
   position: relative;
-  z-index: 10;
+  z-index: auto;
   padding-bottom: 3rem;
 }
 
@@ -660,11 +660,12 @@ html[data-theme="cyber"] .jumbotron,
 html[data-theme="cyber"] .theme-hero-section {
   background: rgba(8, 12, 26, 0.82) !important;
   border: none !important;
-  border-bottom: 1px solid rgba(0, 240, 255, 0.3) !important;
+  border-top: 1px solid rgba(0, 240, 255, 0.25) !important;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.25) !important;
   border-radius: 0 !important;
-  padding: 2.75rem 0 2.5rem !important;
+  padding: 2.5rem 0 2.35rem !important;
   margin-bottom: 2.25rem !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.32) !important;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -718,7 +719,22 @@ html[data-theme="cyber"] .card:hover {
   left: 0;
   right: 0;
   height: 5px;
+  border-radius: 19px 19px 0 0;
   background: var(--cyber-gradient-accent);
+}
+
+/* Evitar que tarjetas 3D o con overflow atrapen/recorten modales de Bootstrap (Delete Token, API Key, Retos) */
+html[data-theme="cyber"] .theme-card:has(.modal),
+html[data-theme="cyber"] body.modal-open .theme-card,
+html[data-theme="cyber"] body.modal-open .tilt-card {
+  overflow: visible !important;
+}
+
+html[data-theme="cyber"] body.modal-open .theme-card,
+html[data-theme="cyber"] body.modal-open .tilt-card,
+html[data-theme="cyber"] .theme-card:has(.modal.show) {
+  transform: none !important;
+  will-change: auto !important;
 }
 
 .tilt-card {
@@ -1055,6 +1071,14 @@ html[data-theme="cyber"] .challenge-button.solved-challenge:hover {
 /* ============================================================================
    MODAL DE RETO Y MODALES GLOBALES
    ============================================================================ */
+html[data-theme="cyber"] .modal {
+  z-index: 1060 !important;
+}
+
+html[data-theme="cyber"] .modal-backdrop {
+  z-index: 1050 !important;
+}
+
 html[data-theme="cyber"] .modal-backdrop.show {
   opacity: 0.78 !important;
   background-color: #02040A !important;
@@ -1442,15 +1466,43 @@ html[data-theme="cyber"] .cyber-table-wrap .table tbody tr:last-child th:last-ch
 .cyber-settings-section-title {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  font-family: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
+  gap: 0.7rem;
+  font-family: 'Plus Jakarta Sans', 'Google Sans Fallback', system-ui, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: none;
   color: #F0F9FF;
-  text-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.7rem;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.36);
+  margin-bottom: 1.35rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid rgba(0, 240, 255, 0.22);
+}
+
+.cyber-settings-section-title > i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.18);
+  flex-shrink: 0;
+}
+
+.cyber-settings-section-title--passwords > i {
+  background: rgba(255, 230, 0, 0.12);
+  border-color: rgba(255, 230, 0, 0.4);
+  box-shadow: 0 0 14px rgba(255, 230, 0, 0.18);
+}
+
+.cyber-settings-section-title--tokens > i {
+  background: rgba(255, 0, 127, 0.12);
+  border-color: rgba(255, 0, 127, 0.42);
+  box-shadow: 0 0 14px rgba(255, 0, 127, 0.2);
 }
 
 html[data-theme="cyber"] .table {

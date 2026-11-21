@@ -482,21 +482,24 @@
   }
 
   // Helpers comunes para páginas interiores
-  function addJumbotronPill(labelText, withDots) {
-    var jumboContainer = document.querySelector("main .jumbotron .container");
-    if (!jumboContainer || jumboContainer.querySelector(".theme-badge-pill")) return;
-    var pill = document.createElement("div");
-    pill.className = "theme-badge-pill mb-3";
-    var dotsHtml = withDots
-      ? '<span class="cyber-dots" aria-hidden="true">' +
-        '<span class="cyber-dot cyber-dot--1"></span>' +
-        '<span class="cyber-dot cyber-dot--2"></span>' +
-        '<span class="cyber-dot cyber-dot--3"></span>' +
-        '<span class="cyber-dot cyber-dot--4"></span>' +
-        "</span>"
-      : "";
-    pill.innerHTML = dotsHtml + "<span>" + labelText + "</span>";
-    jumboContainer.insertBefore(pill, jumboContainer.firstChild);
+  function getActiveLocale() {
+    var activeLang = document.querySelector('form[x-data="LanguageForm"] .dropdown-item.bg-primary[value]');
+    if (activeLang) {
+      return (activeLang.getAttribute("value") || "en").toLowerCase();
+    }
+    return ((document.documentElement.getAttribute("lang") || "en").split("-")[0]).toLowerCase();
+  }
+
+  function makeTiltable(card, maxTilt) {
+    if (!card) return;
+    card.classList.add("tilt-card");
+    card.setAttribute("data-tilt-max", String(maxTilt || 1.1));
+    if (!card.querySelector(":scope > .tilt-glare")) {
+      var glare = document.createElement("div");
+      glare.className = "tilt-glare";
+      glare.setAttribute("aria-hidden", "true");
+      card.insertBefore(glare, card.firstChild);
+    }
   }
 
   function wrapInThemeCard(el, extraClasses) {
@@ -545,7 +548,7 @@
     if (jumboContainer) {
       var sub = document.createElement("p");
       sub.className = "cyber-hero-sub";
-      sub.innerHTML = '<span class="theme-accent-text fw-bold">CyberTrainer GDGoC UHU</span>';
+      sub.innerHTML = '<span class="theme-accent-text fw-bold">GDGoC UHU CyberTrainer</span>';
       jumboContainer.appendChild(sub);
 
       statsWrap = document.createElement("div");
@@ -945,13 +948,34 @@
     });
   }
 
-  // 8. Settings unificado (Perfil + Access Tokens en una sola página sin pestañas separadas)
+  // 8. Settings unificado y multilingüe (3 cajas 3D: Profile → Passwords → Access Tokens)
   function upgradeSettingsPage() {
-    addJumbotronPill("ACCOUNT::CONFIG", false);
     var mainContainer = document.querySelector("main > .container");
-    if (!mainContainer) return;
-
+    if (!mainContainer || mainContainer.dataset.cyberSettingsUpgraded === "1") return;
+    mainContainer.dataset.cyberSettingsUpgraded = "1";
     mainContainer.classList.add("cyber-settings-unified");
+
+    var locale = getActiveLocale();
+    var isEn = locale === "en" || locale.indexOf("en") === 0;
+    var isEs = locale === "es" || locale.indexOf("es") === 0;
+
+    var passwordsTitles = {
+      en: "Passwords",
+      es: "Contraseñas",
+      fr: "Mots de passe",
+      de: "Passwörter",
+      pt_br: "Senhas",
+      it: "Password",
+      ca: "Contrasenyes",
+      pl: "Hasła",
+    };
+
+    // Leer los textos ya traducidos por CTFd en las pestañas originales antes de ocultarlas
+    var profileTab = mainContainer.querySelector("#settings-profile-tab");
+    var tokensTab = mainContainer.querySelector("#settings-tokens-tab");
+    var profileTitleText = (profileTab && profileTab.textContent.trim()) || "Profile";
+    var tokensTitleText = (tokensTab && tokensTab.textContent.trim()) || "Access Tokens";
+    var passwordsTitleText = passwordsTitles[locale] || passwordsTitles[locale.split("_")[0]] || "Passwords";
 
     var navPills = mainContainer.querySelector(".nav-pills");
     if (navPills) {
@@ -960,38 +984,151 @@
     }
 
     var tabContent = mainContainer.querySelector(".tab-content");
-    if (tabContent) {
-      var contentCol = tabContent.closest('[class*="col-"]');
-      if (contentCol) {
-        contentCol.className = "col-lg-9 col-xl-8 mx-auto";
-      }
+    if (!tabContent) return;
 
-      var profilePane = tabContent.querySelector("#profile");
-      if (profilePane) {
-        profilePane.classList.add("show", "active");
-        var profileCard = wrapInThemeCard(profilePane, "p-4 p-sm-5 mb-4");
-        if (profileCard && !profileCard.querySelector(".cyber-settings-section-title")) {
-          var h = document.createElement("h3");
-          h.className = "cyber-settings-section-title";
-          h.innerHTML = '<i class="fas fa-user-cog" style="color:#00F0FF;"></i><span>Configuración de Perfil y Seguridad</span>';
-          profilePane.insertBefore(h, profilePane.firstChild);
+    var contentCol = tabContent.closest('[class*="col-"]');
+    if (contentCol) {
+      contentCol.className = "col-lg-9 col-xl-8 mx-auto";
+    }
+
+    var profilePane = tabContent.querySelector("#profile");
+    var tokensPane = tabContent.querySelector("#tokens");
+
+    function createSectionHeader(iconCls, iconColor, text, modifierCls) {
+      var h = document.createElement("h3");
+      h.className = "cyber-settings-section-title" + (modifierCls ? " " + modifierCls : "");
+      h.innerHTML = '<i class="' + iconCls + '" style="color:' + iconColor + ';"></i><span></span>';
+      h.querySelector("span").textContent = text;
+      return h;
+    }
+
+    var passwordsCard = null;
+
+    if (profilePane) {
+      profilePane.classList.add("show", "active");
+
+      // Ajustar etiquetas respetando traducciones activas de CTFd
+      var nameLabel = profilePane.querySelector('label[for="name"]');
+      if (nameLabel && isEn && nameLabel.textContent.trim().toLowerCase() === "user name") {
+        nameLabel.textContent = "Username";
+      }
+      var langLabel = profilePane.querySelector('label[for="language"]');
+      if (langLabel) {
+        if (isEn && langLabel.textContent.trim().toLowerCase() === "language") {
+          langLabel.textContent = "Preferred Language";
+        } else if (isEs && langLabel.textContent.trim().toLowerCase() === "idioma") {
+          langLabel.textContent = "Idioma preferido";
         }
       }
 
-      var tokensPane = tabContent.querySelector("#tokens");
-      if (tokensPane) {
-        tokensPane.classList.add("show", "active");
-        var tokensCard = wrapInThemeCard(tokensPane, "p-4 p-sm-5");
-        if (tokensCard && !tokensCard.querySelector(".cyber-settings-section-title")) {
-          var th = document.createElement("h3");
-          th.className = "cyber-settings-section-title";
-          th.innerHTML = '<i class="fas fa-key" style="color:#FF007F;"></i><span>Access Tokens (API)</span>';
-          tokensPane.insertBefore(th, tokensPane.firstChild);
+      // Extraer confirm + password a su propia caja independiente "Passwords" antes de Access Tokens
+      var profileForm = profilePane.querySelector('form[x-data="SettingsForm"]');
+      var confirmInput = profileForm && profileForm.querySelector('#confirm, input[name="confirm"]');
+      var passwordInput = profileForm && profileForm.querySelector('#password, input[name="password"]');
+
+      if (profileForm && confirmInput && passwordInput) {
+        var confirmGroup = confirmInput.closest(".mb-3");
+        var passwordGroup = passwordInput.closest(".mb-3");
+
+        var passLabel = passwordGroup && passwordGroup.querySelector('label[for="password"]');
+        if (passLabel) {
+          if (isEn && passLabel.textContent.trim().toLowerCase() === "password") {
+            passLabel.textContent = "New Password";
+          } else if (isEs && passLabel.textContent.trim().toLowerCase() === "contraseña") {
+            passLabel.textContent = "Nueva contraseña";
+          }
+        }
+
+        // Eliminar los <hr> que quedaban alrededor del bloque de contraseñas dentro de Profile
+        if (confirmGroup && confirmGroup.previousElementSibling && confirmGroup.previousElementSibling.tagName === "HR") {
+          confirmGroup.previousElementSibling.remove();
+        }
+        if (passwordGroup && passwordGroup.nextElementSibling && passwordGroup.nextElementSibling.tagName === "HR") {
+          passwordGroup.nextElementSibling.remove();
+        }
+
+        // Crear el contenedor independiente Passwords con su propio formulario SettingsForm
+        passwordsCard = document.createElement("div");
+        passwordsCard.className = "theme-card p-4 p-sm-5 mb-4";
+        passwordsCard.id = "passwords";
+        var pBar = document.createElement("div");
+        pBar.className = "cyber-card-accent-bar";
+        passwordsCard.appendChild(pBar);
+        passwordsCard.appendChild(
+          createSectionHeader("fas fa-lock", "#FFE600", passwordsTitleText, "cyber-settings-section-title--passwords")
+        );
+
+        var pwForm = document.createElement("form");
+        pwForm.method = "post";
+        pwForm.setAttribute("accept-charset", "utf-8");
+        pwForm.setAttribute("autocomplete", "off");
+        pwForm.setAttribute("role", "form");
+        pwForm.setAttribute("x-data", "SettingsForm");
+        pwForm.setAttribute("@submit.prevent", "updateProfile()");
+        pwForm.className = "form-horizontal";
+
+        if (confirmGroup) pwForm.appendChild(confirmGroup);
+        if (passwordGroup) pwForm.appendChild(passwordGroup);
+
+        var origResults = profileForm.querySelector("#results");
+        if (origResults) {
+          var pwResults = origResults.cloneNode(true);
+          pwResults.removeAttribute("id");
+          pwForm.appendChild(pwResults);
+        }
+
+        var origSubmit = profileForm.querySelector('input[type="submit"], button[type="submit"]');
+        var submitWrap = document.createElement("div");
+        submitWrap.className = "d-flex justify-content-end pt-2";
+        var pwSubmit = document.createElement("input");
+        pwSubmit.type = "submit";
+        pwSubmit.name = "_submit";
+        pwSubmit.className = "btn btn-primary px-4";
+        pwSubmit.value = (origSubmit && (origSubmit.value || origSubmit.textContent.trim())) || "Submit";
+        submitWrap.appendChild(pwSubmit);
+        pwForm.appendChild(submitWrap);
+
+        passwordsCard.appendChild(pwForm);
+        makeTiltable(passwordsCard, 1.1);
+      }
+
+      var profileCard = wrapInThemeCard(profilePane, "p-4 p-sm-5 mb-4");
+      if (profileCard) {
+        if (!profilePane.querySelector(".cyber-settings-section-title")) {
+          profilePane.insertBefore(
+            createSectionHeader("fas fa-user-circle", "#00F0FF", profileTitleText, ""),
+            profilePane.firstChild
+          );
+        }
+        makeTiltable(profileCard, 1.1);
+        if (passwordsCard && profileCard.parentNode) {
+          profileCard.parentNode.insertBefore(passwordsCard, profileCard.nextSibling);
+          var insertedPwForm = passwordsCard.querySelector('form[x-data="SettingsForm"]');
+          if (insertedPwForm && window.Alpine && !insertedPwForm._x_dataStack && typeof window.Alpine.initTree === "function") {
+            window.Alpine.initTree(insertedPwForm);
+          }
         }
       }
     }
 
+    if (tokensPane) {
+      tokensPane.classList.add("show", "active");
+      var tokensCard = wrapInThemeCard(tokensPane, "p-4 p-sm-5");
+      if (tokensCard) {
+        if (!tokensPane.querySelector(".cyber-settings-section-title")) {
+          tokensPane.insertBefore(
+            createSectionHeader("fas fa-key", "#FF007F", tokensTitleText, "cyber-settings-section-title--tokens"),
+            tokensPane.firstChild
+          );
+        }
+        makeTiltable(tokensCard, 1.1);
+      }
+    }
+
     wrapTablesInCyberWrap(document);
+    if (typeof window.gdgocScanTiltCards === "function") {
+      window.gdgocScanTiltCards(mainContainer);
+    }
   }
 
   // 9. Mejora de páginas interiores de `core`
@@ -1009,18 +1146,17 @@
       path === "/reset_password" ||
       path === "/confirm"
     ) {
-      if (path === "/login") addJumbotronPill("AUTH::ACCESS_NODE", true);
-      if (path === "/register") addJumbotronPill("NEW_PLAYER::ENROLLMENT", true);
       var form = document.querySelector("main form");
       if (form) {
         var col = form.closest('[class*="col-"]');
         if (col) {
           var card = wrapChildrenInThemeCard(col, "p-4 p-sm-5");
+          if (card) makeTiltable(card, 1.1);
           if (card && path === "/login" && !card.querySelector('a[href*="/register"]')) {
             var footerHint = document.createElement("div");
             footerHint.innerHTML =
               '<hr class="my-4"><div class="text-center small theme-text-secondary">' +
-              '¿Todavía no tienes cuenta? <a href="' +
+              'Don\'t have an account yet? <a href="' +
               getUrlRoot() +
               '/register" class="fw-bold ms-1">Register →</a></div>';
             card.appendChild(footerHint);
@@ -1028,7 +1164,7 @@
             var loginHint = document.createElement("div");
             loginHint.innerHTML =
               '<hr class="my-4"><div class="text-center small theme-text-secondary">' +
-              '¿Ya tienes una cuenta registrada? <a href="' +
+              'Already have an account? <a href="' +
               getUrlRoot() +
               '/login" class="fw-bold ms-1">Login →</a></div>';
             card.appendChild(loginHint);
@@ -1039,7 +1175,6 @@
     }
 
     if (path === "/notifications") {
-      addJumbotronPill("SYSTEM::BROADCASTS", false);
       var emptyH2 = document.querySelector("main > .container > h2.text-center");
       if (emptyH2) {
         var box = document.createElement("div");
@@ -1050,6 +1185,7 @@
         emptyH2.className = "h4 theme-text-primary fw-bold mb-1";
         emptyH2.parentNode.insertBefore(box, emptyH2);
         box.appendChild(emptyH2);
+        makeTiltable(box, 1.1);
       }
       document.querySelectorAll("main .card").forEach(function (c) {
         if (!c.querySelector(".cyber-card-accent-bar")) {
@@ -1057,12 +1193,12 @@
           bar.className = "cyber-card-accent-bar";
           c.insertBefore(bar, c.firstChild);
         }
+        makeTiltable(c, 1.1);
       });
       return;
     }
 
     if (path === "/scoreboard") {
-      addJumbotronPill("LIVE RANKING · TELEMETRY", true);
       var graph = document.getElementById("score-graph");
       if (graph) wrapInThemeCard(graph, "p-3 p-md-4 mb-4");
       wrapTablesInCyberWrap(document);
@@ -1070,7 +1206,6 @@
     }
 
     if (path === "/users" || path === "/teams") {
-      addJumbotronPill(path === "/teams" ? "DIRECTORY::TEAMS" : "DIRECTORY::PLAYERS", false);
       var searchForm = document.querySelector("main form");
       if (searchForm) wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");
       upgradeUsersDirectoryTable();
@@ -1084,7 +1219,6 @@
       path === "/team" ||
       path.indexOf("/teams/") === 0
     ) {
-      addJumbotronPill(path.indexOf("/team") === 0 ? "TEAM::PROFILE" : "PLAYER::PROFILE", true);
       var profGraph = document.getElementById("score-graph");
       if (profGraph) wrapInThemeCard(profGraph, "p-3 p-md-4 mb-4");
       wrapTablesInCyberWrap(document);

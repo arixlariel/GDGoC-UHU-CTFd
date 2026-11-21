@@ -466,11 +466,11 @@ def build():
 
     def make_ctx(authed_state=True, admin_state=True):
         return {
-            "title": "CyberTrainer GDGoC UHU",
+            "title": "GDGoC UHU CyberTrainer",
             "meta": "",
             "Assets": MockAssets(),
             "url_for": mock_url_for,
-            "get_locale": lambda: "es",
+            "get_locale": lambda: "en",
             "authed": lambda: authed_state,
             "is_admin": lambda: admin_state,
             "registration_visible": lambda: True,
@@ -479,7 +479,7 @@ def build():
             "get_mode_as_word": lambda capitalize=False: "User" if capitalize else "user",
             "lookup_country_code": lambda code: {"ES": "Spain", "PT": "Portugal"}.get(code, code),
             "Configs": SimpleNamespace(
-                ctf_name="CyberTrainer GDGoC UHU",
+                ctf_name="GDGoC UHU CyberTrainer",
                 ctf_logo=None,
                 ctf_small_icon=None,
                 user_mode="users",
@@ -532,10 +532,10 @@ def build():
                     ),
                 ),
                 self=SimpleNamespace(
-                    SettingsForm=lambda language="es", country="ES": SimpleNamespace(
-                        name=MockField("name", "User Name", value="0xHuelva_Root"),
+                    SettingsForm=lambda language="en", country="ES": SimpleNamespace(
+                        name=MockField("name", "Username", value="0xHuelva_Root"),
                         email=MockField("email", "Email", input_type="email", value="root@gdguhu.com"),
-                        language=MockField("language", "Language", field_type="select", required=False),
+                        language=MockField("language", "Preferred Language", field_type="select", required=False),
                         confirm=MockField("confirm", "Current Password", input_type="password", required=False),
                         password=MockField("password", "New Password", input_type="password", required=False),
                         affiliation=MockField("affiliation", "Affiliation", required=False, value="Universidad de Huelva"),

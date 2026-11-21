@@ -246,11 +246,15 @@
 
     card.addEventListener("pointermove", function (e) {
       if (window.innerWidth < 768 || e.pointerType === "touch") return;
+      if (document.body.classList.contains("modal-open") || document.querySelector(".modal.show")) {
+        resetTilt();
+        return;
+      }
       var activeEl = document.activeElement;
       if (
         activeEl &&
         card.contains(activeEl) &&
-        (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA")
+        (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")
       ) {
         resetTilt();
         return;
@@ -287,7 +291,10 @@
     });
 
     card.addEventListener("focusin", function (e) {
-      if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
+      if (
+        e.target &&
+        (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT")
+      ) {
         resetTilt();
       }
     });
@@ -295,6 +302,14 @@
     card.addEventListener("pointerleave", resetTilt);
     card.addEventListener("pointercancel", resetTilt);
   }
+
+  // Limpiar cualquier transform 3D al abrir un modal de Bootstrap (evita atrapar modales fixed)
+  document.addEventListener("show.bs.modal", function () {
+    document.querySelectorAll(".tilt-card").forEach(function (card) {
+      card.classList.remove("is-tilting");
+      card.style.transform = "";
+    });
+  });
 
   function scanTiltCards(root) {
     if (prefersReducedMotion) return;

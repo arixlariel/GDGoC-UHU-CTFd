@@ -4,9 +4,6 @@
 {% block content %}
   <section class="jumbotron theme-hero-section">
     <div class="container">
-      <div class="theme-badge-pill mb-3">
-        <span>ACCOUNT::CONFIG</span>
-      </div>
       <h1>{% trans %}Settings{% endtrans %}</h1>
     </div>
   </section>
@@ -14,17 +11,18 @@
   <div class="container cyber-settings-unified">
     <div class="row justify-content-center">
       <div class="col-lg-9 col-xl-8">
-        <!-- Configuración de Perfil y Seguridad -->
-        <div class="theme-card p-4 p-sm-5 mb-4" id="profile">
-          <div class="cyber-card-accent-bar"></div>
-          <h3 class="cyber-settings-section-title">
-            <i class="fas fa-user-cog" style="color: #00F0FF;"></i>
-            <span>{% trans %}Profile{% endtrans %} &amp; {% trans %}Security{% endtrans %}</span>
-          </h3>
+        {% with form = Forms.self.SettingsForm(language=language, country=country) %}
+          <!-- 1. Profile -->
+          <div class="theme-card tilt-card p-4 p-sm-5 mb-4" id="profile" data-tilt-max="1.1">
+            <div class="tilt-glare" aria-hidden="true"></div>
+            <div class="cyber-card-accent-bar"></div>
+            <h3 class="cyber-settings-section-title">
+              <i class="fas fa-user-circle" style="color: #00F0FF;"></i>
+              <span>{% trans %}Profile{% endtrans %}</span>
+            </h3>
 
-          {% include "components/errors.html" %}
+            {% include "components/errors.html" %}
 
-          {% with form = Forms.self.SettingsForm(language=language, country=country) %}
             <form
               method="post"
               accept-charset="utf-8"
@@ -36,7 +34,7 @@
             >
               <div class="row g-3">
                 <div class="col-md-6">
-                  <b>{{ form.name.label(class="form-label") }}</b>
+                  <b><label class="form-label" for="name">{% trans %}Username{% endtrans %}</label></b>
                   {{ form.name(class="form-control", value=name) }}
                 </div>
                 <div class="col-md-6">
@@ -44,7 +42,7 @@
                   {{ form.email(class="form-control", value=email) }}
                 </div>
                 <div class="col-md-6">
-                  <b>{{ form.language.label(class="form-label") }}</b>
+                  <b><label class="form-label" for="language">{% trans %}Preferred Language{% endtrans %}</label></b>
                   {{ form.language(class="form-select", value=language) }}
                 </div>
                 <div class="col-md-6">
@@ -58,19 +56,6 @@
                 <div class="col-md-6">
                   <b>{{ form.website.label(class="form-label") }}</b>
                   {{ form.website(class="form-control", value=website or "") }}
-                </div>
-              </div>
-
-              <hr class="my-4">
-
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <b>{{ form.confirm.label(class="form-label") }}</b>
-                  {{ form.confirm(class="form-control") }}
-                </div>
-                <div class="col-md-6">
-                  <b>{{ form.password.label(class="form-label") }}</b>
-                  {{ form.password(class="form-control") }}
                 </div>
               </div>
 
@@ -101,13 +86,70 @@
                 {{ form.submit(class="btn btn-primary px-4") }}
               </div>
             </form>
-          {% endwith %}
-        </div>
+          </div>
 
-        <!-- Access Tokens (API) en la misma vista sin pestañas separadas -->
-        <div class="theme-card p-4 p-sm-5" id="tokens">
+          <!-- 2. Passwords -->
+          <div class="theme-card tilt-card p-4 p-sm-5 mb-4" id="passwords" data-tilt-max="1.1">
+            <div class="tilt-glare" aria-hidden="true"></div>
+            <div class="cyber-card-accent-bar"></div>
+            <h3 class="cyber-settings-section-title cyber-settings-section-title--passwords">
+              <i class="fas fa-lock" style="color: #FFE600;"></i>
+              <span>{% trans %}Passwords{% endtrans %}</span>
+            </h3>
+
+            <form
+              method="post"
+              accept-charset="utf-8"
+              autocomplete="off"
+              role="form"
+              x-data="SettingsForm"
+              @submit.prevent="updateProfile()"
+              class="form-horizontal"
+            >
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <b>{{ form.confirm.label(class="form-label") }}</b>
+                  {{ form.confirm(class="form-control") }}
+                </div>
+                <div class="col-md-6">
+                  <b><label class="form-label" for="password">{% trans %}New Password{% endtrans %}</label></b>
+                  {{ form.password(class="form-control") }}
+                </div>
+              </div>
+
+              <div class="my-3">
+                <div
+                  class="alert alert-success alert-dismissible submit-row"
+                  role="alert"
+                  x-cloak="success"
+                  x-show="success"
+                >
+                  <strong>Success!</strong>
+                  {% trans %}Your profile has been updated{% endtrans %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <template x-for="(msg, idx) in errors" :key="idx">
+                  <div class="alert alert-danger alert-dismissible" role="alert">
+                    <span class="sr-only">{% trans %}Error:{% endtrans %}</span>
+                    <span x-text="msg"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                </template>
+              </div>
+
+              <div class="d-flex justify-content-end pt-2">
+                {{ form.submit(class="btn btn-primary px-4") }}
+              </div>
+            </form>
+          </div>
+        {% endwith %}
+
+        <!-- 3. Access Tokens -->
+        <div class="theme-card tilt-card p-4 p-sm-5" id="tokens" data-tilt-max="1.1">
+          <div class="tilt-glare" aria-hidden="true"></div>
           <div class="cyber-card-accent-bar"></div>
-          <h3 class="cyber-settings-section-title">
+          <h3 class="cyber-settings-section-title cyber-settings-section-title--tokens">
             <i class="fas fa-key" style="color: #FF007F;"></i>
             <span>{% trans %}Access Tokens{% endtrans %}</span>
           </h3>

@@ -3,18 +3,9 @@
 {% block content %}
   <section class="jumbotron theme-hero-section">
     <div class="container">
-      <div class="theme-badge-pill mb-3">
-        <span class="cyber-dots" aria-hidden="true">
-          <span class="cyber-dot cyber-dot--1"></span>
-          <span class="cyber-dot cyber-dot--2"></span>
-          <span class="cyber-dot cyber-dot--3"></span>
-          <span class="cyber-dot cyber-dot--4"></span>
-        </span>
-        <span>NEW_PLAYER::ENROLLMENT</span>
-      </div>
       <h1>{% trans %}Register{% endtrans %}</h1>
       <p class="cyber-hero-sub">
-        Crea tu credencial para competir en <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</span>
+        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU CyberTrainer' }}</span>
       </p>
     </div>
   </section>
