@@ -145,21 +145,21 @@
               </a>
             </li>
           {% else %}
+            {% if registration_visible() %}
+              <li class="nav-item">
+                <a class="theme-primary-btn w-100 w-lg-auto" href="{{ url_for('auth.register') }}">
+                  <i class="fas fa-user-plus"></i>
+                  <span>{% trans %}Register{% endtrans %}</span>
+                </a>
+              </li>
+            {% endif %}
+
             <li class="nav-item">
               <a class="theme-pill-btn w-100 w-lg-auto" href="{{ url_for('auth.login') }}">
                 <i class="fas fa-sign-in-alt"></i>
                 <span>{% trans %}Login{% endtrans %}</span>
               </a>
             </li>
-
-            {% if registration_visible() %}
-              <li class="nav-item">
-                <a class="theme-primary-btn btn w-100 w-lg-auto d-inline-flex align-items-center justify-content-center gap-2" href="{{ url_for('auth.register') }}">
-                  <i class="fas fa-user-plus"></i>
-                  <span>{% trans %}Register{% endtrans %}</span>
-                </a>
-              </li>
-            {% endif %}
           {% endif %}
 
           <!-- Selector de idioma oficial de CTFd -->

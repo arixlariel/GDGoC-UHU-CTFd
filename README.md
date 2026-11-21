@@ -79,9 +79,13 @@ docker compose restart ctfd
 
 ---
 
-## Vista previa local (sin Docker)
+## Vista previa en vivo (GitHub Pages)
 
-Puedes abrir el archivo `preview.html` directamente en cualquier navegador (o servir la carpeta con `python3 -m http.server 8080`) para previsualizar el tema interactivo con datos de ejemplo (Retos + buscador/filtros + Modal de reto + Scoreboard + Login + Portada).
+Cada `git push` a `main` publica automáticamente una vista previa interactiva (usando directamente las plantillas reales de `templates/` y `static/`) en:
+
+- **https://arixlariel.github.io/GDGoC-UHU-CTFd/**
+
+*(Este entorno en `github.io` es independiente de `gdguhu.com` y sirve solo para revisar el diseño visual del tema; el dominio final bajo `gdguhu.com` apunta al servidor CTFd real mediante Cloudflare).*
 
 ---
 
@@ -89,7 +93,7 @@ Puedes abrir el archivo `preview.html` directamente en cualquier navegador (o se
 
 ```text
 GDGoC-UHU-CTFd/
-├── preview.html                   # Vista previa local interactiva sin servidor CTFd
+├── .github/                       # Workflow de GitHub Pages para previsualizar el tema en github.io
 ├── static/
 │   ├── manifest.json              # Vite manifest oficial de CTFd core-beta
 │   ├── assets/                    # Bundles JS/CSS oficiales de CTFd (Alpine.js, ECharts, Bootstrap)

@@ -9,16 +9,6 @@
     <!-- Hero Cyber de Retos con estadísticas en tiempo real -->
     <section class="jumbotron theme-hero-section">
       <div class="container position-relative">
-        <div class="theme-badge-pill mb-3">
-          <span class="cyber-dots" aria-hidden="true">
-            <span class="cyber-dot cyber-dot--1"></span>
-            <span class="cyber-dot cyber-dot--2"></span>
-            <span class="cyber-dot cyber-dot--3"></span>
-            <span class="cyber-dot cyber-dot--4"></span>
-          </span>
-          <span>CYBER ARENA · GDGoC UHU</span>
-        </div>
-
         <h1>{% trans %}Challenges{% endtrans %}</h1>
         <p class="cyber-hero-sub">
           <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'CyberTrainer GDGoC UHU' }}</span>
@@ -27,11 +17,6 @@
         <!-- Chips de resumen y barra de progreso (visible cuando cargan los retos) -->
         <div x-show="loaded && challenges.length > 0" style="display: none;">
           <div class="cyber-stats-strip">
-            <span class="cyber-stat-chip">
-              <i class="fas fa-layer-group" style="color: #00F0FF;"></i>
-              <span>Categorías:</span>
-              <strong x-text="getCategories().length">0</strong>
-            </span>
             <span class="cyber-stat-chip">
               <i class="fas fa-terminal" style="color: #FF007F;"></i>
               <span>Retos:</span>
