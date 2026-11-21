@@ -12,7 +12,7 @@
 
     <!-- Gráfica ECharts de evolución Top 10 -->
     <div
-      class="theme-card p-3 p-md-4 mb-4"
+      class="theme-card cyber-chart-card p-3 p-md-4 mb-4"
       x-data="ScoreboardDetail"
       :class="{'d-block': show, 'd-none': !show}"
       @bracket-change.window="activeBracket=$event.detail; update();"
@@ -51,9 +51,12 @@
           <table class="table table-striped align-middle">
             <thead>
               <tr>
-                <th class="text-center" style="width: 90px">{% trans %}Place{% endtrans %}</th>
+                <th class="text-center" style="width: 86px">{% trans %}Place{% endtrans %}</th>
+                <th class="text-center" style="width: 110px">{% trans %}Points{% endtrans %}</th>
                 <th class="text-start ps-3">{{ get_mode_as_word(capitalize=True) }}</th>
-                <th class="text-end pe-4">{% trans %}Score{% endtrans %}</th>
+                <th class="text-center">{% trans %}Solves{% endtrans %}</th>
+                <th class="text-center">Submission accuracy</th>
+                <th class="text-center">Points efficiency</th>
               </tr>
             </thead>
 
@@ -72,15 +75,16 @@
                       x-text="'#' + (index + 1)"
                     ></span>
                   </th>
+                  <td class="text-center font-mono fw-bold" style="color: #00F0FF;" x-text="standing.score"></td>
                   <td class="text-start ps-3 fw-semibold">
                     <a :href="standing.account_url" x-text="standing.name"></a>
                     <template x-if="standing.bracket_name">
                       <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
                     </template>
                   </td>
-                  <td class="text-end pe-4 font-mono fw-bold" style="color: #00F0FF;">
-                    <span x-text="standing.score"></span> <small style="color: #94A3B8;">PTS</small>
-                  </td>
+                  <td class="text-center font-mono theme-text-secondary">—</td>
+                  <td class="text-center font-mono theme-text-secondary">—</td>
+                  <td class="text-center font-mono theme-text-secondary">—</td>
                 </tr>
               </template>
             </tbody>

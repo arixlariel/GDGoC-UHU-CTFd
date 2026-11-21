@@ -83,9 +83,45 @@
   }
 
   // 2. Configuración Cyber Neon 100% compatible con mergeObjects() de CTFd ECharts
-  //    (solo propiedades de 1 nivel bajo claves existentes para no lanzar TypeError en mergeObjects)
-  function makeCyberChartTheme() {
-    return {
+  //    (solo propiedades seguras para mergeObjects; sin barra blanca superior dataZoom ni tooltips decimales)
+  var CHART_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function formatChartDate(val) {
+    if (val === null || val === undefined || val === "") return "";
+    var d = val instanceof Date ? val : new Date(val);
+    if (isNaN(d.getTime())) {
+      // Limpiar sufijos tipo "GMT+0100 (hora estándar de Europa central)" si llegara texto crudo
+      return String(val).replace(/\s*GMT[^\n]*$/i, "").trim();
+    }
+    var dd = String(d.getDate()).padStart(2, "0");
+    var mon = CHART_MONTHS[d.getMonth()] || "";
+    var yyyy = d.getFullYear();
+    var hh = String(d.getHours()).padStart(2, "0");
+    var mm = String(d.getMinutes()).padStart(2, "0");
+    return dd + " " + mon + " " + yyyy + " · " + hh + ":" + mm;
+  }
+
+  function formatIntAxis(v) {
+    var num = Number(v);
+    if (isNaN(num)) return "";
+    return Math.abs(num - Math.round(num)) < 1e-6 ? String(Math.round(num)) : "";
+  }
+
+  // Crea un objeto hoja seguro para mergeObjects() de CTFd (instanceof Object === false evita recursión en claves inexistentes)
+  function safeMergeLeaf(props) {
+    var o = Object.create(null);
+    Object.defineProperty(o, "hasOwnProperty", {
+      value: Object.prototype.hasOwnProperty,
+      enumerable: false,
+    });
+    Object.keys(props).forEach(function (k) {
+      o[k] = props[k];
+    });
+    return o;
+  }
+
+  function makeCyberChartTheme(isProfile) {
+    var base = {
       backgroundColor: "transparent",
       color: [
         "#00F0FF",
@@ -99,93 +135,238 @@
         "#FBBF24",
         "#818CF8",
       ],
-      textStyle: {
+      textStyle: safeMergeLeaf({
         color: "#E2F1FF",
         fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
-      },
+      }),
       title: {
-        textStyle: {
+        top: 6,
+        textStyle: safeMergeLeaf({
           color: "#F0F9FF",
           fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
-          fontWeight: 700,
-          fontSize: 16,
-        },
+          fontWeight: 800,
+          fontSize: isProfile ? 23 : 19,
+        }),
+      },
+      toolbox: {
+        show: false,
+      },
+      grid: {
+        top: isProfile ? 68 : 62,
+        bottom: isProfile ? 48 : 74,
+        left: 20,
+        right: 24,
+        containLabel: true,
       },
       tooltip: {
+        trigger: "axis",
+        confine: true,
         backgroundColor: "rgba(6, 10, 24, 0.96)",
         borderColor: "#00F0FF",
         borderWidth: 1,
-        textStyle: {
+        padding: isProfile ? [6, 14] : [10, 14],
+        textStyle: safeMergeLeaf({
           color: "#E2F1FF",
           fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
+        }),
+        axisPointer: {
+          type: "line",
+          snap: true,
+          label: safeMergeLeaf({ show: false }),
+          lineStyle: safeMergeLeaf({
+            color: "rgba(0, 240, 255, 0.5)",
+            width: 1.5,
+            type: "dashed",
+          }),
         },
       },
-      legend: {
-        textStyle: {
-          color: "#E2F1FF",
-          fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
-        },
-        pageTextStyle: { color: "#94A3B8" },
-        pageIconColor: "#00F0FF",
-        pageIconInactiveColor: "#475569",
-      },
+      legend: isProfile
+        ? { show: false }
+        : {
+            show: true,
+            bottom: 8,
+            textStyle: safeMergeLeaf({
+              color: "#E2F1FF",
+              fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
+            }),
+            pageTextStyle: safeMergeLeaf({ color: "#94A3B8" }),
+            pageIconColor: "#00F0FF",
+            pageIconInactiveColor: "#475569",
+          },
       xAxis: [
         {
-          axisLabel: {
+          axisLabel: safeMergeLeaf({
             color: "#94A3B8",
+            margin: 18,
+            fontSize: 12,
             fontFamily: "'Google Sans Mono', 'JetBrains Mono', monospace",
-          },
+            formatter: formatChartDate,
+          }),
+          axisPointer: safeMergeLeaf({
+            label: safeMergeLeaf({ show: false }),
+          }),
         },
       ],
       yAxis: [
         {
-          axisLabel: {
+          minInterval: 1,
+          axisLabel: safeMergeLeaf({
             color: "#94A3B8",
+            margin: 12,
             fontFamily: "'Google Sans Mono', 'JetBrains Mono', monospace",
-          },
+            formatter: formatIntAxis,
+          }),
+          splitLine: safeMergeLeaf({
+            lineStyle: safeMergeLeaf({ color: "rgba(0, 240, 255, 0.14)" }),
+          }),
+          axisPointer: safeMergeLeaf({
+            show: false,
+            label: safeMergeLeaf({ show: false }),
+          }),
         },
       ],
       dataZoom: [
         {
-          backgroundColor: "rgba(6, 10, 24, 0.85)",
-          borderColor: "rgba(0, 240, 255, 0.35)",
-          fillerColor: "rgba(0, 240, 255, 0.18)",
-          textStyle: { color: "#94A3B8" },
+          show: false,
         },
       ],
     };
+
+    if (isProfile) {
+      base.tooltip.formatter = function (params) {
+        var p = Array.isArray(params) ? params[0] : params;
+        if (!p) return "";
+        var raw = Array.isArray(p.value) ? p.value[1] : p.value;
+        var pts = Math.round(Number(raw || 0));
+        return (
+          '<span style="font-family:\'JetBrains Mono\',monospace;font-weight:800;font-size:16px;color:#00F0FF;">' +
+          pts +
+          "</span>"
+        );
+      };
+      base.series = [
+        {
+          symbol: "circle",
+          symbolSize: 15,
+          showSymbol: true,
+          showAllSymbol: true,
+          emphasis: safeMergeLeaf({ scale: 1.35 }),
+        },
+      ];
+    } else {
+      base.tooltip.formatter = function (params) {
+        var items = Array.isArray(params) ? params : [params];
+        if (!items.length) return "";
+        var header = items[0].axisValue ? formatChartDate(items[0].axisValue) : "";
+        var lines = header
+          ? ['<div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#94A3B8;margin-bottom:4px;">' + header + "</div>"]
+          : [];
+        items.forEach(function (it) {
+          var raw = Array.isArray(it.value) ? it.value[1] : it.value;
+          var pts = Math.round(Number(raw || 0));
+          lines.push(
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;">' +
+            "<span>" + (it.marker || "") + " " + String(it.seriesName || "") + "</span>" +
+            '<strong style="font-family:\'JetBrains Mono\',monospace;color:#00F0FF;">' + pts + "</strong>" +
+            "</div>"
+          );
+        });
+        return lines.join("");
+      };
+    }
+
+    return base;
   }
 
   ["scoreboardChartOptions", "userScoreGraphChartOptions", "teamScoreGraphChartOptions"].forEach(function (prop) {
+    var isProf = prop !== "scoreboardChartOptions";
     try {
       Object.defineProperty(window, prop, {
         configurable: true,
         enumerable: true,
-        get: makeCyberChartTheme,
+        get: function () {
+          return makeCyberChartTheme(isProf);
+        },
       });
     } catch (_) {
-      window[prop] = makeCyberChartTheme();
+      window[prop] = makeCyberChartTheme(isProf);
     }
   });
 
-  // 3. Limpiar el viejo bloque inline de Theme Header y adaptar la portada de BD (/)
+  // Botón Download diferenciado sobre #score-graph (descarga sot_<USERNAME>.png en perfiles)
+  function initChartDownloadButton() {
+    var graph = document.getElementById("score-graph");
+    if (!graph) return;
+    var card = graph.closest(".theme-card") || graph.parentElement;
+    if (!card || card.querySelector(".cyber-chart-dl-btn")) return;
+    card.classList.add("cyber-chart-card");
+
+    var path = getNormPath();
+    var isProfile =
+      path === "/user" ||
+      path === "/profile" ||
+      path.indexOf("/users/") === 0 ||
+      path === "/team" ||
+      path.indexOf("/teams/") === 0;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "cyber-chart-dl-btn";
+    btn.setAttribute("aria-label", "Download chart as image");
+    btn.innerHTML = '<i class="fas fa-download"></i><span>Download</span>';
+
+    btn.addEventListener("click", function () {
+      var canvas = graph.querySelector("canvas");
+      if (!canvas) return;
+      var out = document.createElement("canvas");
+      out.width = canvas.width;
+      out.height = canvas.height;
+      var ctx = out.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "#080E22";
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(canvas, 0, 0);
+      }
+      var filename = "scoreboard.png";
+      if (isProfile) {
+        var rawName =
+          (window.USER && window.USER.name) ||
+          (window.TEAM && window.TEAM.name) ||
+          ((document.querySelector("main h1") && document.querySelector("main h1").textContent) || "").trim() ||
+          "profile";
+        var safeName = rawName.replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "profile";
+        filename = "sot_" + safeName + ".png";
+      }
+      var link = document.createElement("a");
+      link.download = filename;
+      link.href = out.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+
+    card.appendChild(btn);
+  }
+
+  // 3. Limpiar el viejo bloque inline de Theme Header y activar 3D en toda la portada (/)
   function cleanupLegacyThemeHeader() {
     var legacyStyle = document.getElementById("gdg-custom-theme");
     if (legacyStyle) {
       legacyStyle.disabled = true;
     }
 
-    // Potenciar automáticamente .feature-card en la portada con tilt 3D sutil + glare
-    document.querySelectorAll("main .feature-card").forEach(function (card) {
+    // Potenciar automáticamente .gdg-hero y todas las .feature-card en la portada con tilt 3D + glare
+    document.querySelectorAll("main .gdg-hero, main .feature-card").forEach(function (card) {
       if (!card.classList.contains("tilt-card")) {
         card.classList.add("tilt-card");
-        card.setAttribute("data-tilt-max", card.offsetWidth > 500 ? "0.9" : "1.6");
-        if (!card.querySelector(".tilt-glare")) {
-          var glare = document.createElement("div");
-          glare.className = "tilt-glare";
-          glare.setAttribute("aria-hidden", "true");
-          card.insertBefore(glare, card.firstChild);
-        }
+        var isHero = card.classList.contains("gdg-hero");
+        card.setAttribute("data-tilt-max", isHero ? "0.7" : card.offsetWidth > 500 ? "1.0" : "1.8");
+      }
+      if (!card.querySelector(":scope > .tilt-glare")) {
+        var glare = document.createElement("div");
+        glare.className = "tilt-glare";
+        glare.setAttribute("aria-hidden", "true");
+        card.insertBefore(glare, card.firstChild);
       }
     });
 
@@ -598,7 +779,8 @@
     };
   }
 
-  // 7. Scoreboard con pestañas temporales: All-Time · This Year · Last Month
+  // 7. Scoreboard con pestañas temporales (All-Time · Year · Last Month) y 6 columnas operativas:
+  //    Place | Points | User | Solves | Submission accuracy | Points efficiency
   function initScoreboardTimeframes() {
     if (getNormPath() !== "/scoreboard") return;
     var sbRoot = document.getElementById("scoreboard");
@@ -615,139 +797,375 @@
 
     sbRoot.insertBefore(bar, sbRoot.firstChild);
 
-    var filteredPanel = document.createElement("div");
-    filteredPanel.className = "col-md-12 d-none";
-    filteredPanel.id = "cyber-scoreboard-filtered";
-    sbRoot.appendChild(filteredPanel);
+    var enhancedPanel = document.createElement("div");
+    enhancedPanel.className = "col-md-12";
+    enhancedPanel.id = "cyber-scoreboard-enhanced";
+    sbRoot.appendChild(enhancedPanel);
 
-    var cachedTop = null;
+    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var hdrs = { Accept: "application/json", "Content-Type": "application/json" };
     var activePeriod = "all";
+    var activeBracket = null;
+    var dataLoaded = false;
+    var standingsList = [];
+    var topMap = {};
+    var userMetricsById = {};
+    var chalMaxById = {};
+
+    function fetchJson(u) {
+      return fetch(u, { headers: hdrs })
+        .then(function (r) {
+          var ct = (r.headers && r.headers.get("content-type")) || "";
+          return r.ok && ct.indexOf("application/json") !== -1 ? r.json() : null;
+        })
+        .catch(function () { return null; });
+    }
 
     function getNativeCols() {
       return Array.prototype.slice.call(sbRoot.children).filter(function (el) {
-        return el !== bar && el !== filteredPanel && !el.querySelector(".nav-pills");
+        return el !== bar && el !== enhancedPanel && !el.querySelector(".nav-pills");
       });
     }
 
-    function computeFilteredStandings(period) {
-      if (!cachedTop) return [];
+    function fmtPctCell(pct) {
+      if (pct === null || pct === undefined || isNaN(pct)) {
+        return '<span class="theme-text-secondary opacity-50">—</span>';
+      }
+      var clean = Number(pct.toFixed(1));
+      var cls = clean >= 75 ? "cyber-sb-pct--high" : clean >= 45 ? "cyber-sb-pct--mid" : "cyber-sb-pct--low";
+      return '<span class="cyber-sb-pct ' + cls + '">' + clean + "%</span>";
+    }
+
+    function buildRowsForPeriod(period) {
       var now = Date.now();
       var cutoff =
         period === "month"
           ? now - 30 * 24 * 60 * 60 * 1000
-          : new Date(year, 0, 1).getTime();
+          : period === "year"
+          ? new Date(year, 0, 1).getTime()
+          : 0;
 
-      var list = [];
-      Object.keys(cachedTop).forEach(function (k) {
-        var entry = cachedTop[k];
-        if (!entry || !Array.isArray(entry.solves)) return;
+      // Combinar standings nativos + entradas de top/100
+      var byId = {};
+      standingsList.forEach(function (st) {
+        var id = String(st.account_id || st.id || "");
+        if (!id) return;
+        byId[id] = {
+          id: id,
+          name: st.name,
+          account_url: st.account_url || (root + "/users/" + id),
+          bracket_id: st.bracket_id || null,
+          bracket_name: st.bracket_name || null,
+          allScore: Number(st.score || 0),
+          solves: [],
+        };
+      });
+      Object.keys(topMap).forEach(function (k) {
+        var entry = topMap[k];
+        if (!entry) return;
+        var id = String(entry.id || k);
+        if (!byId[id]) {
+          byId[id] = {
+            id: id,
+            name: entry.name,
+            account_url: entry.account_url || (root + "/users/" + id),
+            bracket_id: entry.bracket_id || null,
+            bracket_name: entry.bracket_name || null,
+            allScore: Number(entry.score || 0),
+            solves: [],
+          };
+        }
+        if (Array.isArray(entry.solves)) {
+          byId[id].solves = entry.solves;
+        }
+      });
+
+      var rows = [];
+      Object.keys(byId).forEach(function (id) {
+        var u = byId[id];
+        if (activeBracket && String(u.bracket_id) !== String(activeBracket)) return;
+
+        var uMet = userMetricsById[id] || { failCount: 0, fails: [], posAwards: 0, negAwards: 0 };
+        var filtSolves =
+          period === "all"
+            ? u.solves
+            : u.solves.filter(function (sv) {
+                var ts = Date.parse(sv.date);
+                return !isNaN(ts) && ts >= cutoff;
+              });
+
+        var solveCount = filtSolves.length;
         var score = 0;
         var lastSolveMs = 0;
-        entry.solves.forEach(function (sv) {
-          var ts = Date.parse(sv.date);
-          if (!isNaN(ts) && ts >= cutoff) {
+        if (period === "all") {
+          score = u.allScore;
+          filtSolves.forEach(function (sv) {
+            var ts = Date.parse(sv.date);
+            if (!isNaN(ts) && ts > lastSolveMs) lastSolveMs = ts;
+          });
+        } else {
+          filtSolves.forEach(function (sv) {
             score += Number(sv.value || 0);
-            if (ts > lastSolveMs) lastSolveMs = ts;
-          }
+            var ts = Date.parse(sv.date);
+            if (!isNaN(ts) && ts > lastSolveMs) lastSolveMs = ts;
+          });
+          if (score <= 0) return;
+        }
+
+        // Fails filtrados por periodo si existen timestamps (admin), o conteo total en All-Time
+        var failCount = uMet.failCount;
+        var filtFails = uMet.fails || [];
+        if (period !== "all" && filtFails.length) {
+          filtFails = filtFails.filter(function (fl) {
+            var ts = Date.parse(fl.date);
+            return !isNaN(ts) && ts >= cutoff;
+          });
+          failCount = filtFails.length;
+        }
+
+        var totalAttempts = solveCount + failCount;
+        var accuracy = totalAttempts > 0 ? (solveCount / totalAttempts) * 100 : null;
+
+        // Points efficiency: puntos obtenidos vs potenciales (max de retos resueltos/intentados)
+        var chalIds = {};
+        var solveSum = 0;
+        filtSolves.forEach(function (sv) {
+          var cid = String(sv.challenge_id || "");
+          if (cid) chalIds[cid] = Math.max(chalIds[cid] || 0, Number(sv.value || 0));
+          solveSum += Number(sv.value || 0);
         });
-        if (score > 0) {
-          list.push({
-            name: entry.name,
-            account_url: entry.account_url || "#",
-            bracket_name: entry.bracket_name || null,
-            score: score,
-            lastSolveMs: lastSolveMs,
+        filtFails.forEach(function (fl) {
+          var cid = String(fl.challenge_id || "");
+          if (cid && !(cid in chalIds)) chalIds[cid] = 0;
+        });
+
+        var potential = 0;
+        Object.keys(chalIds).forEach(function (cid) {
+          potential += Math.max(chalMaxById[cid] || 0, chalIds[cid] || 0);
+        });
+        var earned = period === "all" ? Math.max(0, score - uMet.posAwards) : Math.max(0, solveSum);
+        if (potential > 0) potential = Math.max(potential, earned);
+        var efficiency = potential > 0 ? Math.min(100, (earned / potential) * 100) : null;
+
+        rows.push({
+          id: id,
+          name: u.name,
+          account_url: u.account_url,
+          bracket_name: u.bracket_name,
+          score: Math.round(score),
+          solves: solveCount,
+          accuracy: accuracy,
+          efficiency: efficiency,
+          lastSolveMs: lastSolveMs,
+        });
+      });
+
+      rows.sort(function (a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.lastSolveMs - b.lastSolveMs;
+      });
+      return rows;
+    }
+
+    function paintTable() {
+      bar.querySelectorAll(".cyber-period-btn").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-period") === activePeriod);
+      });
+
+      getNativeCols().forEach(function (el) {
+        el.classList.add("gdg-filter-hidden");
+      });
+
+      if (!dataLoaded) {
+        enhancedPanel.innerHTML =
+          '<div class="theme-card p-5 text-center"><i class="fas fa-circle-notch fa-spin fa-2x spinner"></i></div>';
+        return;
+      }
+
+      var rows = buildRowsForPeriod(activePeriod);
+      if (!rows.length) {
+        var label =
+          activePeriod === "month"
+            ? "the last 30 days"
+            : activePeriod === "year"
+            ? String(year)
+            : "the scoreboard yet";
+        enhancedPanel.innerHTML =
+          '<div class="theme-card cyber-empty-state">' +
+          '  <span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>0 entries</span></span>' +
+          '  <h3 class="h5 theme-text-primary fw-bold mb-0">No scores recorded in ' + label + "</h3>" +
+          "</div>";
+        return;
+      }
+
+      var modeWord = (window.init && window.init.userMode === "teams") ? "Team" : "User";
+      var html =
+        '<div class="cyber-table-wrap"><table class="table table-striped align-middle">' +
+        "<thead><tr>" +
+        '<th class="text-center" style="width:86px">Place</th>' +
+        '<th class="text-center" style="width:110px">Points</th>' +
+        '<th class="text-start ps-3">' + modeWord + "</th>" +
+        '<th class="text-center">Solves</th>' +
+        '<th class="text-center">Submission accuracy</th>' +
+        '<th class="text-center">Points efficiency</th>' +
+        "</tr></thead><tbody>";
+
+      rows.forEach(function (r, idx) {
+        var rCls =
+          idx === 0
+            ? "rank-badge--1"
+            : idx === 1
+            ? "rank-badge--2"
+            : idx === 2
+            ? "rank-badge--3"
+            : "rank-badge--other";
+        var bracketHtml = r.bracket_name ? ' <span class="badge bg-secondary ms-2"></span>' : "";
+        html +=
+          '<tr>' +
+          '<th scope="row" class="text-center"><span class="rank-badge ' + rCls + '">#' + (idx + 1) + "</span></th>" +
+          '<td class="text-center font-mono fw-bold" style="color:#00F0FF;">' + r.score + "</td>" +
+          '<td class="text-start ps-3 fw-semibold"><a href="' + r.account_url + '"></a>' + bracketHtml + "</td>" +
+          '<td class="text-center font-mono fw-bold theme-text-primary">' + r.solves + "</td>" +
+          '<td class="text-center">' + fmtPctCell(r.accuracy) + "</td>" +
+          '<td class="text-center">' + fmtPctCell(r.efficiency) + "</td>" +
+          "</tr>";
+      });
+      html += "</tbody></table></div>";
+      enhancedPanel.innerHTML = html;
+
+      var trs = enhancedPanel.querySelectorAll("tbody tr");
+      rows.forEach(function (r, idx) {
+        var a = trs[idx].querySelector("a");
+        if (a) a.textContent = r.name;
+        var br = trs[idx].querySelector(".badge");
+        if (br && r.bracket_name) br.textContent = r.bracket_name;
+      });
+    }
+
+    window.addEventListener("bracket-change", function (ev) {
+      activeBracket = ev && ev.detail ? ev.detail : null;
+      paintTable();
+    });
+
+    bar.querySelectorAll(".cyber-period-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activePeriod = btn.getAttribute("data-period") || "all";
+        paintTable();
+      });
+    });
+
+    paintTable();
+
+    var apiBase = (window.init && window.init.userMode === "teams") ? "/api/v1/teams/" : "/api/v1/users/";
+    Promise.all([
+      fetchJson(root + "/api/v1/scoreboard"),
+      fetchJson(root + "/api/v1/scoreboard/top/100"),
+    ]).then(function (res) {
+      standingsList = (res[0] && Array.isArray(res[0].data)) ? res[0].data : [];
+      topMap = (res[1] && res[1].data) || {};
+
+      var accountIds = {};
+      var chalIds = {};
+      standingsList.forEach(function (st) {
+        var id = String(st.account_id || st.id || "");
+        if (id) accountIds[id] = true;
+      });
+      Object.keys(topMap).forEach(function (k) {
+        var entry = topMap[k];
+        if (!entry) return;
+        var id = String(entry.id || k);
+        accountIds[id] = true;
+        if (Array.isArray(entry.solves)) {
+          entry.solves.forEach(function (sv) {
+            if (sv.challenge_id) chalIds[String(sv.challenge_id)] = true;
           });
         }
       });
 
-      list.sort(function (a, b) {
-        if (b.score !== a.score) return b.score - a.score;
-        return a.lastSolveMs - b.lastSolveMs;
+      var ids = Object.keys(accountIds);
+      var userPromises = ids.map(function (id) {
+        return Promise.all([
+          fetchJson(root + apiBase + id + "/fails"),
+          fetchJson(root + apiBase + id + "/awards"),
+        ]).then(function (ur) {
+          var failsRes = ur[0] || {};
+          var failsData = Array.isArray(failsRes.data) ? failsRes.data : [];
+          var failCount =
+            failsRes.meta && typeof failsRes.meta.count === "number"
+              ? failsRes.meta.count
+              : failsData.length;
+          failsData.forEach(function (fl) {
+            if (fl.challenge_id) chalIds[String(fl.challenge_id)] = true;
+          });
+          var awardsData = (ur[1] && Array.isArray(ur[1].data)) ? ur[1].data : [];
+          var posAwards = 0;
+          var negAwards = 0;
+          awardsData.forEach(function (aw) {
+            var v = Number(aw.value || 0);
+            if (v > 0) posAwards += v;
+            else if (v < 0) negAwards += Math.abs(v);
+          });
+          userMetricsById[id] = {
+            failCount: failCount,
+            fails: failsData,
+            posAwards: posAwards,
+            negAwards: negAwards,
+          };
+        });
       });
-      return list;
-    }
 
-    function renderPeriod(period) {
-      activePeriod = period;
-      bar.querySelectorAll(".cyber-period-btn").forEach(function (b) {
-        b.classList.toggle("active", b.getAttribute("data-period") === period);
-      });
-
-      var nativeCols = getNativeCols();
-      if (period === "all") {
-        nativeCols.forEach(function (el) { el.classList.remove("gdg-filter-hidden"); });
-        filteredPanel.classList.add("d-none");
-        return;
-      }
-
-      nativeCols.forEach(function (el) { el.classList.add("gdg-filter-hidden"); });
-      filteredPanel.classList.remove("d-none");
-
-      function paint() {
-        var rows = computeFilteredStandings(period);
-        if (!rows.length) {
-          var label = period === "month" ? "the last 30 days" : String(year);
-          filteredPanel.innerHTML =
-            '<div class="theme-card cyber-empty-state">' +
-            '  <span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>0 entries</span></span>' +
-            '  <h3 class="h5 theme-text-primary fw-bold mb-0">No scores recorded in ' + label + '</h3>' +
-            "</div>";
-          return;
-        }
-        var html =
-          '<div class="cyber-table-wrap"><table class="table table-striped align-middle">' +
-          '<thead><tr><th class="text-center" style="width:90px">Place</th><th class="text-start ps-3">User</th><th class="text-end pe-4">Score</th></tr></thead><tbody>';
-        rows.forEach(function (r, idx) {
-          var rCls = idx === 0 ? "rank-badge--1" : idx === 1 ? "rank-badge--2" : idx === 2 ? "rank-badge--3" : "rank-badge--other";
-          var bracketHtml = r.bracket_name ? ' <span class="badge bg-secondary ms-2"></span>' : "";
-          html +=
-            '<tr><th scope="row" class="text-center"><span class="rank-badge ' + rCls + '">#' + (idx + 1) + "</span></th>" +
-            '<td class="text-start ps-3 fw-semibold"><a href="' + r.account_url + '"></a>' + bracketHtml + "</td>" +
-            '<td class="text-end pe-4 font-mono fw-bold" style="color:#00F0FF;">' + r.score + ' <small style="color:#94A3B8;">PTS</small></td></tr>';
-        });
-        html += "</tbody></table></div>";
-        filteredPanel.innerHTML = html;
-        var trs = filteredPanel.querySelectorAll("tbody tr");
-        rows.forEach(function (r, idx) {
-          var a = trs[idx].querySelector("a");
-          if (a) a.textContent = r.name;
-          var br = trs[idx].querySelector(".badge");
-          if (br && r.bracket_name) br.textContent = r.bracket_name;
-        });
-      }
-
-      if (cachedTop) {
-        paint();
-        return;
-      }
-
-      filteredPanel.innerHTML =
-        '<div class="theme-card p-5 text-center"><i class="fas fa-circle-notch fa-spin fa-2x spinner"></i></div>';
-
-      var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
-      fetch(root + "/api/v1/scoreboard/top/100", {
-        headers: { Accept: "application/json", "Content-Type": "application/json" },
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (res) {
-          cachedTop = (res && res.data) || {};
-          if (activePeriod === period) paint();
-        })
-        .catch(function () {
-          cachedTop = {};
-          if (activePeriod === period) paint();
-        });
-    }
-
-    bar.querySelectorAll(".cyber-period-btn").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        renderPeriod(btn.getAttribute("data-period"));
+      Promise.all(userPromises).then(function () {
+        var cids = Object.keys(chalIds);
+        return Promise.all(
+          cids.map(function (cid) {
+            return fetchJson(root + "/api/v1/challenges/" + cid).then(function (cr) {
+              if (cr && cr.data) {
+                chalMaxById[cid] = Number(
+                  cr.data.initial != null ? cr.data.initial : cr.data.value || 0
+                );
+              }
+            });
+          })
+        );
+      }).then(function () {
+        dataLoaded = true;
+        paintTable();
       });
     });
   }
 
-  // 8. Perfiles de usuario (/user y /users/<id>): columna "Points" (earned/potential) + barra automática Potential vs Earned
+  // 8. Contador live de usuarios registrados ("Registered users") en Landing (/) y /users
+  function initRegisteredUsersCounter() {
+    var els = document.querySelectorAll("[data-cyber-user-count]");
+    if (!els.length) return;
+    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    fetch(root + "/api/v1/users?per_page=1", {
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+    })
+      .then(function (r) {
+        var ct = (r.headers && r.headers.get("content-type")) || "";
+        return r.ok && ct.indexOf("application/json") !== -1 ? r.json() : null;
+      })
+      .then(function (res) {
+        var total =
+          res && res.meta && res.meta.pagination && typeof res.meta.pagination.total === "number"
+            ? res.meta.pagination.total
+            : res && Array.isArray(res.data)
+            ? res.data.length
+            : null;
+        if (total !== null) {
+          els.forEach(function (el) {
+            el.textContent = String(total);
+          });
+        }
+      })
+      .catch(function () {});
+  }
+
+  // 9. Perfiles de usuario (/user y /users/<id>):
+  //    - Columna "Points" (earned / max sin "PTS")
+  //    - Solves ordenados por más puntos potenciales a menos, límite 15 + botón "Load more"
+  //    - Barra automática "Points Efficiency" (Missed solo porcentaje) separada de Solves
   function initProfilePointsMetrics() {
     var path = getNormPath();
     var isPrivate = path === "/user" || path === "/profile";
@@ -775,7 +1193,10 @@
 
     function fetchJson(u) {
       return fetch(u, { headers: hdrs })
-        .then(function (r) { return r.ok ? r.json() : { data: [] }; })
+        .then(function (r) {
+          var ct = (r.headers && r.headers.get("content-type")) || "";
+          return r.ok && ct.indexOf("application/json") !== -1 ? r.json() : { data: [] };
+        })
         .catch(function () { return { data: [] }; });
     }
 
@@ -835,7 +1256,6 @@
           }
         });
 
-        // Calcular posibles penalizaciones (awards negativos) y bonus (awards positivos)
         var negAwardTotal = 0;
         var posAwardTotal = 0;
         var negAwardById = {};
@@ -855,7 +1275,6 @@
           }
         });
 
-        // Actualizar columna Points a "earned / max" en la tabla de Solves
         var earnedTotal = 0;
         var solveById = {};
         var solveByName = {};
@@ -866,7 +1285,7 @@
           var earned = Math.max(0, val - penalty);
           var maxPts = Math.max(maxById[cid] || val, val);
           var cName = (s.challenge && s.challenge.name) || nameById[cid] || "";
-          var rec = { earned: earned, max: maxPts, name: cName };
+          var rec = { earned: earned, max: maxPts, name: cName, dateMs: Date.parse(s.date) || 0 };
           solveById[cid] = rec;
           if (cName) solveByName[cName.trim().toLowerCase()] = rec;
           earnedTotal += val;
@@ -888,48 +1307,100 @@
         potentialTotal = Math.max(potentialTotal, earnedTotal);
 
         if (solvesTable) {
-          var rows = solvesTable.querySelectorAll("tbody tr");
-          rows.forEach(function (tr, idx) {
+          var tbody = solvesTable.querySelector("tbody");
+          var rows = Array.prototype.slice.call(solvesTable.querySelectorAll("tbody tr"));
+          var rowMeta = rows.map(function (tr, idx) {
             var tds = tr.querySelectorAll("td");
-            if (tds.length < 3) return;
-            var link = tds[0].querySelector("a[href]");
             var matched = null;
-            if (link && link.href) {
-              var m = link.href.match(/-(\d+)$/);
-              if (m && solveById[m[1]]) matched = solveById[m[1]];
+            if (tds.length >= 3) {
+              var link = tds[0].querySelector("a[href]");
+              if (link && link.href) {
+                var m = link.href.match(/-(\d+)$/);
+                if (m && solveById[m[1]]) matched = solveById[m[1]];
+              }
+              if (!matched && link) {
+                var linkTxt = (link.textContent || "").trim().toLowerCase();
+                if (linkTxt && solveByName[linkTxt]) matched = solveByName[linkTxt];
+              }
+              if (!matched && solves[idx]) {
+                var cid = String(solves[idx].challenge_id || (solves[idx].challenge && solves[idx].challenge.id) || "");
+                matched = solveById[cid];
+              }
+              if (matched) {
+                tds[2].classList.add("font-mono", "fw-bold");
+                tds[2].innerHTML =
+                  '<span style="color:#00FF66;">' + matched.earned + "</span>" +
+                  '<span style="color:#64748B;"> / ' + matched.max + "</span>";
+              }
             }
-            if (!matched && link) {
-              var linkTxt = (link.textContent || "").trim().toLowerCase();
-              if (linkTxt && solveByName[linkTxt]) matched = solveByName[linkTxt];
-            }
-            if (!matched && solves[idx]) {
-              var cid = String(solves[idx].challenge_id || (solves[idx].challenge && solves[idx].challenge.id) || "");
-              matched = solveById[cid];
-            }
-            if (matched) {
-              tds[2].classList.add("font-mono", "fw-bold");
-              tds[2].innerHTML =
-                '<span style="color:#00FF66;">' + matched.earned + "</span>" +
-                '<span style="color:#64748B;"> / ' + matched.max + "</span>" +
-                ' <small style="color:#94A3B8;">PTS</small>';
-            }
+            return {
+              tr: tr,
+              max: matched ? matched.max : 0,
+              earned: matched ? matched.earned : 0,
+              dateMs: matched ? matched.dateMs : 0,
+            };
           });
+
+          // Ordenar de más puntos potenciales a menos
+          rowMeta.sort(function (a, b) {
+            if (b.max !== a.max) return b.max - a.max;
+            if (b.earned !== a.earned) return b.earned - a.earned;
+            return b.dateMs - a.dateMs;
+          });
+
+          if (tbody) {
+            rowMeta.forEach(function (item) {
+              tbody.appendChild(item.tr);
+            });
+          }
+
+          // Paginación de 15 en 15 con botón "Load more"
+          var PAGE_SIZE = 15;
+          if (rowMeta.length > PAGE_SIZE) {
+            var visibleCount = PAGE_SIZE;
+            var applyRowLimit = function () {
+              rowMeta.forEach(function (item, idx) {
+                item.tr.classList.toggle("gdg-filter-hidden", idx >= visibleCount);
+              });
+            };
+            applyRowLimit();
+
+            var tableWrap = solvesTable.closest(".cyber-table-wrap") || solvesTable;
+            var existingMore = tableWrap.parentNode && tableWrap.parentNode.querySelector(".cyber-load-more-wrap");
+            if (existingMore) existingMore.remove();
+
+            var moreWrap = document.createElement("div");
+            moreWrap.className = "cyber-load-more-wrap";
+            var moreBtn = document.createElement("button");
+            moreBtn.type = "button";
+            moreBtn.className = "theme-pill-btn cyber-load-more-btn";
+            moreBtn.innerHTML = '<i class="fas fa-plus-circle"></i><span>Load more</span>';
+            moreBtn.addEventListener("click", function () {
+              visibleCount += PAGE_SIZE;
+              applyRowLimit();
+              if (visibleCount >= rowMeta.length) {
+                moreWrap.remove();
+              }
+            });
+            moreWrap.appendChild(moreBtn);
+            if (tableWrap.parentNode) {
+              tableWrap.parentNode.insertBefore(moreWrap, tableWrap.nextSibling);
+            }
+          }
         }
 
-        // Inyectar la barra automática Potential vs Earned junto a Solves/Fails y Category Breakdown
+        // Inyectar la barra automática Potential vs Earned junto a Submission Accuracy y Category Breakdown
         var graphsRow = document.querySelector('[x-data="UserGraphs"]');
         if (graphsRow && potentialTotal > 0 && !document.getElementById("cyber-points-efficiency-col")) {
           var earnedPct = Number(((earnedTotal / potentialTotal) * 100).toFixed(2));
           var missedPct = Number(Math.max(0, 100 - earnedPct).toFixed(2));
-          var missedPts = Math.max(0, potentialTotal - earnedTotal);
 
-          // Limpiar <br class="clearfix"> nativo de core y añadir espaciado uniforme
-          graphsRow.classList.add("g-4", "mb-4");
+          // Separar claramente las barras de la tabla de Solves y limpiar <br class="clearfix">
+          graphsRow.classList.add("g-4", "mt-5", "mb-4");
           graphsRow.querySelectorAll(":scope > br.clearfix").forEach(function (br) {
             br.remove();
           });
 
-          // Ajustar las 2 barras existentes (col-md-6 -> col-md-4) y envolverlas en .theme-card si estamos en core
           var coreHeaders = [
             '<h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing:0.05em;"><i class="fas fa-crosshairs me-2" style="color:#00FF66;"></i>Submission Accuracy</h4>',
             '<h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing:0.05em;"><i class="fas fa-chart-pie me-2" style="color:#00F0FF;"></i>Category Breakdown</h4>',
@@ -962,7 +1433,7 @@
             '    <h4 class="h6 fw-bold theme-text-primary mb-0 font-mono text-uppercase" style="letter-spacing:0.05em;">' +
             '      <i class="fas fa-bolt me-2" style="color:#FFE600;"></i>Points Efficiency' +
             '    </h4>' +
-            '    <span class="font-mono small fw-bold" style="color:#00F0FF;">' + earnedTotal + " / " + potentialTotal + " PTS</span>" +
+            '    <span class="font-mono small fw-bold" style="color:#00F0FF;">' + earnedTotal + " / " + potentialTotal + "</span>" +
             '  </div>' +
             '  <div class="progress mb-3">' +
             '    <div class="progress-bar" role="progressbar" style="width:' + earnedPct + '%;background-color:#00FF66;"></div>' +
@@ -975,7 +1446,7 @@
             '    </span>' +
             '    <span class="d-inline-flex align-items-center gap-1 theme-text-secondary">' +
             '      <span class="cyber-dot cyber-dot--2" style="animation:none;"></span>' +
-            '      <span>Missed (' + missedPts + ' pts · ' + missedPct + '%)</span>' +
+            '      <span>Missed (' + missedPct + '%)</span>' +
             '    </span>' +
             '  </div>' +
             '</div>';
@@ -1001,6 +1472,8 @@
   window.cyberInitSettingsInlineFeedback = initSettingsInlineFeedback;
   window.cyberInitScoreboardTimeframes = initScoreboardTimeframes;
   window.cyberInitProfilePointsMetrics = initProfilePointsMetrics;
+  window.cyberInitChartDownloadButton = initChartDownloadButton;
+  window.cyberInitRegisteredUsersCounter = initRegisteredUsersCounter;
 
   document.addEventListener("DOMContentLoaded", function () {
     cleanupLegacyThemeHeader();
@@ -1010,6 +1483,8 @@
     initSettingsInlineFeedback();
     initScoreboardTimeframes();
     initProfilePointsMetrics();
+    initChartDownloadButton();
+    initRegisteredUsersCounter();
 
     // Observar nuevos nodos inyectados dinámicamente por Alpine.js (retos, modales) con debounce ligero
     if (!prefersReducedMotion && typeof MutationObserver !== "undefined") {

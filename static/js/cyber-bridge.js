@@ -418,15 +418,15 @@
         a.innerHTML = '<i class="fas fa-cogs fa-fw"></i><span class="d-lg-none"></span>';
         a.querySelector("span").textContent = lbl || "Settings";
       } else if (p === "/logout") {
-        a.className = "theme-pill-btn theme-pill-btn--icon w-100 w-lg-auto";
+        a.className = "theme-pill-btn theme-pill-btn--icon theme-pill-btn--logout w-100 w-lg-auto";
         setCyberTooltip(a, lbl || "Logout");
-        a.innerHTML = '<i class="fas fa-sign-out-alt fa-fw"></i><span class="d-lg-none"></span>';
+        a.innerHTML = '<i class="fas fa-power-off fa-fw"></i><span class="d-lg-none"></span>';
         a.querySelector("span").textContent = lbl || "Logout";
       } else if (p === "/login") {
         loginLi = li;
-        a.className = "theme-pill-btn w-100 w-lg-auto";
+        a.className = "theme-pill-btn theme-pill-btn--login w-100 w-lg-auto";
         setCyberTooltip(a, "Register or Login");
-        a.innerHTML = '<i class="fas fa-sign-in-alt"></i><span></span>';
+        a.innerHTML = '<i class="fas fa-key"></i><span></span>';
         a.querySelector("span").textContent = lbl || "Login";
       } else if (p === "/register") {
         // Sin sesión solo mostramos Login en la barra; Register es accesible debajo del formulario de Login
@@ -1306,6 +1306,29 @@
           });
         }
 
+        if (path === "/reset_password") {
+          // Aviso claro cuando no hay servidor de correo configurado (manteniendo el botón de cierre .btn-close)
+          document.querySelectorAll("main .alert span, main p").forEach(function (el) {
+            var txt = (el.textContent || "").trim();
+            if (/not configured to send email/i.test(txt)) {
+              el.textContent =
+                "This CTFd instance is not configured to send emails, please contact an organizer to have your password reset.";
+            }
+          });
+          // Acortar botón Submit como el resto de formularios
+          var rpSub = form.querySelector('input[type="submit"], button[type="submit"]');
+          if (rpSub) {
+            rpSub.classList.remove("w-100", "w-sm-auto", "col-md-12", "btn-block", "float-end");
+            rpSub.classList.add("px-4");
+            var rpRow = rpSub.closest(".row") || rpSub.closest(".mb-3, div");
+            if (rpRow && rpRow !== form) {
+              rpRow.className = "d-flex justify-content-end pt-3";
+              rpRow.innerHTML = "";
+              rpRow.appendChild(rpSub);
+            }
+          }
+        }
+
         var col = form.closest('[class*="col-"]');
         if (col) {
           col.className = "col-md-10 col-lg-8 col-xl-7 mx-auto";
@@ -1331,6 +1354,15 @@
             }
           }
         }
+      } else if (path === "/reset_password") {
+        // Caso sin formulario (CTFd solo renderiza aviso cuando no hay email configurado)
+        document.querySelectorAll("main .alert, main p, main h4, main h5").forEach(function (el) {
+          var txt = (el.textContent || "").trim();
+          if (/not configured to send email/i.test(txt)) {
+            el.textContent =
+              "This CTFd instance is not configured to send emails, please contact an organizer to have your password reset.";
+          }
+        });
       }
       return;
     }
@@ -1341,13 +1373,13 @@
         var box = document.createElement("div");
         box.className = "theme-card cyber-empty-state";
         box.innerHTML =
-          '<span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>// 0 notifications</span></span>';
+          '<span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>0 notifications</span></span>';
         emptyH2.className = "h4 theme-text-primary fw-bold mb-1";
         emptyH2.parentNode.insertBefore(box, emptyH2);
         box.appendChild(emptyH2);
         var subNote = document.createElement("p");
         subNote.className = "small theme-text-secondary mb-0";
-        subNote.textContent = "Competition announcements and updates will appear here in real time.";
+        subNote.textContent = "Competition announcements and updates will appear here in real time";
         box.appendChild(subNote);
         makeTiltable(box, 0.9);
       }
@@ -1360,7 +1392,7 @@
     if (path === "/scoreboard") {
       var graph = document.getElementById("score-graph");
       if (graph) {
-        var gc = wrapInThemeCard(graph, "p-3 p-md-4 mb-4");
+        var gc = wrapInThemeCard(graph, "cyber-chart-card p-3 p-md-4 mb-4");
         if (gc) {
           makeTiltable(gc, 0.8);
           if (typeof MutationObserver !== "undefined") {
@@ -1374,10 +1406,31 @@
       if (typeof window.cyberInitScoreboardTimeframes === "function") {
         window.cyberInitScoreboardTimeframes();
       }
+      if (typeof window.cyberInitChartDownloadButton === "function") {
+        window.cyberInitChartDownloadButton();
+      }
       return;
     }
 
     if (path === "/users" || path === "/teams") {
+      if (path === "/users") {
+        var uJumbo = document.querySelector("main .jumbotron .container");
+        if (uJumbo && !uJumbo.querySelector("[data-cyber-user-count]")) {
+          var rowCnt = document.querySelectorAll("main table.table tbody tr").length;
+          var chipWrap = document.createElement("div");
+          chipWrap.className = "cyber-stats-strip";
+          chipWrap.innerHTML =
+            '<span class="cyber-stat-chip">' +
+            '  <i class="fas fa-users" style="color:#00F0FF;"></i>' +
+            '  <span>Registered users:</span>' +
+            '  <strong data-cyber-user-count>' + rowCnt + "</strong>" +
+            "</span>";
+          uJumbo.appendChild(chipWrap);
+          if (typeof window.cyberInitRegisteredUsersCounter === "function") {
+            window.cyberInitRegisteredUsersCounter();
+          }
+        }
+      }
       var searchForm = document.querySelector("main form");
       if (searchForm) {
         var sc = wrapInThemeCard(searchForm, "p-3 p-md-4 mb-4");
@@ -1396,12 +1449,15 @@
     ) {
       var profGraph = document.getElementById("score-graph");
       if (profGraph) {
-        var pg = wrapInThemeCard(profGraph, "p-3 p-md-4 mb-4");
+        var pg = wrapInThemeCard(profGraph, "cyber-chart-card p-3 p-md-4 mb-4");
         if (pg) makeTiltable(pg, 0.8);
       }
       wrapTablesInCyberWrap(document);
       if (typeof window.cyberInitProfilePointsMetrics === "function") {
         window.cyberInitProfilePointsMetrics();
+      }
+      if (typeof window.cyberInitChartDownloadButton === "function") {
+        window.cyberInitChartDownloadButton();
       }
       return;
     }

@@ -4,6 +4,13 @@
   <section class="jumbotron theme-hero-section">
     <div class="container">
       <h1>{% trans %}Users{% endtrans %}</h1>
+      <div class="cyber-stats-strip">
+        <span class="cyber-stat-chip">
+          <i class="fas fa-users" style="color: #00F0FF;"></i>
+          <span>Registered users:</span>
+          <strong data-cyber-user-count>{{ users.total }}</strong>
+        </span>
+      </div>
     </div>
   </section>
 

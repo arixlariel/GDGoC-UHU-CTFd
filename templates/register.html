@@ -4,9 +4,6 @@
   <section class="jumbotron theme-hero-section">
     <div class="container">
       <h1>{% trans %}Register{% endtrans %}</h1>
-      <p class="cyber-hero-sub">
-        <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU Cyber Trainer' }}</span>
-      </p>
     </div>
   </section>
 
@@ -49,7 +46,7 @@
               {{ render_extra_fields(form.extra) }}
 
               <div class="d-flex justify-content-end pt-3">
-                {{ form.submit(class="btn btn-primary w-100 w-sm-auto") }}
+                {{ form.submit(class="btn btn-primary px-4") }}
               </div>
 
               {% if Configs.tos_or_privacy %}

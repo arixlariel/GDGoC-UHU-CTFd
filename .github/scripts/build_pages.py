@@ -266,171 +266,110 @@ MOCK_CHALLENGES = [
     },
 ]
 
-# Portada completa fiel de arriba abajo a http://188.245.96.96/ adaptada a Cyber Neon
+# Portada oficial Cyber Neon de GDGoC UHU Cyber Trainer (con efectos 3D y las 5 categorías reales)
 HOME_CONTENT = Markup("""
 <div class="container my-3">
-  <!-- HERO PRINCIPAL -->
-  <div class="gdg-hero text-center">
+  <!-- HERO PRINCIPAL CON 3D TILT -->
+  <div class="gdg-hero tilt-card text-center" data-tilt-max="0.7">
+    <div class="tilt-glare" aria-hidden="true"></div>
+
     <div class="gdg-pill-badge">
       <span class="palette-dots">
         <span class="palette-dot dot-burdeos"></span>
         <span class="palette-dot dot-turquesa"></span>
         <span class="palette-dot dot-mostaza"></span>
       </span>
-      <span>Google Developer Groups on Campus · Universidad de Huelva</span>
+      <span>Google Developer Group on Campus Huelva University</span>
     </div>
 
     <h1 class="display-4 fw-bold mb-3">
-      Cyber Trainer <span class="theme-accent-text">CTF 2026</span>
+      Cyber <span class="theme-accent-text">Trainer</span>
     </h1>
 
-    <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width: 760px; font-size: 1.12rem;">
-      Plataforma oficial de entrenamiento y competición en ciberseguridad impulsada por <strong class="theme-text-primary">GDG on Campus UHU</strong>.
-      Resuelve retos de <em>Criptografía, Web, Forense, Reversing y Misc</em>.
+    <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width: 780px; font-size: 1.12rem;">
+      Plataforma oficial de entrenamiento y competición en ciberseguridad impulsada por CTFd. Resuelve retos de Criptografía, Web, Forense o Reversing para ganar puntos y badges
     </p>
 
     <!-- FORMATO DE FLAG -->
     <div>
-      <div class="small text-uppercase fw-bold theme-text-secondary" style="font-size: 0.78rem; letter-spacing: 0.06em;">Formato Oficial de Flag</div>
+      <div class="small text-uppercase fw-bold theme-text-secondary" style="font-size: 0.78rem; letter-spacing: 0.06em;">Formato de Flag</div>
       <div class="flag-box">CLUB{ejemplo_de_flag_1337}</div>
     </div>
 
-    <!-- CUENTA ATRÁS -->
-    <div>
-      <div class="countdown-box">
-        <div id="countdown-status" class="small text-uppercase fw-bold" style="color: #FFE600; letter-spacing: 0.05em;">
-          ⏳ TIEMPO RESTANTE PARA EL INICIO:
-        </div>
-        <div class="countdown-grid" id="countdown-timer">
-          <div class="countdown-item"><div class="countdown-num" id="cd-days">00</div><div class="countdown-label">Días</div></div>
-          <div class="countdown-item"><div class="countdown-num" id="cd-hours">00</div><div class="countdown-label">Horas</div></div>
-          <div class="countdown-item"><div class="countdown-num" id="cd-mins">00</div><div class="countdown-label">Minutos</div></div>
-          <div class="countdown-item"><div class="countdown-num" id="cd-secs">00</div><div class="countdown-label">Segundos</div></div>
-        </div>
-      </div>
+    <!-- CONTADOR DE USUARIOS REGISTRADOS -->
+    <div class="cyber-stats-strip mt-1 mb-2">
+      <span class="cyber-stat-chip">
+        <i class="fas fa-users" style="color: #00F0FF;"></i>
+        <span>Registered users:</span>
+        <strong data-cyber-user-count>3</strong>
+      </span>
     </div>
 
-    <!-- BOTONES DE ACCIÓN -->
-    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-      <a href="__BASE__/register/" class="btn btn-primary btn-lg px-4 fw-bold">🚀 Registrarse</a>
-      <a href="__BASE__/challenges/" class="theme-pill-btn px-4 py-2" style="font-size: 0.95rem;">🎯 Ver Retos</a>
-      <a href="__BASE__/scoreboard/" class="theme-pill-btn px-4 py-2" style="font-size: 0.95rem;">🏆 Scoreboard</a>
-      <a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" class="theme-pill-btn px-4 py-2" style="font-size: 0.95rem;">🌐 gdguhu.com</a>
+    <!-- BOTONES DE ACCIÓN RÁPIDA -->
+    <div class="gdg-hero-actions">
+      <a href="__BASE__/users/" class="theme-pill-btn gdg-hero-action-btn">
+        <span aria-hidden="true">👥</span>
+        <span>Ver usuarios</span>
+      </a>
+      <a href="__BASE__/scoreboard/" class="theme-pill-btn gdg-hero-action-btn">
+        <span aria-hidden="true">🏆</span>
+        <span>Ver scoreboard</span>
+      </a>
+      <a href="__BASE__/challenges/" class="btn btn-primary gdg-hero-action-btn fw-bold">
+        <span aria-hidden="true">🎯</span>
+        <span>Ver retos</span>
+      </a>
     </div>
   </div>
 
-  <!-- TARJETAS DE CATEGORÍAS -->
-  <div class="row mt-4 g-4">
-    <div class="col-md-4 col-sm-6">
-      <div class="feature-card border-burdeos">
+  <!-- TARJETAS 3D POR CADA CATEGORÍA ACTIVA EN LA WEB -->
+  <div class="row mt-4 g-4 justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-burdeos" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
         <div class="icon-bubble bubble-burdeos">🔐</div>
-        <h5 class="fw-bold mb-2 theme-text-primary">Criptografía &amp; Reversing</h5>
-        <p class="small mb-0 theme-text-secondary">RSA, Diffie-Hellman, cifrados afines, LCG, descompilación en C/Ghidra y validadores binarios.</p>
+        <h5 class="fw-bold mb-2 theme-text-primary">Criptografía</h5>
+        <p class="small mb-0 theme-text-secondary">Cifrados clásicos y modernos, codificaciones en capas, RSA, Diffie-Hellman, curvas y criptoanálisis matemático</p>
       </div>
     </div>
-    <div class="col-md-4 col-sm-6">
-      <div class="feature-card border-turquesa">
+
+    <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-morado" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
+        <div class="icon-bubble bubble-morado">⚙️</div>
+        <h5 class="fw-bold mb-2 theme-text-primary">Reversing</h5>
+        <p class="small mb-0 theme-text-secondary">Ingeniería inversa de binarios, máquinas virtuales, validadores, checksums, rotación de bits y resolución con Z3</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-turquesa" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
         <div class="icon-bubble bubble-turquesa">🌐</div>
-        <h5 class="fw-bold mb-2 theme-text-primary">Web &amp; Protocolos</h5>
-        <p class="small mb-0 theme-text-secondary">Auditoría de cookies, tokens JWT sin firma, inyecciones en logs, evasión de expresiones regulares y APIs.</p>
+        <h5 class="fw-bold mb-2 theme-text-primary">Web</h5>
+        <p class="small mb-0 theme-text-secondary">Auditoría de cookies, tokens JWT sin firma, código fuente, parámetros escapados y evasión de filtros regex</p>
       </div>
     </div>
-    <div class="col-md-4 col-sm-12">
-      <div class="feature-card border-mostaza">
+
+    <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-mostaza" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
         <div class="icon-bubble bubble-mostaza">🕵️</div>
-        <h5 class="fw-bold mb-2 theme-text-primary">Forense &amp; Estego</h5>
-        <p class="small mb-0 theme-text-secondary">Capturas PCAP de Wireshark, exfiltración DNS, archivos políglotas, cabeceras PNG y memoria.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- REGLAS & CRONOGRAMA -->
-  <div class="row mt-3 g-4">
-    <div class="col-md-7">
-      <div class="feature-card border-turquesa">
-        <h4 class="fw-bold mb-3 theme-text-primary">📜 Reglas de la Competición &amp; Fair Play</h4>
-        <ul class="mb-0 ps-3 theme-text-secondary" style="line-height: 1.85;">
-          <li><strong class="theme-text-primary">Prohibido atacar la infraestructura:</strong> No realices ataques DoS/DDoS, fuzzing masivo ni escaneos agresivos contra el servidor de CTFd.</li>
-          <li><strong class="theme-text-primary">No compartir flags ni soluciones:</strong> La competición evalúa el aprendizaje propio. Compartir flags acarrea descalificación directa.</li>
-          <li><strong class="theme-text-primary">Puntuación Dinámica:</strong> El valor en puntos decae según las resoluciones, premiando retos complejos o ser el primero en resolver.</li>
-          <li><strong class="theme-text-primary">Scoreboard Brackets:</strong> Elige tu categoría correspondiente al crear tu cuenta para competir en tu tabla oficial.</li>
-        </ul>
+        <h5 class="fw-bold mb-2 theme-text-primary">Forense</h5>
+        <p class="small mb-0 theme-text-secondary">Análisis de logs, volcados de memoria, túneles DNS, marcas de tiempo Unix, endianness y trazas de red</p>
       </div>
     </div>
 
-    <div class="col-md-5">
-      <div class="feature-card border-burdeos d-flex flex-column justify-content-between">
-        <div>
-          <h4 class="fw-bold mb-3 theme-text-primary">⏱️ Cronograma &amp; Comunidad</h4>
-          <table class="table table-borderless table-sm mb-3">
-            <tbody>
-              <tr>
-                <td>🟢 <strong>Registro:</strong></td>
-                <td class="text-end fw-bold" style="color: #00F0FF;">Abierto con Código</td>
-              </tr>
-              <tr>
-                <td>🚀 <strong>Inicio Oficial:</strong></td>
-                <td class="text-end fw-bold theme-text-primary">Viernes 18:00h</td>
-              </tr>
-              <tr>
-                <td>❄️ <strong>Scoreboard Freeze:</strong></td>
-                <td class="text-end fw-bold" style="color: #FFE600;">Domingo 17:00h</td>
-              </tr>
-              <tr>
-                <td>🏁 <strong>Cierre del CTF:</strong></td>
-                <td class="text-end fw-bold" style="color: #FF007F;">Domingo 18:00h</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary w-100 fw-bold mt-2">
-          Visitar GDG on Campus UHU
-        </a>
+    <div class="col-md-6 col-lg-4">
+      <div class="feature-card tilt-card border-verde" data-tilt-max="1.8">
+        <div class="tilt-glare" aria-hidden="true"></div>
+        <div class="icon-bubble bubble-verde">🧩</div>
+        <h5 class="fw-bold mb-2 theme-text-primary">Misc</h5>
+        <p class="small mb-0 theme-text-secondary">Operaciones XOR, codificaciones binarias, octales y ASCII, señales, esteganografía y lógica aplicada</p>
       </div>
     </div>
   </div>
 </div>
-
-<script>
-  (function () {
-    const START_DATE  = new Date("2026-11-20T18:00:00").getTime();
-    const FREEZE_DATE = new Date("2026-11-22T17:00:00").getTime();
-    const END_DATE    = new Date("2026-11-22T18:00:00").getTime();
-
-    function updateCountdown() {
-      const now = new Date().getTime();
-      let target = START_DATE;
-      const statusEl = document.getElementById("countdown-status");
-      if (!statusEl) return;
-
-      if (now < START_DATE) {
-        target = START_DATE;
-        statusEl.innerText = "⏳ TIEMPO RESTANTE PARA EL INICIO:";
-        statusEl.style.color = "#FFE600";
-      } else if (now < FREEZE_DATE) {
-        target = FREEZE_DATE;
-        statusEl.innerText = "🔥 CTF EN CURSO · TIEMPO HASTA CONGELAR MARCADOR (FREEZE):";
-        statusEl.style.color = "#00F0FF";
-      } else if (now < END_DATE) {
-        target = END_DATE;
-        statusEl.innerText = "❄️ MARCADOR CONGELADO · TIEMPO PARA EL CIERRE FINAL:";
-        statusEl.style.color = "#FF007F";
-      } else {
-        statusEl.innerText = "🏁 LA COMPETICIÓN HA FINALIZADO · ¡GRACIAS POR PARTICIPAR!";
-        statusEl.style.color = "#FF007F";
-        return;
-      }
-
-      const diff = Math.max(0, target - now);
-      document.getElementById("cd-days").innerText  = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, "0");
-      document.getElementById("cd-hours").innerText = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
-      document.getElementById("cd-mins").innerText  = String(Math.floor((diff / 1000 / 60)) % 60).padStart(2, "0");
-      document.getElementById("cd-secs").innerText  = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
-    }
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-  })();
-</script>
 """.replace("__BASE__", BASE_PATH))
 
 
@@ -714,6 +653,9 @@ def build():
       ] }});
     }}
 
+    if (/\\/api\\/v1\\/users(?:\\?|$)/.test(url)) {{
+      return jsonResp({{ success: true, data: [{{ id: 1, name: "0xHuelva_Root" }}], meta: {{ pagination: {{ total: 3, page: 1, pages: 1 }} }} }});
+    }}
     if (/\\/api\\/v1\\/users\\/(?:me|\\d+)\\/solves/.test(url)) {{
       return jsonResp({{ success: true, data: USER_SOLVES, meta: {{ count: USER_SOLVES.length }} }});
     }}
