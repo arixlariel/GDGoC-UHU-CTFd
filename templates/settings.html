@@ -203,14 +203,10 @@
                       <button type="button" class="cyber-date-preset" data-days="90">90d</button>
                       <button type="button" class="cyber-date-preset" data-days="365">1y</button>
                     </div>
-                    <div class="cyber-date-inputs">
-                      <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-dd" placeholder="DD" aria-label="Day">
-                      <span class="cyber-date-sep">/</span>
-                      <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-mm" placeholder="MM" aria-label="Month">
-                      <span class="cyber-date-sep">/</span>
-                      <input type="text" inputmode="numeric" maxlength="4" class="form-control cyber-date-yyyy" placeholder="YYYY" aria-label="Year">
+                    <div class="cyber-date-input-wrap">
+                      <input type="text" class="form-control cyber-date-text is-never" placeholder="Never (no expiration)" autocomplete="off" aria-label="Expiration date DD/MM/YYYY">
                     </div>
-                    <div class="cyber-date-hint">Never expires</div>
+                    <div class="cyber-date-hint">Never expires — type DD/MM/YYYY to set a date</div>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -219,7 +215,8 @@
                 </div>
               </div>
 
-              <div class="d-flex justify-content-end pt-3">
+              <div class="cyber-form-actions">
+                <div class="cyber-form-status"></div>
                 {{ form.submit(class="btn btn-primary") }}
               </div>
             </form>

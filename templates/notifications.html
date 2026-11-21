@@ -9,9 +9,16 @@
 
   <div class="container">
     {% if not notifications %}
-      <div class="theme-card p-5 text-center">
-        <i class="fas fa-bell-slash fa-3x mb-3" style="color: #00F0FF; opacity: 0.7;"></i>
-        <h3 class="theme-text-primary fw-bold mb-1">{% trans %}There are no notifications yet{% endtrans %}</h3>
+      <div class="theme-card tilt-card cyber-empty-state" data-tilt-max="0.9">
+        <div class="tilt-glare" aria-hidden="true"></div>
+        <span class="cyber-empty-signal">
+          <span class="cyber-empty-dot"></span>
+          <span>// 0 notifications</span>
+        </span>
+        <h3 class="h4 theme-text-primary fw-bold mb-1">{% trans %}There are no notifications yet{% endtrans %}</h3>
+        <p class="small theme-text-secondary mb-0">
+          Competition announcements and updates will appear here in real time.
+        </p>
       </div>
     {% endif %}
 

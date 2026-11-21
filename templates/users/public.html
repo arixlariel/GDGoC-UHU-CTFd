@@ -120,8 +120,8 @@
       <div class="row g-4 mb-5" x-data="UserGraphs">
         <div class="col-md-6 d-none d-md-block">
           <div class="theme-card p-4 h-100">
-            <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.06em;">
-              <i class="fas fa-crosshairs me-2" style="color: #00FF66;"></i>Precisión de envíos
+            <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
+              <i class="fas fa-crosshairs me-2" style="color: #00FF66;"></i>Submission Accuracy
             </h4>
             <div class="progress mb-3">
               <div
@@ -150,8 +150,8 @@
 
         <div class="col-md-6 d-none d-md-block">
           <div class="theme-card p-4 h-100">
-            <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.06em;">
-              <i class="fas fa-chart-pie me-2" style="color: #00F0FF;"></i>Desglose por categoría
+            <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
+              <i class="fas fa-chart-pie me-2" style="color: #00F0FF;"></i>Category Breakdown
             </h4>
             <div class="progress mb-3">
               <template x-for="category in getCategoryBreakdown()" :key="category.name">
@@ -200,7 +200,7 @@
                 <tr>
                   <th>{% trans %}Challenge{% endtrans %}</th>
                   <th class="d-none d-md-table-cell">{% trans %}Category{% endtrans %}</th>
-                  <th class="text-end">{% trans %}Value{% endtrans %}</th>
+                  <th class="text-end">{% trans %}Points{% endtrans %}</th>
                   <th class="text-end">{% trans %}Time{% endtrans %}</th>
                 </tr>
               </thead>

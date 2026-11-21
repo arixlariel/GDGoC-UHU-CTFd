@@ -435,13 +435,13 @@
       }
     });
 
-    if (!rightUl.querySelector('a[href="https://gdguhu.com"]')) {
+    if (!rightUl.querySelector('a.theme-pill-btn--community')) {
       var comLi = document.createElement("li");
       comLi.className = "nav-item";
       comLi.innerHTML =
-        '<a href="https://gdguhu.com" target="_blank" rel="noopener noreferrer" ' +
+        '<a href="https://gdg.community.dev/gdg-on-campus-huelva-university-huelva-spain/" target="_blank" rel="noopener noreferrer" ' +
         'class="theme-pill-btn theme-pill-btn--community w-100 w-lg-auto" ' +
-        'data-cyber-tooltip="GDGoC UHU · gdguhu.com" aria-label="GDGoC UHU · gdguhu.com">' +
+        'data-cyber-tooltip="Web oficial del GDGoC UHU" aria-label="Web oficial del GDGoC UHU">' +
         '<span>Comunidad</span>' +
         '<i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i>' +
         "</a>";
@@ -551,11 +551,6 @@
     var jumboContainer = document.querySelector("main .jumbotron .container");
     var statsWrap = null;
     if (jumboContainer) {
-      var sub = document.createElement("p");
-      sub.className = "cyber-hero-sub";
-      sub.innerHTML = '<span class="theme-accent-text fw-bold">GDGoC UHU Cyber Trainer</span>';
-      jumboContainer.appendChild(sub);
-
       statsWrap = document.createElement("div");
       statsWrap.id = "gdg-core-stats";
       statsWrap.style.display = "none";
@@ -572,17 +567,17 @@
     filterBar.className = "cyber-filter-bar";
     filterBar.style.display = "none";
     filterBar.innerHTML =
-      '<div class="row g-3 align-items-center">' +
-      '  <div class="col-lg-8">' +
+      '<div class="row g-3 align-items-center justify-content-between">' +
+      '  <div class="col-md-7 col-lg-5">' +
       '    <div class="theme-search-box">' +
       '      <i class="fas fa-search ms-2" style="color:#00F0FF;"></i>' +
-      '      <input type="text" id="gdg-chal-search" placeholder="Search challenge by name, category or tag..." aria-label="Search challenge">' +
+      '      <input type="text" id="gdg-chal-search" placeholder="Search challenge by name" aria-label="Search challenge by name">' +
       '      <button type="button" id="gdg-chal-clear" class="btn btn-sm p-1 border-0 bg-transparent text-secondary" style="display:none;min-height:auto;padding:0.25rem!important;" aria-label="Clear search"><i class="fas fa-times"></i></button>' +
       "    </div>" +
       "  </div>" +
-      '  <div class="col-lg-4 d-flex justify-content-lg-end">' +
+      '  <div class="col-md-5 col-lg-4 d-flex justify-content-md-end">' +
       '    <button type="button" id="gdg-chal-hide-solved" class="theme-pill-btn">' +
-      '      <i class="fas fa-filter"></i><span>Hide solved</span>' +
+      '      <i class="fas fa-eye"></i><span>Showing solved</span>' +
       "    </button>" +
       "  </div>" +
       "</div>" +
@@ -672,9 +667,9 @@
       hideSolvedBtn.classList.toggle("active", state.hideSolved);
       hideSolvedBtn.innerHTML =
         '<i class="fas ' +
-        (state.hideSolved ? "fa-eye-slash" : "fa-filter") +
+        (state.hideSolved ? "fa-eye-slash" : "fa-eye") +
         '"></i><span>' +
-        (state.hideSolved ? "Showing unsolved" : "Hide solved") +
+        (state.hideSolved ? "Hiding solved" : "Showing solved") +
         "</span>";
       applyFilters();
     });
@@ -975,7 +970,7 @@
     });
   }
 
-  // Selector de fecha personalizado sin calendario nativo (presets + DD / MM / YYYY -> hidden YYYY-MM-DD)
+  // Selector de fecha personalizado: campo de texto DD/MM/YYYY + opción explícita Never (sin calendario nativo)
   function buildCustomExpirationPicker(oldInput) {
     var hidden = document.createElement("input");
     hidden.type = "hidden";
@@ -994,14 +989,10 @@
       '  <button type="button" class="cyber-date-preset" data-days="90">90d</button>' +
       '  <button type="button" class="cyber-date-preset" data-days="365">1y</button>' +
       "</div>" +
-      '<div class="cyber-date-inputs">' +
-      '  <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-dd" placeholder="DD" aria-label="Day">' +
-      '  <span class="cyber-date-sep">/</span>' +
-      '  <input type="text" inputmode="numeric" maxlength="2" class="form-control cyber-date-mm" placeholder="MM" aria-label="Month">' +
-      '  <span class="cyber-date-sep">/</span>' +
-      '  <input type="text" inputmode="numeric" maxlength="4" class="form-control cyber-date-yyyy" placeholder="YYYY" aria-label="Year">' +
+      '<div class="cyber-date-input-wrap">' +
+      '  <input type="text" class="form-control cyber-date-text is-never" placeholder="Never (no expiration)" autocomplete="off" aria-label="Expiration date DD/MM/YYYY">' +
       "</div>" +
-      '<div class="cyber-date-hint">Leave empty for no expiration</div>';
+      '<div class="cyber-date-hint">Never expires — type DD/MM/YYYY to set a date</div>';
     wrap.insertBefore(hidden, wrap.firstChild);
     oldInput.parentNode.replaceChild(wrap, oldInput);
     if (typeof window.cyberInitDatePickers === "function") {
@@ -1241,15 +1232,16 @@
         var tSub = tokForm.querySelector('input[type="submit"], button[type="submit"]');
         if (tSub) {
           tSub.classList.remove("float-end", "btn-outlined", "btn-md", "w-100");
-          var tWrap = tSub.closest(".mb-3, div");
-          if (tWrap && tWrap !== tokForm) {
-            tWrap.className = "d-flex justify-content-end pt-3";
-            tokForm.appendChild(tWrap);
-          } else {
-            var genRow = document.createElement("div");
-            genRow.className = "d-flex justify-content-end pt-3";
-            genRow.appendChild(tSub);
-            tokForm.appendChild(genRow);
+          var oldTWrap = tSub.closest(".mb-3, div");
+          var tActions = document.createElement("div");
+          tActions.className = "cyber-form-actions";
+          var tStatus = document.createElement("div");
+          tStatus.className = "cyber-form-status";
+          tActions.appendChild(tStatus);
+          tActions.appendChild(tSub);
+          tokForm.appendChild(tActions);
+          if (oldTWrap && oldTWrap !== tokForm && oldTWrap.children.length === 0) {
+            oldTWrap.remove();
           }
         }
       }
@@ -1267,6 +1259,9 @@
     }
 
     wrapTablesInCyberWrap(document);
+    if (typeof window.cyberInitSettingsInlineFeedback === "function") {
+      window.cyberInitSettingsInlineFeedback();
+    }
     if (typeof window.gdgocScanTiltCards === "function") {
       window.gdgocScanTiltCards(mainContainer);
     }
@@ -1344,12 +1339,16 @@
       var emptyH2 = document.querySelector("main > .container > h2.text-center");
       if (emptyH2) {
         var box = document.createElement("div");
-        box.className = "theme-card p-5 text-center";
+        box.className = "theme-card cyber-empty-state";
         box.innerHTML =
-          '<i class="fas fa-bell-slash fa-3x mb-3" style="color:#00F0FF;opacity:0.7;"></i>';
+          '<span class="cyber-empty-signal"><span class="cyber-empty-dot"></span><span>// 0 notifications</span></span>';
         emptyH2.className = "h4 theme-text-primary fw-bold mb-1";
         emptyH2.parentNode.insertBefore(box, emptyH2);
         box.appendChild(emptyH2);
+        var subNote = document.createElement("p");
+        subNote.className = "small theme-text-secondary mb-0";
+        subNote.textContent = "Competition announcements and updates will appear here in real time.";
+        box.appendChild(subNote);
         makeTiltable(box, 0.9);
       }
       document.querySelectorAll("main .card").forEach(function (c) {
@@ -1362,9 +1361,19 @@
       var graph = document.getElementById("score-graph");
       if (graph) {
         var gc = wrapInThemeCard(graph, "p-3 p-md-4 mb-4");
-        if (gc) makeTiltable(gc, 0.8);
+        if (gc) {
+          makeTiltable(gc, 0.8);
+          if (typeof MutationObserver !== "undefined") {
+            new MutationObserver(function () {
+              gc.classList.toggle("d-none", graph.classList.contains("d-none"));
+            }).observe(graph, { attributes: true, attributeFilter: ["class"] });
+          }
+        }
       }
       wrapTablesInCyberWrap(document);
+      if (typeof window.cyberInitScoreboardTimeframes === "function") {
+        window.cyberInitScoreboardTimeframes();
+      }
       return;
     }
 
@@ -1391,6 +1400,9 @@
         if (pg) makeTiltable(pg, 0.8);
       }
       wrapTablesInCyberWrap(document);
+      if (typeof window.cyberInitProfilePointsMetrics === "function") {
+        window.cyberInitProfilePointsMetrics();
+      }
       return;
     }
 

@@ -10,21 +10,18 @@
     <section class="jumbotron theme-hero-section">
       <div class="container position-relative">
         <h1>{% trans %}Challenges{% endtrans %}</h1>
-        <p class="cyber-hero-sub">
-          <span class="theme-accent-text fw-bold">{{ Configs.ctf_name or 'GDGoC UHU Cyber Trainer' }}</span>
-        </p>
 
         <!-- Chips de resumen y barra de progreso (visible cuando cargan los retos) -->
         <div x-show="loaded && challenges.length > 0" style="display: none;">
           <div class="cyber-stats-strip">
             <span class="cyber-stat-chip">
               <i class="fas fa-terminal" style="color: #FF007F;"></i>
-              <span>Retos:</span>
+              <span>Challenges:</span>
               <strong x-text="challenges.length">0</strong>
             </span>
             <span class="cyber-stat-chip cyber-stat-chip--solved">
               <i class="fas fa-check-circle" style="color: #00FF66;"></i>
-              <span>Resueltos:</span>
+              <span>Solved:</span>
               <strong x-text="challenges.filter(c => c.solved_by_me).length + ' / ' + challenges.length">0 / 0</strong>
             </span>
           </div>
@@ -77,37 +74,37 @@
       >
         <!-- Barra de búsqueda y filtro por categoría -->
         <div class="cyber-filter-bar" x-show="challenges.length > 0">
-          <div class="row g-3 align-items-center">
-            <div class="col-lg-7">
+          <div class="row g-3 align-items-center justify-content-between">
+            <div class="col-md-7 col-lg-5">
               <div class="theme-search-box">
                 <i class="fas fa-search ms-2" style="color: #00F0FF;"></i>
                 <input
                   type="text"
                   x-model="search"
-                  placeholder="Buscar reto por nombre, categoría o etiqueta..."
-                  aria-label="Buscar reto"
+                  placeholder="Search challenge by name"
+                  aria-label="Search challenge by name"
                 >
                 <button
                   type="button"
                   x-show="search.length > 0"
                   @click="search = ''"
                   class="btn btn-sm p-1 border-0 bg-transparent text-secondary"
-                  aria-label="Limpiar búsqueda"
+                  aria-label="Clear search"
                 >
                   <i class="fas fa-times"></i>
                 </button>
               </div>
             </div>
 
-            <div class="col-lg-5 d-flex justify-content-lg-end">
+            <div class="col-md-5 col-lg-4 d-flex justify-content-md-end">
               <button
                 type="button"
                 @click="hideSolved = !hideSolved"
                 class="theme-pill-btn"
                 :class="{ 'active': hideSolved }"
               >
-                <i class="fas" :class="hideSolved ? 'fa-eye-slash' : 'fa-filter'"></i>
-                <span x-text="hideSolved ? 'Mostrando pendientes' : 'Ocultar resueltos'"></span>
+                <i class="fas" :class="hideSolved ? 'fa-eye-slash' : 'fa-eye'"></i>
+                <span x-text="hideSolved ? 'Hiding solved' : 'Showing solved'"></span>
               </button>
             </div>
           </div>
@@ -120,7 +117,7 @@
               :class="{ 'active': activeCategory === 'ALL' }"
               @click="activeCategory = 'ALL'"
             >
-              <span>⚡ Todas</span>
+              <span>⚡ All</span>
             </button>
             <template x-for="(cat, cIdx) in getCategories()" :key="cIdx">
               <button

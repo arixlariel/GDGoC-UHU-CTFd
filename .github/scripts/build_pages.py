@@ -185,6 +185,7 @@ MOCK_CHALLENGES = [
         "name": "JWT None Bypass",
         "category": "Web",
         "value": 250,
+        "initial": 300,
         "solved_by_me": True,
         "solves": 14,
         "tags": [{"value": "jwt"}, {"value": "auth"}, {"value": "easy"}],
@@ -198,6 +199,7 @@ MOCK_CHALLENGES = [
         "name": "Log Injection 101",
         "category": "Web",
         "value": 350,
+        "initial": 400,
         "solved_by_me": False,
         "solves": 7,
         "tags": [{"value": "web"}, {"value": "ssti"}, {"value": "medium"}],
@@ -211,6 +213,7 @@ MOCK_CHALLENGES = [
         "name": "RSA Small Exponent",
         "category": "Criptografía",
         "value": 300,
+        "initial": 350,
         "solved_by_me": True,
         "solves": 11,
         "tags": [{"value": "rsa"}, {"value": "math"}],
@@ -224,6 +227,7 @@ MOCK_CHALLENGES = [
         "name": "Ghidra Vault Crackme",
         "category": "Reversing",
         "value": 450,
+        "initial": 500,
         "solved_by_me": False,
         "solves": 3,
         "tags": [{"value": "ghidra"}, {"value": "elf"}, {"value": "hard"}],
@@ -237,6 +241,7 @@ MOCK_CHALLENGES = [
         "name": "DNS Exfiltration",
         "category": "Forense",
         "value": 200,
+        "initial": 250,
         "solved_by_me": False,
         "solves": 9,
         "tags": [{"value": "pcap"}, {"value": "wireshark"}],
@@ -250,6 +255,7 @@ MOCK_CHALLENGES = [
         "name": "PNG Polyglot",
         "category": "Forense",
         "value": 400,
+        "initial": 450,
         "solved_by_me": False,
         "solves": 4,
         "tags": [{"value": "stego"}, {"value": "binwalk"}],
@@ -593,10 +599,12 @@ def build():
           "name": c["name"],
           "category": c["category"],
           "value": c["value"],
+          "initial": c.get("initial", c["value"]),
           "solved_by_me": c["solved_by_me"],
           "solves": c["solves"],
           "tags": c["tags"],
-          "type": "standard",
+          "hints": c["hints"],
+          "type": "dynamic",
       }
       for c in MOCK_CHALLENGES
   ], ensure_ascii=False)};
@@ -608,19 +616,19 @@ def build():
     {{ pos: 4, account_id: 4, account_url: BASE + "/users/1/", name: "pwn_andaluz", score: 700, bracket_id: 1, bracket_name: "ETSI UHU" }}
   ];
   var TOP_GRAPH = {{
-    "1": {{ id: 1, name: "0xHuelva_Root", solves: [
+    "1": {{ id: 1, account_url: BASE + "/users/1/", bracket_name: "ETSI UHU", name: "0xHuelva_Root", solves: [
       {{ value: 250, date: "2026-11-20T18:15:00Z" }},
       {{ value: 300, date: "2026-11-20T19:00:00Z" }},
       {{ value: 450, date: "2026-11-20T20:20:00Z" }},
       {{ value: 450, date: "2026-11-20T21:40:00Z" }}
     ] }},
-    "2": {{ id: 2, name: "cyber_tartessos", solves: [
+    "2": {{ id: 2, account_url: BASE + "/users/1/", bracket_name: "ETSI UHU", name: "cyber_tartessos", solves: [
       {{ value: 250, date: "2026-11-20T18:30:00Z" }},
       {{ value: 350, date: "2026-11-20T19:40:00Z" }},
       {{ value: 300, date: "2026-11-20T20:50:00Z" }},
       {{ value: 300, date: "2026-11-20T22:10:00Z" }}
     ] }},
-    "3": {{ id: 3, name: "neo_gdg", solves: [
+    "3": {{ id: 3, account_url: BASE + "/users/1/", bracket_name: "Invitado", name: "neo_gdg", solves: [
       {{ value: 200, date: "2026-11-20T18:45:00Z" }},
       {{ value: 350, date: "2026-11-20T20:10:00Z" }},
       {{ value: 400, date: "2026-11-20T21:55:00Z" }}
@@ -707,13 +715,22 @@ def build():
     }}
 
     if (/\\/api\\/v1\\/users\\/(?:me|\\d+)\\/solves/.test(url)) {{
-      return jsonResp({{ success: true, data: USER_SOLVES }});
+      return jsonResp({{ success: true, data: USER_SOLVES, meta: {{ count: USER_SOLVES.length }} }});
     }}
     if (/\\/api\\/v1\\/users\\/(?:me|\\d+)\\/fails/.test(url)) {{
-      return jsonResp({{ success: true, data: USER_FAILS }});
+      return jsonResp({{ success: true, data: USER_FAILS, meta: {{ count: USER_FAILS.length }} }});
     }}
     if (/\\/api\\/v1\\/users\\/(?:me|\\d+)\\/awards/.test(url)) {{
-      return jsonResp({{ success: true, data: [] }});
+      return jsonResp({{ success: true, data: [], meta: {{ count: 0 }} }});
+    }}
+    if (/\\/api\\/v1\\/users\\/(?:me|\\d+)(?:\\?|$)/.test(url)) {{
+      if (init && (init.method || "").toUpperCase() === "PATCH") {{
+        return jsonResp({{ success: true, data: {{ id: 1, name: "0xHuelva_Root" }} }});
+      }}
+      return jsonResp({{ success: true, data: {{ id: 1, name: "0xHuelva_Root", score: 1400, place: "1st" }} }});
+    }}
+    if (/\\/api\\/v1\\/tokens(?:\\?|$)/.test(url) && init && (init.method || "").toUpperCase() === "POST") {{
+      return jsonResp({{ success: true, data: {{ id: 99, value: "ctfd_demo_preview_token_gdgoc_uhu" }} }});
     }}
 
     var mHint = url.match(/\\/api\\/v1\\/hints\\/(\\d+)/);
