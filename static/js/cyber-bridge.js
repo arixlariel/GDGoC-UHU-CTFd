@@ -1127,7 +1127,8 @@
     var profileTab = mainContainer.querySelector("#settings-profile-tab");
     var tokensTab = mainContainer.querySelector("#settings-tokens-tab");
     var profileTitleText = (profileTab && profileTab.textContent.trim()) || "Profile";
-    var tokensTitleText = (tokensTab && tokensTab.textContent.trim()) || "Access Tokens";
+    var rawTokensTitle = (tokensTab && tokensTab.textContent.trim()) || "Access Tokens";
+    var tokensTitleText = /fichas\s+de\s+acceso/i.test(rawTokensTitle) ? "Access Tokens" : rawTokensTitle;
     var passwordsTitleText = passwordsTitles[locale] || passwordsTitles[locale.split("_")[0]] || "Passwords";
 
     var navPills = mainContainer.querySelector(".nav-pills");
