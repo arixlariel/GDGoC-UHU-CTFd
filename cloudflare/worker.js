@@ -17,8 +17,9 @@
  */
 
 const PREFIX = "/cybertrainer";
-const UPSTREAM_ORIGIN = "http://188.245.96.96";
-const UPSTREAM_HOST = "188.245.96.96";
+// Cloudflare Workers bloquea fetch() a IPs literales (Error 1003); usamos el subdominio DNS-only del VPS.
+const UPSTREAM_ORIGIN = "http://origin-ctf.gdguhu.com";
+const UPSTREAM_HOSTS = new Set(["origin-ctf.gdguhu.com", "188.245.96.96"]);
 
 function shouldPrefixPath(raw) {
   if (!raw || typeof raw !== "string") return false;
@@ -139,7 +140,7 @@ function rewriteLocationHeader(rawLocation, publicUrl) {
   if (!rawLocation) return rawLocation;
   try {
     const resolved = new URL(rawLocation, UPSTREAM_ORIGIN);
-    if (resolved.hostname === UPSTREAM_HOST || resolved.hostname === publicUrl.hostname) {
+    if (UPSTREAM_HOSTS.has(resolved.hostname) || resolved.hostname === publicUrl.hostname) {
       const nextParam = resolved.searchParams.get("next");
       if (nextParam && (nextParam === PREFIX || nextParam.startsWith(PREFIX + "/"))) {
         resolved.searchParams.set("next", nextParam.slice(PREFIX.length) || "/");
