@@ -358,7 +358,7 @@ HOME_CONTENT = Markup("""
         <div class="tilt-glare" aria-hidden="true"></div>
         <div class="icon-bubble bubble-morado">⚙️</div>
         <h5 class="fw-bold mb-2 theme-text-primary">Reversing</h5>
-        <p class="small mb-0 theme-text-secondary">Ingeniería inversa de binarios, máquinas virtuales, validadores, checksums, rotación de bits y resoluciones Z3</p>
+        <p class="small mb-0 theme-text-secondary">Ingeniería inversa de binarios, máquinas virtuales, validadores, checksums, rotación de bits y Z3</p>
       </div>
     </div>
 

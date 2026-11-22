@@ -120,6 +120,57 @@ def api_request(base_url: str, token: str, path: str, method: str = "GET", paylo
         return resp.status, json.loads(resp.read().decode("utf-8"))
 
 
+def sync_index_page_copy(ctfd_url: str, token: str) -> None:
+    """Apply idempotent copy fixes to the live CTFd homepage (`route == 'index'`)."""
+    replacements = [
+        (
+            "rotación de bits y resoluciones Z3",
+            "rotación de bits y Z3",
+        ),
+    ]
+    try:
+        _, pages_resp = api_request(ctfd_url, token, "/api/v1/pages", method="GET")
+    except Exception as e:
+        print(f"WARNING: Could not list CTFd pages for copy sync: {e}", file=sys.stderr)
+        return
+
+    index_page = next((p for p in pages_resp.get("data", []) if p.get("route") == "index"), None)
+    if not index_page or not index_page.get("id"):
+        return
+
+    page_id = index_page["id"]
+    try:
+        _, detail_resp = api_request(ctfd_url, token, f"/api/v1/pages/{page_id}", method="GET")
+    except Exception as e:
+        print(f"WARNING: Could not read CTFd index page #{page_id}: {e}", file=sys.stderr)
+        return
+
+    content = (detail_resp.get("data") or {}).get("content") or ""
+    updated = content
+    for old_text, new_text in replacements:
+        if old_text in updated:
+            updated = updated.replace(old_text, new_text)
+
+    if updated == content:
+        print("Live CTFd index page copy is already up to date.")
+        return
+
+    try:
+        status, res = api_request(
+            ctfd_url,
+            token,
+            f"/api/v1/pages/{page_id}",
+            method="PATCH",
+            payload={"content": updated},
+        )
+        if status == 200 and res.get("success"):
+            print(f"Successfully updated live CTFd index page (#{page_id}) copy!")
+        else:
+            print(f"WARNING: Unexpected response updating CTFd index page #{page_id}: {res}", file=sys.stderr)
+    except Exception as e:
+        print(f"WARNING: Failed to update CTFd index page #{page_id}: {e}", file=sys.stderr)
+
+
 def main() -> int:
     ctfd_url = os.environ.get("CTFD_URL", "").strip()
     token = os.environ.get("CTFD_API_TOKEN", "").strip()
@@ -151,6 +202,8 @@ def main() -> int:
     configs = {c["key"]: c["value"] for c in cfg_resp.get("data", [])}
     active_theme = configs.get("ctf_theme", "")
     print(f"Connected to CTFd ({ctfd_url}). Active theme: {active_theme!r}")
+
+    sync_index_page_copy(ctfd_url, token)
 
     if active_theme in ("cyber", "gdgoc-cyber"):
         print(f"Server already runs native `{active_theme}` theme — skipping `core` bridge injection.")
