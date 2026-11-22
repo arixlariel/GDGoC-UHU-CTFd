@@ -525,17 +525,15 @@
     footer.innerHTML =
       '<div class="container">' +
       '  <div class="theme-footer-inner">' +
-      '    <div class="theme-footer-brand">' +
+      '    <a href="https://gdguhu.com/" class="theme-footer-brand" title="Ir a gdguhu.com">' +
       '      <img src="' + assetUrl("img/gdgoc-uhu-logo-sm.webp") + '" alt="GDG on Campus UHU" width="40" height="40" loading="lazy" decoding="async">' +
       '      <div>' +
       '        <div class="fw-bold theme-text-primary" style="font-size: 0.9rem;">GDGoC UHU</div>' +
-      '        <div class="theme-text-secondary" style="font-size: 0.76rem;">Cyber Trainer</div>' +
+      '        <div class="theme-text-secondary" style="font-size: 0.76rem;">Universidad de Huelva</div>' +
       '      </div>' +
-      '    </div>' +
+      '    </a>' +
       '    <div class="theme-footer-links">' +
       '      <a href="https://ctfd.io" target="_blank" rel="noopener noreferrer" class="footer-link-muted">Powered by CTFd</a>' +
-      '      <span style="opacity: 0.4;">·</span>' +
-      '      <a href="https://gdguhu.com/" class="footer-link-accent">gdguhu.com</a>' +
       '      <span style="opacity: 0.4;">·</span>' +
       '      <a href="https://gdguhu.com/openbadges/" class="footer-link-accent">Open Badges</a>' +
       '      <span style="opacity: 0.4;">·</span>' +

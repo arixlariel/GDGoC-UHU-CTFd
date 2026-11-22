@@ -2403,9 +2403,15 @@ html[data-theme="cyber"] .progress {
 }
 
 .theme-footer-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.85rem;
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+html[data-theme="cyber"] a.theme-footer-brand:hover {
+  text-shadow: none !important;
 }
 
 .theme-footer-brand img {
@@ -2415,6 +2421,13 @@ html[data-theme="cyber"] .progress {
   object-fit: cover;
   border: 1px solid rgba(0, 240, 255, 0.35);
   background: #ffffff;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+a.theme-footer-brand:hover img {
+  transform: scale(1.06) rotate(3deg);
+  border-color: #FF007F;
+  box-shadow: 0 0 16px rgba(255, 0, 127, 0.45);
 }
 
 .theme-footer-links {

@@ -1,7 +1,7 @@
 <footer class="theme-footer">
   <div class="container">
     <div class="theme-footer-inner">
-      <div class="theme-footer-brand">
+      <a href="https://gdguhu.com/" class="theme-footer-brand" title="Ir a gdguhu.com">
         <img
           src="{{ url_for('views.themes', path='img/gdgoc-uhu-logo-sm.webp') }}"
           alt="GDG on Campus UHU"
@@ -15,18 +15,14 @@
             GDGoC UHU
           </div>
           <div class="theme-text-secondary" style="font-size: 0.76rem;">
-            Cyber Trainer
+            Universidad de Huelva
           </div>
         </div>
-      </div>
+      </a>
 
       <div class="theme-footer-links">
         <a href="https://ctfd.io" target="_blank" rel="noopener noreferrer" class="footer-link-muted">
           {% trans %}Powered by CTFd{% endtrans %}
-        </a>
-        <span style="opacity: 0.4;">·</span>
-        <a href="https://gdguhu.com/" class="footer-link-accent">
-          gdguhu.com
         </a>
         <span style="opacity: 0.4;">·</span>
         <a href="https://gdguhu.com/openbadges/" class="footer-link-accent">
