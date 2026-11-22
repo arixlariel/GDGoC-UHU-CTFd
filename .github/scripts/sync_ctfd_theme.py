@@ -47,20 +47,22 @@ def build_theme_header(pages_base: str, version: str) -> str:
         "&family=Orbitron:wght@600;700;800"
         "&family=JetBrains+Mono:wght@400;600;700&display=swap"
     )
-    # Critical inline CSS + early flag: prevents any white/light-mode or raw `core` navbar flash at t=0ms
+    # Critical inline CSS + early flag: prevents any white/light-mode, native Top 10, or raw `core` navbar flash at t=0ms
     critical_css = (
         "html,body{background-color:#05070F!important;color:#E2F1FF!important}"
         "body>nav.navbar{position:sticky!important;top:0!important;z-index:1030!important;"
         "min-height:68px!important;background:rgba(6,9,20,.92)!important;"
         "border-bottom:1px solid rgba(0,240,255,.35)!important}"
         ".theme-switch{display:none!important}"
+        "html.cyber-scoreboard-page #score-graph{display:none!important}"
         "html.cyber-bridging body>nav.navbar>*,html.cyber-bridging body>main,html.cyber-bridging body>footer.footer{opacity:0!important}"
     )
     bootstrap_js = (
         "(function(){"
-        "if(location.pathname.indexOf('/admin')===0)return;"
+        "if(/^(\\/cybertrainer)?\\/admin(\\/|$)/.test(location.pathname))return;"
         "var r=document.documentElement;"
         "r.setAttribute('data-theme','cyber');r.setAttribute('data-bs-theme','dark');"
+        "if(/^(\\/cybertrainer)?\\/scoreboard(\\/|$)/.test(location.pathname))r.classList.add('cyber-scoreboard-page');"
         "r.classList.add('cyber-bridging');"
         "try{localStorage.setItem('theme','dark')}catch(e){}"
         "setTimeout(function(){r.classList.remove('cyber-bridging')},250);"

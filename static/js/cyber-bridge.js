@@ -12,10 +12,15 @@
 (function () {
   "use strict";
 
-  // Guardia absoluta: nunca tocar el panel de administración de CTFd
-  if (window.location.pathname.indexOf("/admin") === 0) {
+  // Guardia absoluta: nunca tocar el panel de administración de CTFd (raíz o bajo /cybertrainer)
+  if (/^(\/cybertrainer)?\/admin(?:\/|$)/.test(window.location.pathname)) {
     document.documentElement.classList.remove("cyber-bridging");
     return;
+  }
+
+  // En /scoreboard marcar cuanto antes para ocultar la gráfica nativa Top 10 desde t=0ms
+  if (/^(\/cybertrainer)?\/scoreboard(?:\/|$)/.test(window.location.pathname)) {
+    document.documentElement.classList.add("cyber-scoreboard-page");
   }
 
   var ASSET_BASE = (
@@ -198,7 +203,11 @@
   }
 
   function getUrlRoot() {
-    return ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var r = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    if (!r && /^\/cybertrainer(?:\/|$)/.test(window.location.pathname)) {
+      return "/cybertrainer";
+    }
+    return r;
   }
 
   function normPath(href) {
@@ -525,6 +534,10 @@
       '    </div>' +
       '    <div class="theme-footer-links">' +
       '      <a href="https://ctfd.io" target="_blank" rel="noopener noreferrer" class="footer-link-muted">Powered by CTFd</a>' +
+      '      <span style="opacity: 0.4;">·</span>' +
+      '      <a href="https://gdguhu.com/" class="footer-link-accent">gdguhu.com</a>' +
+      '      <span style="opacity: 0.4;">·</span>' +
+      '      <a href="https://gdguhu.com/openbadges/" class="footer-link-accent">Open Badges</a>' +
       '      <span style="opacity: 0.4;">·</span>' +
       '      <a href="https://gdg.community.dev/gdg-on-campus-huelva-university-huelva-spain/" target="_blank" rel="noopener noreferrer" class="footer-link-accent">Comunidad</a>' +
       '      <span style="opacity: 0.4;">·</span>' +
@@ -1512,10 +1525,16 @@
     }
 
     if (path === "/scoreboard") {
+      document.documentElement.classList.add("cyber-scoreboard-page");
       var graph = document.getElementById("score-graph");
       if (graph) {
+        graph.classList.remove("d-flex", "d-block");
+        graph.classList.add("d-none");
+        graph.style.setProperty("display", "none", "important");
         var gc = wrapInThemeCard(graph, "cyber-chart-card p-3 p-md-4 mb-4");
         if (gc) {
+          gc.classList.remove("d-none");
+          gc.classList.add("d-block");
           makeTiltable(gc, 0.8);
         }
       }

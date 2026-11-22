@@ -378,6 +378,15 @@
           "profile";
         var safeName = rawName.replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^_+|_+$/g, "") || "profile";
         filename = "sot_" + safeName + ".png";
+      } else {
+        var activeBtn = document.querySelector(".cyber-period-btn.active");
+        var per = activeBtn ? activeBtn.getAttribute("data-period") : "all";
+        filename =
+          per === "year"
+            ? "top15_this_year.png"
+            : per === "month"
+            ? "top15_last_30_days.png"
+            : "top15_all_time.png";
       }
       var link = document.createElement("a");
       link.download = filename;
@@ -589,9 +598,18 @@
     });
   }
 
-  // Helper para normalizar ruta quitando urlRoot (funciona tanto en live CTFd como en GitHub Pages)
+  // Helper para obtener urlRoot (soporta raíz "/" y subpath "/cybertrainer")
+  function getUrlRoot() {
+    var r = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    if (!r && /^\/cybertrainer(?:\/|$)/.test(window.location.pathname)) {
+      return "/cybertrainer";
+    }
+    return r;
+  }
+
+  // Helper para normalizar ruta quitando urlRoot (funciona tanto en live CTFd como en /cybertrainer o GitHub Pages)
   function getNormPath() {
-    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var root = getUrlRoot();
     var p = window.location.pathname;
     if (root && p.indexOf(root) === 0) p = p.slice(root.length) || "/";
     return p.replace(/\/+$/, "") || "/";
@@ -851,7 +869,32 @@
     enhancedPanel.id = "cyber-scoreboard-enhanced";
     sbRoot.appendChild(enhancedPanel);
 
-    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var root = getUrlRoot();
+    document.documentElement.classList.add("cyber-scoreboard-page");
+
+    // Ocultar por completo la gráfica nativa Top 10 y montar inmediatamente el contenedor de nuestras gráficas Top 15
+    var initOrigGraph = document.getElementById("score-graph");
+    if (initOrigGraph) {
+      initOrigGraph.classList.remove("d-flex", "d-block");
+      initOrigGraph.classList.add("d-none");
+      initOrigGraph.style.setProperty("display", "none", "important");
+      var initCard = initOrigGraph.closest(".theme-card") || initOrigGraph.parentElement;
+      if (initCard) {
+        initCard.classList.remove("d-none");
+        initCard.classList.add("d-block");
+      }
+      if (!document.getElementById("cyber-score-graph") && initOrigGraph.parentNode) {
+        var initialHost = document.createElement("div");
+        initialHost.id = "cyber-score-graph";
+        initialHost.style.cssText = "width:100%;display:block;";
+        initialHost.innerHTML =
+          '<div class="d-flex align-items-center justify-content-center" style="min-height:420px;">' +
+          '  <i class="fas fa-circle-notch fa-spin fa-2x spinner"></i>' +
+          "</div>";
+        initOrigGraph.parentNode.insertBefore(initialHost, initOrigGraph.nextSibling);
+      }
+    }
+
     var hdrs = { Accept: "application/json", "Content-Type": "application/json" };
     var activePeriod = "all"; // Nunca se guarda entre visitas
     var activeBracket = null;
@@ -1003,6 +1046,14 @@
       var urlBase = root + (isTeams ? "/teams/" : "/users/");
       var byId = {};
 
+      function withRootUrl(u, fallback) {
+        var raw = u || fallback;
+        if (root && raw && raw.charAt(0) === "/" && raw.indexOf(root + "/") !== 0 && raw !== root) {
+          return root + raw;
+        }
+        return raw;
+      }
+
       // 1. Sembrar TODOS los perfiles registrados (incluso con 0 puntos)
       allUsersList.forEach(function (u) {
         var id = String(u.id || "");
@@ -1028,7 +1079,7 @@
             id: id,
             regOrder: Number(id) || 999999,
             name: st.name,
-            account_url: st.account_url || (urlBase + id),
+            account_url: withRootUrl(st.account_url, urlBase + id),
             bracket_id: st.bracket_id || null,
             bracket_name: st.bracket_name || null,
             allScore: Number(st.score || 0),
@@ -1036,7 +1087,7 @@
           };
         } else {
           byId[id].allScore = Number(st.score || 0);
-          if (st.account_url) byId[id].account_url = st.account_url;
+          if (st.account_url) byId[id].account_url = withRootUrl(st.account_url, urlBase + id);
           if (st.bracket_name) byId[id].bracket_name = st.bracket_name;
         }
       });
@@ -1051,7 +1102,7 @@
             id: id,
             regOrder: Number(id) || 999999,
             name: entry.name,
-            account_url: entry.account_url || (urlBase + id),
+            account_url: withRootUrl(entry.account_url, urlBase + id),
             bracket_id: entry.bracket_id || null,
             bracket_name: entry.bracket_name || null,
             allScore: Number(entry.score || 0),
@@ -1161,8 +1212,13 @@
     function renderScoreboardChart(rows) {
       var origGraph = document.getElementById("score-graph");
       if (!origGraph) return;
+      origGraph.classList.remove("d-flex", "d-block");
+      origGraph.classList.add("d-none");
+      origGraph.style.setProperty("display", "none", "important");
       var card = origGraph.closest(".theme-card") || origGraph.parentElement;
       if (!card) return;
+      card.classList.remove("d-none");
+      card.classList.add("d-block");
 
       var top15 = rows
         .filter(function (r) {
@@ -1174,12 +1230,11 @@
       if (!customHost) {
         customHost = document.createElement("div");
         customHost.id = "cyber-score-graph";
-        customHost.style.cssText = "width:100%;display:none;";
+        customHost.style.cssText = "width:100%;display:block;";
         origGraph.parentNode.insertBefore(customHost, origGraph.nextSibling);
       }
 
       if (!top15.length) {
-        origGraph.style.display = "none";
         customHost.style.display = "block";
         customHost.innerHTML =
           '<div class="cyber-empty-state py-5">' +
@@ -1191,7 +1246,7 @@
 
       loadCtfdEmbed().then(function (embed) {
         if (!embed) return;
-        origGraph.style.display = "none";
+        origGraph.style.setProperty("display", "none", "important");
         customHost.style.display = "block";
 
         var xLabels = [];
@@ -1609,7 +1664,7 @@
   function initRegisteredUsersCounter() {
     var els = document.querySelectorAll("[data-cyber-user-count]");
     if (!els.length) return;
-    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var root = getUrlRoot();
     fetch(root + "/api/v1/users?per_page=1", {
       headers: { Accept: "application/json", "Content-Type": "application/json" },
     })
@@ -1794,7 +1849,7 @@
     if (!modal || modal.dataset.cyberModalEnhanced === "1") return;
     modal.dataset.cyberModalEnhanced = "1";
 
-    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var root = getUrlRoot();
     var hdrs = { Accept: "application/json", "Content-Type": "application/json" };
 
     function fetchJson(u) {
@@ -2125,7 +2180,7 @@
     document.body.dataset.cyberProfileMetricsInit = "1";
 
     var targetId = isPrivate ? "me" : pubMatch[1];
-    var root = ((window.init && window.init.urlRoot) || "").replace(/\/+$/, "");
+    var root = getUrlRoot();
     var hdrs = { Accept: "application/json", "Content-Type": "application/json" };
 
     // Activar 3D tilt en tarjetas ya existentes del perfil (awards, gráficas)

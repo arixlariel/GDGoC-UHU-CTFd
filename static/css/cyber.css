@@ -2216,6 +2216,21 @@ html[data-theme="cyber"] .table tbody tr:hover > * {
   width: 100%;
 }
 
+/* En /scoreboard ocultamos por completo la gráfica nativa Top 10 y dejamos solo nuestras gráficas personalizadas Top 15 */
+html.cyber-scoreboard-page #score-graph {
+  display: none !important;
+}
+
+html.cyber-scoreboard-page .cyber-chart-card,
+html.cyber-scoreboard-page [x-data="ScoreboardDetail"] {
+  display: block !important;
+}
+
+#cyber-score-graph {
+  min-height: 420px;
+  width: 100%;
+}
+
 .cyber-chart-dl-btn {
   position: absolute;
   top: 16px;

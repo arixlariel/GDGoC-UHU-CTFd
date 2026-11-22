@@ -10,16 +10,16 @@
   <div class="container">
     {% include "components/errors.html" %}
 
-    <!-- Gráfica ECharts de evolución Top 10 -->
+    <!-- Gráfica ECharts personalizada Top 15 (All-Time / This Year / Last 30 days) -->
     <div
-      class="theme-card cyber-chart-card p-3 p-md-4 mb-4"
+      class="theme-card cyber-chart-card p-3 p-md-4 mb-4 d-block"
       x-data="ScoreboardDetail"
-      :class="{'d-block': show, 'd-none': !show}"
       @bracket-change.window="activeBracket=$event.detail; update();"
     >
-      <div id="score-graph" class="align-items-center d-flex" x-ref="scoregraph">
-        <div class="col-md-12 text-center py-5">
-          <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner"></i>
+      <div id="score-graph" class="d-none" x-ref="scoregraph"></div>
+      <div id="cyber-score-graph" class="w-100">
+        <div class="d-flex align-items-center justify-content-center" style="min-height: 420px;">
+          <i class="fas fa-circle-notch fa-spin fa-2x spinner"></i>
         </div>
       </div>
     </div>
