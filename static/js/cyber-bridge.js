@@ -1221,6 +1221,11 @@
         var pwStatus = document.createElement("div");
         pwStatus.className = "cyber-form-status";
         if (origResults) {
+          // Ocultar preventivamente alertas x-show antes de montar Alpine para evitar cualquier flash verde
+          origResults.querySelectorAll(".alert[x-show]").forEach(function (al) {
+            if (!al.hasAttribute("x-cloak")) al.setAttribute("x-cloak", "");
+            al.style.display = "none";
+          });
           var pwResultsClone = origResults.cloneNode(true);
           pwResultsClone.removeAttribute("id");
           pwResultsClone.className = "cyber-form-status";

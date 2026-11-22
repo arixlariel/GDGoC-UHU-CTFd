@@ -2210,6 +2210,13 @@ html[data-theme="cyber"] .cyber-form-status .alert {
   max-width: 100%;
 }
 
+/* Evitar cualquier parpadeo de alertas x-cloak (ej. mensaje verde de confirmación en /settings) antes de montar Alpine */
+[x-cloak],
+html[data-theme="cyber"] [x-cloak],
+html[data-theme="cyber"] .cyber-form-status .alert[x-cloak] {
+  display: none !important;
+}
+
 html[data-theme="cyber"] .cyber-form-status .alert .btn-close {
   padding: 0.65rem 0.8rem !important;
   top: 50% !important;

@@ -50,6 +50,7 @@ def build_theme_header(pages_base: str, version: str) -> str:
     # Critical inline CSS + early flag: prevents any white/light-mode, native Top 10, or raw `core` navbar flash at t=0ms
     critical_css = (
         "html,body{background-color:#05070F!important;color:#E2F1FF!important}"
+        "[x-cloak]{display:none!important}"
         "body>nav.navbar{position:sticky!important;top:0!important;z-index:1030!important;"
         "min-height:68px!important;background:rgba(6,9,20,.92)!important;"
         "border-bottom:1px solid rgba(0,240,255,.35)!important}"
