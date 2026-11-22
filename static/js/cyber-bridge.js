@@ -126,6 +126,9 @@
       this._timer = setTimeout(function () {
         self._timer = null;
         if (self._closed || document.visibilityState === "hidden") return;
+        // CTFd devuelve HTTP 403 en /events para visitantes sin sesión: evitar petición fallida en consola
+        var isGuest = !window.init || !window.init.userId;
+        if (isGuest && /\/events(?:\?|$)/.test(String(url || ""))) return;
         try {
           var real = config ? new NativeES(url, config) : new NativeES(url);
           self._real = real;
@@ -422,7 +425,9 @@
 
     Array.prototype.slice.call(rightUl.children).forEach(function (li) {
       if (li.querySelector(".theme-switch")) {
-        li.remove();
+        // Ocultar en lugar de eliminar para que color_mode_switcher de CTFd `core` jamás lance TypeError si llega a ejecutarse
+        li.classList.add("d-none");
+        li.setAttribute("aria-hidden", "true");
         return;
       }
 

@@ -61,6 +61,7 @@ def build_theme_header(pages_base: str, version: str) -> str:
         "(function(){"
         "if(/^(\\/cybertrainer)?\\/admin(\\/|$)/.test(location.pathname))return;"
         "var r=document.documentElement;"
+        "if(!r.lang)r.lang='es';"
         "r.setAttribute('data-theme','cyber');r.setAttribute('data-bs-theme','dark');"
         "if(/^(\\/cybertrainer)?\\/scoreboard(\\/|$)/.test(location.pathname))r.classList.add('cyber-scoreboard-page');"
         "r.classList.add('cyber-bridging');"
@@ -70,9 +71,19 @@ def build_theme_header(pages_base: str, version: str) -> str:
         f"window.CYBER_ASSET_VER={json.dumps(version)};"
         "})();"
     )
+    seo_desc = (
+        "Plataforma oficial de entrenamiento y competición en ciberseguridad CTF de "
+        "Google Developer Group on Campus Huelva University (GDGoC UHU)."
+    )
     return "\n".join([
         f"<!-- Cyber Theme · Auto-synced from GDGoC-UHU-CTFd ({version or 'latest'}) -->",
         '<meta name="theme-color" content="#05070F">',
+        f'<meta name="description" content="{seo_desc}">',
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="GDGoC UHU Cyber Trainer">',
+        '<meta property="og:title" content="GDGoC UHU Cyber Trainer">',
+        f'<meta property="og:description" content="{seo_desc}">',
+        f'<meta property="og:image" content="{static}/img/gdgoc-uhu-logo.jpg">',
         f"<style>{critical_css}</style>",
         f"<script>{bootstrap_js}</script>",
         f'<link rel="preconnect" href="https://arixlariel.github.io" crossorigin>',

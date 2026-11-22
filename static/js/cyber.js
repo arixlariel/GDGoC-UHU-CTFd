@@ -34,6 +34,8 @@
       this._timer = setTimeout(function () {
         self._timer = null;
         if (self._closed || document.visibilityState === "hidden") return;
+        var isGuest = !window.init || !window.init.userId;
+        if (isGuest && /\/events(?:\?|$)/.test(String(url || ""))) return;
         try {
           var real = cfg ? new NativeES(url, cfg) : new NativeES(url);
           self._real = real;
@@ -1664,6 +1666,8 @@
   function initRegisteredUsersCounter() {
     var els = document.querySelectorAll("[data-cyber-user-count]");
     if (!els.length) return;
+    // Si account_visibility requiere sesión, evitar un HTTP 403 en consola para visitantes no autenticados
+    if (!window.init || !window.init.userId) return;
     var root = getUrlRoot();
     fetch(root + "/api/v1/users?per_page=1", {
       headers: { Accept: "application/json", "Content-Type": "application/json" },

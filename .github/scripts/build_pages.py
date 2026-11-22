@@ -274,10 +274,11 @@ HOME_CONTENT = Markup("""
     <div class="tilt-glare" aria-hidden="true"></div>
 
     <div class="gdg-pill-badge">
-      <span class="palette-dots">
-        <span class="palette-dot dot-burdeos"></span>
-        <span class="palette-dot dot-turquesa"></span>
-        <span class="palette-dot dot-mostaza"></span>
+      <span class="cyber-dots" aria-hidden="true">
+        <span class="cyber-dot cyber-dot--1"></span>
+        <span class="cyber-dot cyber-dot--2"></span>
+        <span class="cyber-dot cyber-dot--3"></span>
+        <span class="cyber-dot cyber-dot--4"></span>
       </span>
       <span>Google Developer Group on Campus Huelva University</span>
     </div>
@@ -288,7 +289,7 @@ HOME_CONTENT = Markup("""
 
     <p class="lead mx-auto mb-4 theme-text-secondary" style="max-width: 780px; font-size: 1.12rem; line-height: 1.7;">
       Plataforma oficial de entrenamiento y competición en ciberseguridad impulsada por CTFd.<br>
-      Resuelve retos de Criptografía, Web, Forense o Reversing para ganar puntos y badges
+      Resuelve retos de Criptografía, Web, Forense o Reversing para ganar puntos y badges.
     </p>
 
     <!-- FORMATO DE FLAG -->
