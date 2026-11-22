@@ -90,7 +90,7 @@ html[data-bs-theme="dark"] {
 html[data-theme="cyber"] {
   background-color: #05070F !important;
   color-scheme: dark;
-  scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 html[data-theme="cyber"] body {
@@ -100,7 +100,7 @@ html[data-theme="cyber"] body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow-x: clip;
   padding-top: 0 !important;
   -webkit-font-smoothing: antialiased;
 }
@@ -246,21 +246,29 @@ html[data-theme="cyber"] *::-webkit-scrollbar {
   75%, 100% { transform: scale(2); opacity: 0; }
 }
 
+@keyframes cyberDrawerIn {
+  from { opacity: 0; transform: translate3d(0, -8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
 /* ============================================================================
    FONDO ANIMADO CYBER (#theme-fx-container)
    ============================================================================ */
 #theme-fx-container {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
   pointer-events: none;
   overflow: hidden;
   z-index: 0;
-  contain: strict;
-  transform: translate3d(0, 0, 0);
-  isolation: isolate;
+  contain: layout style paint;
   background:
     radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.16), transparent 50%),
-    radial-gradient(circle at 85% 80%, rgba(255, 0, 127, 0.15), transparent 45%);
+    radial-gradient(circle at 85% 80%, rgba(255, 0, 127, 0.15), transparent 45%),
+    #05070F;
 }
 
 .fx-cyber-grid {
@@ -555,15 +563,33 @@ html[data-theme="cyber"] .theme-header .nav-link.active {
   }
 }
 
-/* Menú hamburguesa móvil (< 992px): un solo scroll fluido y selector de idioma en cuadrícula de 2 columnas sin scroll atrapado */
+/* Menú hamburguesa móvil (< 992px): overlay flotante GPU sin reflow de página + idiomas en 2 columnas */
 @media (max-width: 991.98px) {
-  .theme-header .navbar-collapse.show,
-  .theme-header .navbar-collapse.collapsing {
-    max-height: calc(100dvh - 86px);
+  .theme-header .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    background: rgba(6, 9, 20, 0.98);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.42);
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.72), 0 0 22px rgba(0, 240, 255, 0.14);
+    padding: 0.25rem 1.25rem 1.05rem;
+    max-height: calc(100dvh - 84px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding-bottom: 0.75rem;
+    transition: none !important;
+  }
+
+  .theme-header .navbar-collapse.collapsing {
+    height: auto !important;
+    transition: none !important;
+    overflow: hidden !important;
+  }
+
+  .theme-header .navbar-collapse.show {
+    animation: cyberDrawerIn 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .theme-header .navbar-collapse .nav-item.dropdown {
