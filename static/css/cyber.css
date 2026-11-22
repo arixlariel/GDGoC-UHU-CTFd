@@ -246,11 +246,6 @@ html[data-theme="cyber"] *::-webkit-scrollbar {
   75%, 100% { transform: scale(2); opacity: 0; }
 }
 
-@keyframes cyberDrawerIn {
-  from { opacity: 0; transform: translate3d(0, -8px, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-
 /* ============================================================================
    FONDO ANIMADO CYBER (#theme-fx-container)
    ============================================================================ */
@@ -563,9 +558,15 @@ html[data-theme="cyber"] .theme-header .nav-link.active {
   }
 }
 
-/* Menú hamburguesa móvil (< 992px): overlay flotante GPU sin reflow de página + idiomas en 2 columnas */
+/* Menú hamburguesa móvil (< 992px): drawer GPU puro (opacity + translate3d) sin animación height de Bootstrap ni flashes */
 @media (max-width: 991.98px) {
+  html[data-theme="cyber"] .navbar-toggler[aria-expanded="true"] {
+    border-color: #FF007F !important;
+    box-shadow: 0 0 16px rgba(255, 0, 127, 0.35), 0 0 12px rgba(0, 240, 255, 0.22) !important;
+  }
+
   .theme-header .navbar-collapse {
+    display: block !important;
     position: absolute;
     top: 100%;
     left: 0;
@@ -574,22 +575,29 @@ html[data-theme="cyber"] .theme-header .nav-link.active {
     background: rgba(6, 9, 20, 0.98);
     border-bottom: 1px solid rgba(0, 240, 255, 0.42);
     box-shadow: 0 20px 44px rgba(0, 0, 0, 0.72), 0 0 22px rgba(0, 240, 255, 0.14);
-    padding: 0.25rem 1.25rem 1.05rem;
+    padding: 0.35rem 1.25rem 1.1rem;
     max-height: calc(100dvh - 84px);
+    height: auto !important;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    transition: none !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate3d(0, -10px, 0);
+    transition: opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s linear 0.22s !important;
   }
 
-  .theme-header .navbar-collapse.collapsing {
-    height: auto !important;
-    transition: none !important;
-    overflow: hidden !important;
-  }
-
-  .theme-header .navbar-collapse.show {
-    animation: cyberDrawerIn 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+  .theme-header .navbar-collapse.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate3d(0, 0, 0);
+    transition: opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s linear 0s !important;
   }
 
   .theme-header .navbar-collapse .nav-item.dropdown {

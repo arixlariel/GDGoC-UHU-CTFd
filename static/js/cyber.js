@@ -2580,17 +2580,21 @@
     });
   }
 
-  // 10. Cerrar automáticamente el menú hamburguesa móvil al pulsar fuera o con Escape
+  // 10. Drawer móvil GPU puro (sustituye el height-collapse de Bootstrap en < 992px: 0 glitches, 0 reflow y cierre al pulsar fuera)
   function initMobileMenuClose() {
     if (window.__cyberMobileMenuCloseBound) return;
     window.__cyberMobileMenuCloseBound = true;
 
-    function closeMobileNav() {
+    function getNavParts() {
       var header = document.querySelector("header.theme-header");
-      if (!header) return;
+      if (!header) return null;
       var collapse = header.querySelector(".navbar-collapse");
-      if (!collapse || !collapse.classList.contains("show") || collapse.classList.contains("collapsing")) return;
+      var toggler = header.querySelector(".navbar-toggler");
+      if (!collapse || !toggler) return null;
+      return { header: header, collapse: collapse, toggler: toggler };
+    }
 
+    function resetInnerDropdowns(collapse) {
       collapse.querySelectorAll(".dropdown-menu.show").forEach(function (dm) {
         dm.classList.remove("show");
       });
@@ -2601,38 +2605,66 @@
         dt.setAttribute("aria-expanded", "false");
         dt.classList.remove("show");
       });
+    }
 
-      var toggler = header.querySelector(".navbar-toggler");
-      if (window.bootstrap && window.bootstrap.Collapse) {
-        try {
-          window.bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).hide();
-          return;
-        } catch (_) {}
-      }
-      if (toggler) {
-        toggler.click();
+    function setMobileNavOpen(open) {
+      var parts = getNavParts();
+      if (!parts) return;
+      parts.collapse.classList.remove("collapsing", "show");
+      parts.collapse.style.height = "";
+      if (open) {
+        parts.collapse.classList.add("is-open");
+        parts.toggler.setAttribute("aria-expanded", "true");
+        parts.toggler.classList.remove("collapsed");
       } else {
-        collapse.classList.remove("show");
+        parts.collapse.classList.remove("is-open");
+        parts.toggler.setAttribute("aria-expanded", "false");
+        parts.toggler.classList.add("collapsed");
+        resetInnerDropdowns(parts.collapse);
       }
     }
 
+    // Interceptar el clic en el botón hamburguesa antes que Bootstrap Collapse para evitar el parpadeo de .collapsing
+    document.addEventListener(
+      "click",
+      function (e) {
+        if (window.innerWidth >= 992) return;
+        var btn = e.target && e.target.closest ? e.target.closest("header.theme-header .navbar-toggler") : null;
+        if (!btn) return;
+        var parts = getNavParts();
+        if (!parts) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var isOpen = parts.collapse.classList.contains("is-open");
+        setMobileNavOpen(!isOpen);
+      },
+      true
+    );
+
+    // Cerrar al pulsar fuera del header
     document.addEventListener(
       "pointerdown",
       function (e) {
         if (window.innerWidth >= 992) return;
-        var header = document.querySelector("header.theme-header");
-        if (!header) return;
-        var collapse = header.querySelector(".navbar-collapse");
-        if (!collapse || !collapse.classList.contains("show")) return;
-        if (e.target && header.contains(e.target)) return;
-        closeMobileNav();
+        var parts = getNavParts();
+        if (!parts || !parts.collapse.classList.contains("is-open")) return;
+        if (e.target && parts.header.contains(e.target)) return;
+        setMobileNavOpen(false);
       },
       true
     );
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && window.innerWidth < 992) closeMobileNav();
+      if (e.key === "Escape" && window.innerWidth < 992) setMobileNavOpen(false);
     });
+
+    window.addEventListener(
+      "resize",
+      function () {
+        if (window.innerWidth >= 992) setMobileNavOpen(false);
+      },
+      { passive: true }
+    );
   }
 
   window.cyberInitDatePickers = initCyberDatePickers;
