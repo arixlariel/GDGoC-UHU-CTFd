@@ -2,14 +2,39 @@
 
 {% block content %}
   <div class="container">
-    <div class="theme-card tilt-card cyber-error-box" data-tilt-max="1.5">
+    <div class="theme-card tilt-card cyber-error-box" data-tilt-max="1.4">
       <div class="tilt-glare" aria-hidden="true"></div>
+      <div class="cyber-error-strip" aria-hidden="true">
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <div class="theme-badge-pill mb-4">
+        <span class="cyber-dots" aria-hidden="true">
+          <span class="cyber-dot cyber-dot--1"></span>
+          <span class="cyber-dot cyber-dot--2"></span>
+          <span class="cyber-dot cyber-dot--3"></span>
+          <span class="cyber-dot cyber-dot--4"></span>
+        </span>
+        <span>Error 404 · Recurso no localizado</span>
+      </div>
       <div class="cyber-error-code">404</div>
-      <h2 class="h4 fw-bold theme-text-primary mt-3">{% trans %}File not found{% endtrans %}</h2>
-      <p class="theme-text-secondary mt-2 mb-4">La ruta solicitada no existe en este nodo de Cyber Trainer.</p>
-      <a href="{{ url_for('views.static_html', route='/') }}" class="btn btn-primary px-4">
-        Volver al inicio
-      </a>
+      <h1 class="h3 fw-bold theme-text-primary mt-3 mb-2">Página no encontrada</h1>
+      <p class="theme-text-secondary mx-auto mb-0" style="max-width: 480px; line-height: 1.65;">
+        La ruta solicitada no existe en Cyber Trainer. Vuelve al inicio o explora los retos y el scoreboard.
+      </p>
+      <div class="cyber-error-actions">
+        <a href="{{ url_for('views.static_html', route='/') }}" class="btn btn-primary px-4">
+          <i class="fas fa-arrow-left"></i>
+          <span>Ir a Cyber Trainer</span>
+        </a>
+        <a href="{{ url_for('challenges.listing') }}" class="theme-pill-btn">
+          <i class="fas fa-flag"></i>
+          <span>Ver retos</span>
+        </a>
+        <a href="{{ url_for('scoreboard.listing') }}" class="theme-pill-btn">
+          <i class="fas fa-trophy"></i>
+          <span>Scoreboard</span>
+        </a>
+      </div>
     </div>
   </div>
 {% endblock %}

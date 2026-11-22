@@ -176,6 +176,7 @@
   window.cyberCategoryColor = getCategoryColor;
 
   function makeCyberChartTheme(isProfile) {
+    var isCompact = typeof window !== "undefined" && window.innerWidth < 576;
     var base = {
       backgroundColor: "transparent",
       color: TOP15_SERIES_COLORS.slice(),
@@ -189,17 +190,17 @@
           color: "#F0F9FF",
           fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
           fontWeight: 800,
-          fontSize: isProfile ? 23 : 20,
+          fontSize: isProfile ? (isCompact ? 18 : 23) : (isCompact ? 17 : 20),
         }),
       },
       toolbox: {
         show: false,
       },
       grid: {
-        top: isProfile ? 68 : 64,
-        bottom: isProfile ? 68 : 76,
-        left: 20,
-        right: 24,
+        top: isProfile ? (isCompact ? 56 : 68) : (isCompact ? 54 : 64),
+        bottom: isProfile ? (isCompact ? 60 : 68) : (isCompact ? 68 : 76),
+        left: isCompact ? 10 : 20,
+        right: isCompact ? 12 : 24,
         containLabel: true,
       },
       tooltip: {
@@ -482,6 +483,13 @@
     if (prefersReducedMotion || window.__cyberTiltDelegated) return;
     window.__cyberTiltDelegated = true;
 
+    // Pausa de 180 ms durante scroll/trackpad en Mac para evitar reflows y thrashing de capas GPU
+    var scrollGuardUntil = 0;
+    function markScrolling() {
+      scrollGuardUntil = performance.now() + 180;
+      resetActiveTilt();
+    }
+
     document.addEventListener(
       "pointermove",
       function (e) {
@@ -489,6 +497,7 @@
           resetActiveTilt();
           return;
         }
+        if (performance.now() < scrollGuardUntil) return;
         if (document.body.classList.contains("modal-open") || document.querySelector(".modal.show")) {
           resetActiveTilt();
           return;
@@ -550,7 +559,8 @@
 
     document.addEventListener("pointerleave", resetActiveTilt);
     document.addEventListener("pointercancel", resetActiveTilt);
-    window.addEventListener("scroll", resetActiveTilt, { passive: true });
+    window.addEventListener("wheel", markScrolling, { passive: true });
+    window.addEventListener("scroll", markScrolling, { passive: true });
     window.addEventListener("blur", resetActiveTilt);
 
     document.addEventListener("focusin", function (e) {
@@ -1368,6 +1378,7 @@
           });
         }
 
+        var isCompact = window.innerWidth < 576;
         var opt = {
           backgroundColor: "transparent",
           color: TOP15_SERIES_COLORS.slice(),
@@ -1379,7 +1390,7 @@
               color: "#F0F9FF",
               fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
-              fontSize: 22,
+              fontSize: isCompact ? 17 : 22,
             },
           },
           tooltip: {
@@ -1443,7 +1454,9 @@
             data: top15.map(function (u) { return u.name; }),
           },
           toolbox: { show: false },
-          grid: { top: 68, bottom: 78, left: 22, right: 28, containLabel: true },
+          grid: isCompact
+            ? { top: 56, bottom: 72, left: 10, right: 12, containLabel: true }
+            : { top: 68, bottom: 78, left: 22, right: 28, containLabel: true },
           xAxis: [
             {
               type: "category",
@@ -1483,7 +1496,7 @@
         // Montar sobre un nodo limpio para que cada cambio de pestaña re-renderice sin artefactos
         customHost.innerHTML = "";
         var inner = document.createElement("div");
-        inner.style.cssText = "width:100%;height:420px;";
+        inner.style.cssText = "width:100%;height:" + (isCompact ? "350px" : "420px") + ";";
         customHost.appendChild(inner);
         embed(inner, opt);
       });
@@ -2076,13 +2089,24 @@
         valEl.dataset.cyberPtsFormatted = "1";
       }
 
-      // 2c. Convertir <code> inline largos en bloque limpio sin bordes partidos (ej. Set-Cookie / JWT)
-      modal.querySelectorAll(".challenge-desc code:not(pre code)").forEach(function (codeEl) {
-        if (codeEl.classList.contains("cyber-code-block")) return;
+      // 2c. Convertir <code> largos o multilínea (descripción y pistas) en bloque limpio sin bordes partidos
+      modal.querySelectorAll("code").forEach(function (codeEl) {
+        if (codeEl.classList.contains("cyber-code-block") || codeEl.closest("pre")) return;
         var txt = (codeEl.textContent || "").trim();
         var parent = codeEl.parentElement;
-        var soleChild = parent && parent.tagName === "P" && parent.childNodes.length === 1;
-        if (txt.length > 42 || soleChild) {
+        var soleChild = false;
+        if (parent && (parent.tagName === "P" || parent.tagName === "DIV" || parent.tagName === "LI")) {
+          var meaningfulNodes = 0;
+          for (var ci = 0; ci < parent.childNodes.length; ci++) {
+            var n = parent.childNodes[ci];
+            if (n.nodeType === 1 || (n.nodeType === 3 && n.textContent.trim().length > 0)) {
+              meaningfulNodes++;
+            }
+          }
+          soleChild = meaningfulNodes === 1;
+        }
+        var wrapsLines = Boolean(codeEl.getClientRects && codeEl.getClientRects().length > 1);
+        if (txt.length > 36 || soleChild || wrapsLines) {
           codeEl.classList.add("cyber-code-block");
         }
       });
@@ -2168,6 +2192,11 @@
     if (typeof MutationObserver !== "undefined") {
       new MutationObserver(enhanceModalContent).observe(modal, { childList: true, subtree: true });
     }
+    modal.addEventListener("show.bs.modal", enhanceModalContent);
+    modal.addEventListener("shown.bs.modal", function () {
+      enhanceModalContent();
+      setTimeout(enhanceModalContent, 140);
+    });
     enhanceModalContent();
   }
 
@@ -2186,6 +2215,22 @@
     var targetId = isPrivate ? "me" : pubMatch[1];
     var root = getUrlRoot();
     var hdrs = { Accept: "application/json", "Content-Type": "application/json" };
+
+    // Mostrar barras de progreso y Score Over Time también en móvil (< 768px) y reajustar ECharts
+    var initialGraphsRow = document.querySelector('[x-data="UserGraphs"]');
+    if (initialGraphsRow) {
+      initialGraphsRow.querySelectorAll(".d-none.d-md-block").forEach(function (el) {
+        el.classList.remove("d-none", "d-md-block", "d-lg-block");
+      });
+      setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 250);
+      setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 700);
+      setTimeout(function () { window.dispatchEvent(new Event("resize")); }, 1400);
+    }
+
+    // Mostrar todas las columnas de la tabla Solves en móvil (con scroll horizontal limpio)
+    document.querySelectorAll("main table.table .d-none.d-md-table-cell").forEach(function (cell) {
+      cell.classList.remove("d-none", "d-md-table-cell");
+    });
 
     // Activar 3D tilt en tarjetas ya existentes del perfil (awards, gráficas)
     document.querySelectorAll("main .theme-card, main .card").forEach(function (c) {
@@ -2490,7 +2535,7 @@
 
           var col = document.createElement("div");
           col.id = "cyber-points-efficiency-col";
-          col.className = "col-md-4 d-none d-md-block";
+          col.className = "col-md-4";
           col.innerHTML =
             '<div class="theme-card tilt-card p-4 h-100" data-tilt-max="1.2">' +
             '  <div class="tilt-glare" aria-hidden="true"></div>' +
@@ -2535,6 +2580,61 @@
     });
   }
 
+  // 10. Cerrar automáticamente el menú hamburguesa móvil al pulsar fuera o con Escape
+  function initMobileMenuClose() {
+    if (window.__cyberMobileMenuCloseBound) return;
+    window.__cyberMobileMenuCloseBound = true;
+
+    function closeMobileNav() {
+      var header = document.querySelector("header.theme-header");
+      if (!header) return;
+      var collapse = header.querySelector(".navbar-collapse");
+      if (!collapse || !collapse.classList.contains("show") || collapse.classList.contains("collapsing")) return;
+
+      collapse.querySelectorAll(".dropdown-menu.show").forEach(function (dm) {
+        dm.classList.remove("show");
+      });
+      collapse.querySelectorAll(".dropdown.show").forEach(function (dd) {
+        dd.classList.remove("show");
+      });
+      collapse.querySelectorAll('.dropdown-toggle[aria-expanded="true"]').forEach(function (dt) {
+        dt.setAttribute("aria-expanded", "false");
+        dt.classList.remove("show");
+      });
+
+      var toggler = header.querySelector(".navbar-toggler");
+      if (window.bootstrap && window.bootstrap.Collapse) {
+        try {
+          window.bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).hide();
+          return;
+        } catch (_) {}
+      }
+      if (toggler) {
+        toggler.click();
+      } else {
+        collapse.classList.remove("show");
+      }
+    }
+
+    document.addEventListener(
+      "pointerdown",
+      function (e) {
+        if (window.innerWidth >= 992) return;
+        var header = document.querySelector("header.theme-header");
+        if (!header) return;
+        var collapse = header.querySelector(".navbar-collapse");
+        if (!collapse || !collapse.classList.contains("show")) return;
+        if (e.target && header.contains(e.target)) return;
+        closeMobileNav();
+      },
+      true
+    );
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && window.innerWidth < 992) closeMobileNav();
+    });
+  }
+
   window.cyberInitDatePickers = initCyberDatePickers;
   window.cyberInitSettingsInlineFeedback = initSettingsInlineFeedback;
   window.cyberInitScoreboardTimeframes = initScoreboardTimeframes;
@@ -2544,10 +2644,11 @@
   window.cyberInitUsersTableInteractive = initUsersTableInteractive;
   window.cyberInitChallengeModalEnhancer = initChallengeModalEnhancer;
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function bootCyber() {
     cleanupLegacyThemeHeader();
     highlightActiveNav();
     initDelegatedTiltEngine();
+    initMobileMenuClose();
     scanTiltCards(document);
     initCyberDatePickers(document);
     initSettingsInlineFeedback();
@@ -2557,5 +2658,11 @@
     initRegisteredUsersCounter();
     initUsersTableInteractive();
     initChallengeModalEnhancer();
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootCyber);
+  } else {
+    bootCyber();
+  }
 })();

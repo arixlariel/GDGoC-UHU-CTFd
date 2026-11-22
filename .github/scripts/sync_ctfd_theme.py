@@ -55,6 +55,7 @@ def build_theme_header(pages_base: str, version: str) -> str:
         "border-bottom:1px solid rgba(0,240,255,.35)!important}"
         ".theme-switch{display:none!important}"
         "html.cyber-scoreboard-page #score-graph{display:none!important}"
+        "html[data-theme='cyber'] [x-data='UserGraphs'] .d-none.d-md-block{display:block!important}"
         "html.cyber-bridging body>nav.navbar>*,html.cyber-bridging body>main,html.cyber-bridging body>footer.footer{opacity:0!important}"
     )
     bootstrap_js = (

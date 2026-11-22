@@ -491,7 +491,7 @@
 
     if (!rightUl.querySelector('a.theme-pill-btn--community')) {
       var comLi = document.createElement("li");
-      comLi.className = "nav-item";
+      comLi.className = "nav-item d-none d-lg-flex";
       comLi.innerHTML =
         '<a href="https://gdg.community.dev/gdg-on-campus-huelva-university-huelva-spain/" target="_blank" rel="noopener noreferrer" ' +
         'class="theme-pill-btn theme-pill-btn--community w-100 w-lg-auto" ' +
@@ -970,10 +970,10 @@
     thCountry.style.width = "105px";
 
     thAff.textContent = "Affiliation";
-    thAff.className = "d-none d-md-table-cell";
+    thAff.className = "";
 
     thWeb.textContent = "Website";
-    thWeb.className = "d-none d-sm-table-cell";
+    thWeb.className = "";
 
     headerRow.innerHTML = "";
     headerRow.appendChild(thUser);
@@ -1012,7 +1012,7 @@
         tdCountry.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
       }
 
-      tdAff.className = "d-none d-md-table-cell";
+      tdAff.className = "";
       var affText = (tdAff.textContent || "").trim();
       if (!affText) {
         tdAff.innerHTML = '<span class="theme-text-secondary opacity-50">—</span>';
@@ -1025,7 +1025,7 @@
       }
 
       var webLink = tdWeb.querySelector("a[href]");
-      tdWeb.className = "d-none d-sm-table-cell";
+      tdWeb.className = "";
       tdWeb.style.width = "";
       if (webLink && webLink.href) {
         var href = webLink.getAttribute("href");
@@ -1617,6 +1617,12 @@
       path === "/team" ||
       path.indexOf("/teams/") === 0
     ) {
+      document.querySelectorAll('[x-data="UserGraphs"] .d-none.d-md-block').forEach(function (el) {
+        el.classList.remove("d-none", "d-md-block", "d-lg-block");
+      });
+      document.querySelectorAll("main table.table .d-none.d-md-table-cell").forEach(function (cell) {
+        cell.classList.remove("d-none", "d-md-table-cell");
+      });
       var profGraph = document.getElementById("score-graph");
       if (profGraph) {
         var pg = wrapInThemeCard(profGraph, "cyber-chart-card p-3 p-md-4 mb-4");
@@ -1635,6 +1641,68 @@
     if (path === "/settings") {
       upgradeSettingsPage();
       return;
+    }
+
+    // Transformar páginas de error nativas de `core` (404, 403, 429, 500, 502) al estilo Cyber Neon 3D completo
+    var coreErr = document.querySelector("main .pt-5.mt-5.text-center");
+    if (coreErr && !document.querySelector(".cyber-error-box")) {
+      var errH1 = coreErr.querySelector("h1");
+      var errH2 = coreErr.querySelector("h2");
+      var h2Txt = errH2 ? (errH2.textContent || "").trim() : "";
+      var codeMatch = h2Txt.match(/\b(403|404|429|500|502)\b/);
+      if (codeMatch) {
+        var code = codeMatch[1];
+        var urlRoot = getUrlRoot();
+        var homeHref = urlRoot ? urlRoot + "/" : "/";
+        var is404 = code === "404";
+        var pillText = is404
+          ? "Error 404 · Recurso no localizado"
+          : "Error " + code + " · " + (h2Txt.replace(/^\d+\s*/, "") || "Error");
+        var headingText = is404
+          ? "Página no encontrada"
+          : (errH1 && errH1.textContent.trim()) || h2Txt;
+        var descText = is404
+          ? "La ruta solicitada no existe en Cyber Trainer. Vuelve al inicio o explora los retos y el scoreboard."
+          : "No se pudo completar la solicitud en este nodo de Cyber Trainer.";
+
+        var errHost = coreErr.closest(".container") || coreErr.parentElement;
+        if (errHost) {
+          errHost.innerHTML =
+            '<div class="theme-card tilt-card cyber-error-box" data-tilt-max="1.4">' +
+            '  <div class="tilt-glare" aria-hidden="true"></div>' +
+            '  <div class="cyber-error-strip" aria-hidden="true"><div></div><div></div><div></div><div></div></div>' +
+            '  <div class="theme-badge-pill mb-4">' +
+            '    <span class="cyber-dots" aria-hidden="true">' +
+            '      <span class="cyber-dot cyber-dot--1"></span>' +
+            '      <span class="cyber-dot cyber-dot--2"></span>' +
+            '      <span class="cyber-dot cyber-dot--3"></span>' +
+            '      <span class="cyber-dot cyber-dot--4"></span>' +
+            '    </span>' +
+            '    <span class="cyber-err-pill-txt"></span>' +
+            '  </div>' +
+            '  <div class="cyber-error-code">' + code + "</div>" +
+            '  <h1 class="h3 fw-bold theme-text-primary mt-3 mb-2 cyber-err-heading"></h1>' +
+            '  <p class="theme-text-secondary mx-auto mb-0" style="max-width:480px;line-height:1.65;"></p>' +
+            '  <div class="cyber-error-actions">' +
+            '    <a href="' + homeHref + '" class="btn btn-primary px-4"><i class="fas fa-arrow-left"></i><span>Ir a Cyber Trainer</span></a>' +
+            '    <a href="' + urlRoot + '/challenges" class="theme-pill-btn"><i class="fas fa-flag"></i><span>Ver retos</span></a>' +
+            '    <a href="' + urlRoot + '/scoreboard" class="theme-pill-btn"><i class="fas fa-trophy"></i><span>Scoreboard</span></a>' +
+            '  </div>' +
+            "</div>";
+          errHost.querySelector(".cyber-err-pill-txt").textContent = pillText;
+          errHost.querySelector(".cyber-err-heading").textContent = headingText;
+          errHost.querySelector("p").textContent = descText;
+          var errCard = errHost.querySelector(".cyber-error-box");
+          if (errCard) {
+            makeTiltable(errCard, 1.4);
+            if (typeof window.gdgocScanTiltCards === "function") {
+              window.gdgocScanTiltCards(errHost);
+            }
+          }
+          document.title = code + " · GDGoC UHU Cyber Trainer";
+        }
+        return;
+      }
     }
 
     wrapTablesInCyberWrap(document);

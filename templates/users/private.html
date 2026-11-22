@@ -126,7 +126,7 @@
 
       <!-- Gráficas y barras de progreso (con 3D tilt) -->
       <div class="row g-4 mb-5" x-data="UserGraphs">
-        <div class="col-md-6 d-none d-md-block">
+        <div class="col-md-6">
           <div class="theme-card tilt-card p-4 h-100" data-tilt-max="1.2">
             <div class="tilt-glare" aria-hidden="true"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
@@ -157,7 +157,7 @@
           </div>
         </div>
 
-        <div class="col-md-6 d-none d-md-block">
+        <div class="col-md-6">
           <div class="theme-card tilt-card p-4 h-100" data-tilt-max="1.2">
             <div class="tilt-glare" aria-hidden="true"></div>
             <h4 class="h6 fw-bold theme-text-primary mb-3 font-mono text-uppercase" style="letter-spacing: 0.05em;">
@@ -185,7 +185,7 @@
           </div>
         </div>
 
-        <div class="col-12 d-none d-md-block">
+        <div class="col-12">
           <div class="theme-card tilt-card cyber-chart-card p-3 p-md-4" data-tilt-max="0.7">
             <div class="tilt-glare" aria-hidden="true"></div>
             <div id="score-graph" x-ref="scoregraph" class="w-100 d-flex align-items-center">
@@ -211,7 +211,7 @@
               <thead>
                 <tr>
                   <th>{% trans %}Challenge{% endtrans %}</th>
-                  <th class="d-none d-md-table-cell">{% trans %}Category{% endtrans %}</th>
+                  <th>{% trans %}Category{% endtrans %}</th>
                   <th class="text-end">{% trans %}Points{% endtrans %}</th>
                   <th class="text-end">{% trans %}Time{% endtrans %}</th>
                 </tr>
@@ -224,7 +224,7 @@
                         {{ solve.challenge.name }}
                       </a>
                     </td>
-                    <td class="d-none d-md-table-cell">
+                    <td>
                       <span class="badge bg-primary">{{ solve.challenge.category }}</span>
                     </td>
                     <td class="text-end font-mono fw-bold" style="color: #00FF66;">

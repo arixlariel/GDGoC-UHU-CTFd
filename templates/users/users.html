@@ -54,8 +54,8 @@
           <tr>
             <th>{% trans %}Username{% endtrans %}</th>
             <th class="text-center" style="width: 105px;">{% trans %}Country{% endtrans %}</th>
-            <th class="d-none d-md-table-cell">{% trans %}Affiliation{% endtrans %}</th>
-            <th class="d-none d-sm-table-cell">{% trans %}Website{% endtrans %}</th>
+            <th>{% trans %}Affiliation{% endtrans %}</th>
+            <th>{% trans %}Website{% endtrans %}</th>
           </tr>
         </thead>
         <tbody>
@@ -97,7 +97,7 @@
                 {% endif %}
               </td>
 
-              <td class="d-none d-md-table-cell">
+              <td>
                 {% if user.affiliation %}
                   <span title="{{ user.affiliation }}">
                     {{ user.affiliation | truncate(55) }}
@@ -107,7 +107,7 @@
                 {% endif %}
               </td>
 
-              <td class="d-none d-sm-table-cell">
+              <td>
                 {% if user.website and (user.website.startswith('http://') or user.website.startswith('https://')) %}
                   {% set preview = user.website | replace('https://', '') | replace('http://', '') | replace('www.', '') %}
                   <a
